@@ -386,19 +386,38 @@
         }
 
         /* ===== 동물 친구 찾기 게임 스타일 ===== */
-        .animal-score {
+        .animal-hud {
             position: absolute;
-            top: clamp(10px, 2vh, 20px);
-            right: clamp(10px, 2vw, 20px);
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 20px;
-            padding: 8px 16px;
-            font-size: clamp(1.2rem, 3.5vw, 1.6rem);
-            font-weight: 800;
-            color: #2E7D32;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            border: 2px solid #66BB6A;
+            top: clamp(8px, 1.5vh, 16px);
+            right: clamp(8px, 2vw, 16px);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
             z-index: 100;
+        }
+
+        .animal-score {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            padding: clamp(8px, 1.5vh, 14px) clamp(16px, 3vw, 28px);
+            font-size: clamp(1.4rem, 4.5vw, 2.2rem);
+            font-weight: 900;
+            color: #2E7D32;
+            box-shadow: 0 4px 16px rgba(46,125,50,0.2);
+            border: 3px solid #66BB6A;
+            transition: transform 0.15s;
+        }
+
+        .animal-stage {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: clamp(4px, 1vh, 8px) clamp(12px, 2.5vw, 20px);
+            font-size: clamp(0.85rem, 2.5vw, 1.1rem);
+            font-weight: 800;
+            color: #E65100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 2px solid #FF9800;
         }
 
         .animal-game-content {
@@ -453,8 +472,8 @@
         }
 
         .animal-card {
-            width: clamp(90px, 25vw, 140px);
-            height: clamp(100px, 28vw, 155px);
+            width: clamp(110px, 30vw, 170px);
+            height: clamp(130px, 34vw, 190px);
             background: white;
             border-radius: clamp(16px, 3vw, 24px);
             display: flex;
@@ -465,7 +484,7 @@
             box-shadow: 0 6px 20px rgba(0,0,0,0.1);
             border: 4px solid #E0E0E0;
             transition: transform 0.15s, border-color 0.15s;
-            gap: 4px;
+            gap: 6px;
         }
 
         .animal-card:active {
@@ -473,8 +492,8 @@
         }
 
         .animal-card .animal-img-wrap {
-            width: clamp(55px, 16vw, 90px);
-            height: clamp(55px, 16vw, 90px);
+            width: clamp(70px, 20vw, 110px);
+            height: clamp(70px, 20vw, 110px);
             border-radius: 50%;
             overflow: hidden;
             display: flex;
@@ -679,6 +698,271 @@
             }
         }
 
+        /* ===== 마법의 스케치북 게임 스타일 ===== */
+        .sketch-draw-screen {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .sketch-canvas-wrap {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: white;
+            touch-action: none;
+        }
+
+        .sketch-canvas-wrap canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+
+        #sketch-outline-canvas {
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        #sketch-draw-canvas {
+            z-index: 2;
+        }
+
+        .sketch-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(6px, 1.5vw, 12px);
+            padding: clamp(8px, 1.5vh, 14px) clamp(8px, 2vw, 14px);
+            background: rgba(255, 255, 255, 0.95);
+            border-top: 2px solid #E0E0E0;
+            flex-wrap: wrap;
+            z-index: 10;
+        }
+
+        .sketch-color-btn {
+            width: clamp(36px, 9vw, 50px);
+            height: clamp(36px, 9vw, 50px);
+            border-radius: 50%;
+            border: 3px solid #DDD;
+            cursor: pointer;
+            transition: transform 0.15s, border-color 0.15s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .sketch-color-btn.active {
+            border-color: #333;
+            transform: scale(1.15);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+        }
+
+        .sketch-color-btn:active {
+            transform: scale(0.9);
+        }
+
+        .sketch-divider {
+            width: 2px;
+            height: clamp(28px, 6vw, 40px);
+            background: #DDD;
+            border-radius: 1px;
+        }
+
+        .sketch-brush-btn {
+            width: clamp(36px, 9vw, 50px);
+            height: clamp(36px, 9vw, 50px);
+            border-radius: 50%;
+            border: 3px solid #DDD;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.15s, border-color 0.15s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .sketch-brush-btn.active {
+            border-color: #333;
+            transform: scale(1.15);
+        }
+
+        .sketch-brush-btn:active {
+            transform: scale(0.9);
+        }
+
+        .sketch-brush-dot {
+            border-radius: 50%;
+            background: #333;
+        }
+
+        .sketch-action-btns {
+            display: flex;
+            gap: clamp(8px, 2vw, 14px);
+            margin-left: auto;
+        }
+
+        .sketch-action-btn {
+            padding: clamp(8px, 1.5vh, 14px) clamp(14px, 3vw, 24px);
+            border: none;
+            border-radius: 50px;
+            font-size: clamp(0.85rem, 2.5vw, 1.1rem);
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.15s;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        }
+
+        .sketch-action-btn:active {
+            transform: scale(0.92);
+        }
+
+        .sketch-clear-btn {
+            background: #EF5350;
+            color: white;
+        }
+
+        .sketch-magic-btn {
+            background: linear-gradient(135deg, #7C4DFF, #536DFE);
+            color: white;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        /* 수족관 화면 */
+        .aquarium-screen {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .aquarium-bg {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, #0288D1, #01579B, #002F6C);
+        }
+
+        /* 수족관 거품 */
+        .aquarium-bubble {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 40% 40%, rgba(255,255,255,0.6), rgba(255,255,255,0.1));
+            border: 1px solid rgba(255,255,255,0.3);
+            animation: aquaBubbleRise linear infinite;
+        }
+
+        @keyframes aquaBubbleRise {
+            0% { transform: translateY(0) translateX(0); opacity: 0.7; }
+            50% { transform: translateY(-40vh) translateX(10px); opacity: 0.5; }
+            100% { transform: translateY(-100vh) translateX(-5px); opacity: 0; }
+        }
+
+        /* 수족관 바닥 */
+        .aquarium-floor {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 15%;
+            background: linear-gradient(180deg, #5D4037, #795548);
+            border-radius: 0;
+        }
+
+        .aquarium-seaweed {
+            position: absolute;
+            bottom: 10%;
+            width: 20px;
+            background: #388E3C;
+            border-radius: 10px 10px 2px 2px;
+            animation: seaweedSway 3s ease-in-out infinite;
+            transform-origin: bottom center;
+        }
+
+        @keyframes seaweedSway {
+            0%, 100% { transform: rotate(-8deg); }
+            50% { transform: rotate(8deg); }
+        }
+
+        .aquarium-drawing {
+            position: absolute;
+            animation: swimAcross linear infinite;
+        }
+
+        @keyframes swimAcross {
+            0% { transform: translateX(-120%); }
+            100% { transform: translateX(calc(100vw + 120%)); }
+        }
+
+        .aquarium-redraw-btn {
+            position: absolute;
+            bottom: clamp(20px, 4vh, 40px);
+            right: clamp(16px, 3vw, 30px);
+            padding: clamp(12px, 2vh, 18px) clamp(20px, 4vw, 36px);
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(135deg, #FF7043, #F4511E);
+            color: white;
+            font-size: clamp(1rem, 3vw, 1.3rem);
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(244, 81, 30, 0.4);
+            z-index: 100;
+            transition: transform 0.15s;
+        }
+
+        .aquarium-redraw-btn:active {
+            transform: scale(0.92);
+        }
+
+        .sketch-start-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.85);
+            z-index: 200;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .sketch-start-overlay .start-emoji {
+            font-size: clamp(4rem, 15vw, 8rem);
+            margin-bottom: 20px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        .sketch-start-overlay .start-text {
+            font-size: clamp(1.2rem, 4vw, 2rem);
+            font-weight: 800;
+            color: #E65100;
+            margin-bottom: 30px;
+        }
+
+        .sketch-start-btn {
+            font-size: clamp(1.2rem, 4vw, 1.8rem);
+            font-weight: 800;
+            padding: 16px 48px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .sketch-start-btn:active {
+            transform: scale(0.93);
+        }
+
         /* ===== 화면 전환 애니메이션 ===== */
         .fade-in {
             animation: fadeIn 0.3s ease forwards;
@@ -718,7 +1002,10 @@
     <!-- ========== 게임 2: 동물 친구 찾기 ========== -->
     <div id="game-animal" class="screen game-screen">
         <div class="home-btn" onclick="goHome()">🏠</div>
-        <div class="animal-score" id="animal-score">⭐ 0</div>
+        <div class="animal-hud" id="animal-hud">
+            <div class="animal-score" id="animal-score">⭐ 0</div>
+            <div class="animal-stage" id="animal-stage">1단계</div>
+        </div>
         <div class="game-area" id="animal-area">
             <!-- 동물 게임 콘텐츠가 여기에 동적 생성됨 -->
         </div>
@@ -1247,35 +1534,50 @@
 
         /* ==============================================
          *  게임 2: 동물 친구 찾기 (Animal Sound)
-         *  - 6종 동물, SVG 일러스트, 4장 카드 표시
+         *  - 10종 동물, 실제 사진, 단계 시스템
+         *  - 1단계=5점, 선택지 2마리부터, 단계별 +1마리
+         *  - 동일 단계 내 중복 문제 없음
          * ============================================== */
         const AnimalGame = {
             score: 0,
+            stage: 1,
+            stageScore: 0,
             currentAnswer: null,
             currentChoices: [],
             locked: false,
             advanceTimer: null,
             running: false,
+            usedAnswers: [],  // 이번 단계에서 이미 나온 정답
 
             animals: [
-                { id: 'dog',     name: '강아지' },
-                { id: 'cat',     name: '고양이' },
-                { id: 'lion',    name: '사자' },
-                { id: 'cow',     name: '소' },
-                { id: 'chicken', name: '닭' },
-                { id: 'duck',    name: '오리' }
-            ]
+                { id: 'dog',      name: '강아지' },
+                { id: 'cat',      name: '고양이' },
+                { id: 'lion',     name: '사자' },
+                { id: 'cow',      name: '소' },
+                { id: 'chicken',  name: '닭' },
+                { id: 'duck',     name: '오리' },
+                { id: 'sheep',    name: '양' },
+                { id: 'pig',      name: '돼지' },
+                { id: 'horse',    name: '말' },
+                { id: 'elephant', name: '코끼리' }
+            ],
+
+            getStageGoal() { return 5; },
+            getChoiceCount() { return Math.min(this.stage + 1, this.animals.length); }
         };
 
-        /* ===== SVG 동물 일러스트 ===== */
         /* 동물 실제 사진 URL (Unsplash 무료 이미지) */
         const ANIMAL_PHOTOS = {
-            dog:     'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=200&h=200&fit=crop&crop=face',
-            cat:     'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200&h=200&fit=crop&crop=face',
-            lion:    'https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=200&h=200&fit=crop&crop=face',
-            cow:     'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=200&h=200&fit=crop&crop=face',
-            chicken: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=200&h=200&fit=crop&crop=face',
-            duck:    'https://images.unsplash.com/photo-1459682687441-7761439a709d?w=200&h=200&fit=crop&crop=face'
+            dog:      'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=300&h=300&fit=crop&crop=face',
+            cat:      'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300&h=300&fit=crop&crop=face',
+            lion:     'https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=300&h=300&fit=crop&crop=face',
+            cow:      'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=300&h=300&fit=crop&crop=face',
+            chicken:  'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=300&h=300&fit=crop&crop=face',
+            duck:     'https://images.unsplash.com/photo-1459682687441-7761439a709d?w=300&h=300&fit=crop&crop=face',
+            sheep:    'https://images.unsplash.com/photo-1484557985045-edf25e08da73?w=300&h=300&fit=crop&crop=face',
+            pig:      'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=300&h=300&fit=crop&crop=face',
+            horse:    'https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=300&h=300&fit=crop&crop=face',
+            elephant: 'https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?w=300&h=300&fit=crop&crop=face'
         };
 
         function getAnimalImage(id) {
@@ -1311,9 +1613,13 @@
             if (overlay) overlay.remove();
 
             AnimalGame.score = 0;
+            AnimalGame.stage = 1;
+            AnimalGame.stageScore = 0;
+            AnimalGame.usedAnswers = [];
             AnimalGame.running = true;
             AnimalGame.locked = false;
             updateAnimalScore();
+            updateAnimalStage();
 
             startAnimalRound();
         }
@@ -1328,16 +1634,32 @@
             if (oldOverlay) oldOverlay.remove();
             const oldCelebration = document.querySelector('.celebration-stars');
             if (oldCelebration) oldCelebration.remove();
+            const oldStageUp = document.querySelector('.bubble-stage-up');
+            if (oldStageUp) oldStageUp.remove();
 
-            // 6마리 중 4마리를 랜덤 선택 (정답 포함)
-            const allAnimals = [...AnimalGame.animals];
-            const shuffled = allAnimals.sort(() => Math.random() - 0.5);
-            const choices = shuffled.slice(0, 4);
+            const choiceCount = AnimalGame.getChoiceCount();
 
-            // 정답은 4장 중 랜덤
-            const answerAnimal = choices[Math.floor(Math.random() * choices.length)];
+            // 중복 방지: 아직 안 나온 동물 중에서 정답 선택
+            let availableForAnswer = AnimalGame.animals.filter(
+                a => !AnimalGame.usedAnswers.includes(a.id)
+            );
+            // 모두 사용했으면 리셋
+            if (availableForAnswer.length === 0) {
+                AnimalGame.usedAnswers = [];
+                availableForAnswer = [...AnimalGame.animals];
+            }
+
+            // 정답 선택
+            const answerAnimal = availableForAnswer[Math.floor(Math.random() * availableForAnswer.length)];
             AnimalGame.currentAnswer = answerAnimal.id;
-            AnimalGame.currentChoices = choices;
+            AnimalGame.usedAnswers.push(answerAnimal.id);
+
+            // 선택지: 정답 포함 + 나머지 랜덤
+            const others = AnimalGame.animals.filter(a => a.id !== answerAnimal.id);
+            const shuffledOthers = others.sort(() => Math.random() - 0.5);
+            const choices = [answerAnimal, ...shuffledOthers.slice(0, choiceCount - 1)];
+            // 카드 순서 섞기
+            AnimalGame.currentChoices = choices.sort(() => Math.random() - 0.5);
 
             buildAnimalGameUI();
 
@@ -1422,6 +1744,7 @@
             if (isCorrect) {
                 AnimalGame.locked = true;
                 AnimalGame.score++;
+                AnimalGame.stageScore++;
                 updateAnimalScore();
 
                 if (selectedCard) selectedCard.classList.add('correct-flash');
@@ -1429,11 +1752,31 @@
                 showCelebrationStars(area);
                 playCorrectSound();
 
+                // 단계 업 체크
+                const isStageUp = AnimalGame.stageScore >= AnimalGame.getStageGoal();
+                if (isStageUp) {
+                    AnimalGame.stage++;
+                    AnimalGame.stageScore = 0;
+                    AnimalGame.usedAnswers = [];
+                    updateAnimalStage();
+                    playStageUpSound();
+
+                    // 단계업 연출
+                    const stageOverlay = document.createElement('div');
+                    stageOverlay.className = 'bubble-stage-up';
+                    stageOverlay.innerHTML = `
+                        <div class="stage-up-emoji">🎉</div>
+                        <div class="stage-up-text">${AnimalGame.stage}단계!</div>
+                    `;
+                    area.appendChild(stageOverlay);
+                    setTimeout(() => stageOverlay.remove(), 1800);
+                }
+
                 AnimalGame.advanceTimer = setTimeout(() => {
                     if (AnimalGame.running) {
                         startAnimalRound();
                     }
-                }, 2000);
+                }, isStageUp ? 2200 : 1500);
 
             } else {
                 AnimalGame.locked = true;
@@ -1490,8 +1833,15 @@
             const scoreEl = document.getElementById('animal-score');
             if (scoreEl) {
                 scoreEl.textContent = `⭐ ${AnimalGame.score}`;
-                scoreEl.style.transform = 'scale(1.2)';
+                scoreEl.style.transform = 'scale(1.25)';
                 setTimeout(() => { scoreEl.style.transform = 'scale(1)'; }, 150);
+            }
+        }
+
+        function updateAnimalStage() {
+            const stageEl = document.getElementById('animal-stage');
+            if (stageEl) {
+                stageEl.textContent = `${AnimalGame.stage}단계`;
             }
         }
 
@@ -1500,338 +1850,335 @@
         function playAnimalSound(animalId) {
             const ctx = getAudioContext();
             if (!ctx) return;
+            const now = ctx.currentTime;
+
+            // 유틸: 오실레이터+게인 빠른 생성
+            function makeOsc(type, freq, t, dur, vol) {
+                const o = ctx.createOscillator();
+                const g = ctx.createGain();
+                o.type = type;
+                if (typeof freq === 'number') o.frequency.setValueAtTime(freq, t);
+                g.gain.setValueAtTime(vol || 0.3, t);
+                g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+                o.connect(g); g.connect(ctx.destination);
+                o.start(t); o.stop(t + dur);
+                return o;
+            }
 
             switch (animalId) {
-                case 'dog': playDogSound(ctx); break;
-                case 'cat': playCatSound(ctx); break;
-                case 'lion': playLionSound(ctx); break;
-                case 'cow': playCowSound(ctx); break;
-                case 'chicken': playChickenSound(ctx); break;
-                case 'duck': playDuckSound(ctx); break;
-            }
-        }
 
-        // 강아지: 짧은 반복 짖는 소리
-        function playDogSound(ctx) {
-            const now = ctx.currentTime;
-            const barkCount = 3;
-            const barkGap = 0.22;
-
-            for (let i = 0; i < barkCount; i++) {
-                const t = now + i * barkGap;
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(350, t);
-                osc.frequency.linearRampToValueAtTime(250, t + 0.08);
-                osc.frequency.linearRampToValueAtTime(400, t + 0.12);
-                gain.gain.setValueAtTime(0, t);
-                gain.gain.linearRampToValueAtTime(0.35, t + 0.02);
-                gain.gain.setValueAtTime(0.35, t + 0.08);
-                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start(t);
-                osc.stop(t + 0.15);
-
-                const bufSize = Math.floor(ctx.sampleRate * 0.1);
-                const nBuf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
-                const nData = nBuf.getChannelData(0);
-                for (let j = 0; j < bufSize; j++) {
-                    nData[j] = (Math.random() * 2 - 1) * 0.3 * (1 - j / bufSize);
+                case 'dog': {
+                    // 멍멍! - 2회 짖음, 급격한 주파수 변화
+                    for (let i = 0; i < 2; i++) {
+                        const t = now + i * 0.35;
+                        const o = ctx.createOscillator();
+                        const g = ctx.createGain();
+                        const flt = ctx.createBiquadFilter();
+                        o.type = 'sawtooth';
+                        // 빠르게 올라갔다 내려오는 짖는 패턴
+                        o.frequency.setValueAtTime(200, t);
+                        o.frequency.linearRampToValueAtTime(450, t + 0.04);
+                        o.frequency.setValueAtTime(400, t + 0.06);
+                        o.frequency.linearRampToValueAtTime(250, t + 0.18);
+                        flt.type = 'lowpass';
+                        flt.frequency.setValueAtTime(1200, t);
+                        flt.Q.setValueAtTime(2, t);
+                        g.gain.setValueAtTime(0, t);
+                        g.gain.linearRampToValueAtTime(0.4, t + 0.02);
+                        g.gain.setValueAtTime(0.4, t + 0.06);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+                        o.connect(flt); flt.connect(g); g.connect(ctx.destination);
+                        o.start(t); o.stop(t + 0.22);
+                    }
+                    break;
                 }
-                const nSrc = ctx.createBufferSource();
-                nSrc.buffer = nBuf;
-                const nGain = ctx.createGain();
-                nGain.gain.setValueAtTime(0.12, t);
-                nGain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
-                nSrc.connect(nGain);
-                nGain.connect(ctx.destination);
-                nSrc.start(t);
-                nSrc.stop(t + 0.1);
-            }
-        }
 
-        // 고양이: 야옹 소리
-        function playCatSound(ctx) {
-            const now = ctx.currentTime;
+                case 'cat': {
+                    // 야~옹 - 부드러운 상승 후 하강, 2연속
+                    for (let i = 0; i < 2; i++) {
+                        const t = now + i * 0.7;
+                        const o = ctx.createOscillator();
+                        const g = ctx.createGain();
+                        o.type = 'sine';
+                        o.frequency.setValueAtTime(250, t);
+                        o.frequency.linearRampToValueAtTime(520, t + 0.15);
+                        o.frequency.setValueAtTime(520, t + 0.25);
+                        o.frequency.linearRampToValueAtTime(380, t + 0.45);
+                        o.frequency.linearRampToValueAtTime(280, t + 0.55);
+                        g.gain.setValueAtTime(0, t);
+                        g.gain.linearRampToValueAtTime(0.3, t + 0.04);
+                        g.gain.setValueAtTime(0.28, t + 0.25);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.58);
+                        o.connect(g); g.connect(ctx.destination);
+                        o.start(t); o.stop(t + 0.58);
+                        // 비브라토
+                        const v = ctx.createOscillator();
+                        const vg = ctx.createGain();
+                        v.frequency.setValueAtTime(5.5, t);
+                        vg.gain.setValueAtTime(12, t);
+                        v.connect(vg); vg.connect(o.frequency);
+                        v.start(t); v.stop(t + 0.58);
+                    }
+                    break;
+                }
 
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(300, now);
-            osc.frequency.linearRampToValueAtTime(600, now + 0.2);
-            osc.frequency.linearRampToValueAtTime(700, now + 0.35);
-            osc.frequency.linearRampToValueAtTime(500, now + 0.5);
-            osc.frequency.linearRampToValueAtTime(350, now + 0.65);
-            gain.gain.setValueAtTime(0, now);
-            gain.gain.linearRampToValueAtTime(0.3, now + 0.05);
-            gain.gain.setValueAtTime(0.3, now + 0.3);
-            gain.gain.linearRampToValueAtTime(0.25, now + 0.5);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start(now);
-            osc.stop(now + 0.7);
+                case 'lion': {
+                    // 으르렁~ - 아주 낮은 떨리는 소리
+                    const dur = 1.4;
+                    const o = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    const flt = ctx.createBiquadFilter();
+                    o.type = 'sawtooth';
+                    o.frequency.setValueAtTime(70, now);
+                    o.frequency.linearRampToValueAtTime(110, now + 0.3);
+                    o.frequency.linearRampToValueAtTime(85, now + 0.8);
+                    o.frequency.linearRampToValueAtTime(60, now + dur);
+                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(500, now);
+                    g.gain.setValueAtTime(0, now);
+                    g.gain.linearRampToValueAtTime(0.4, now + 0.15);
+                    g.gain.setValueAtTime(0.4, now + 0.5);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+                    o.connect(flt); flt.connect(g); g.connect(ctx.destination);
+                    o.start(now); o.stop(now + dur);
+                    // 떨림
+                    const tr = ctx.createOscillator();
+                    const trg = ctx.createGain();
+                    tr.frequency.setValueAtTime(7, now); trg.gain.setValueAtTime(18, now);
+                    tr.connect(trg); trg.connect(o.frequency);
+                    tr.start(now); tr.stop(now + dur);
+                    // 서브베이스
+                    makeOsc('sine', 45, now, dur, 0.2);
+                    // 숨소리 노이즈
+                    const bs = Math.floor(ctx.sampleRate * dur);
+                    const nb = ctx.createBuffer(1, bs, ctx.sampleRate);
+                    const nd = nb.getChannelData(0);
+                    for (let i = 0; i < bs; i++) { const e = Math.min(1, i/(ctx.sampleRate*0.2)) * Math.max(0, 1-(i-bs*0.6)/(bs*0.4)); nd[i] = (Math.random()*2-1)*0.12*e; }
+                    const ns = ctx.createBufferSource(); ns.buffer = nb;
+                    const ng = ctx.createGain(); ng.gain.setValueAtTime(0.15, now);
+                    const lp = ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.setValueAtTime(350, now);
+                    ns.connect(ng); ng.connect(lp); lp.connect(ctx.destination);
+                    ns.start(now); ns.stop(now + dur);
+                    break;
+                }
 
-            const vibrato = ctx.createOscillator();
-            const vibratoGain = ctx.createGain();
-            vibrato.type = 'sine';
-            vibrato.frequency.setValueAtTime(6, now);
-            vibratoGain.gain.setValueAtTime(15, now);
-            vibrato.connect(vibratoGain);
-            vibratoGain.connect(osc.frequency);
-            vibrato.start(now);
-            vibrato.stop(now + 0.7);
+                case 'cow': {
+                    // 음~메~ - 2음절, 낮은 음에서 올라갔다 길게 유지
+                    const dur = 1.6;
+                    const o = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    const flt = ctx.createBiquadFilter();
+                    o.type = 'sawtooth';
+                    o.frequency.setValueAtTime(110, now);
+                    o.frequency.linearRampToValueAtTime(155, now + 0.25);
+                    o.frequency.setValueAtTime(155, now + 0.7);
+                    o.frequency.linearRampToValueAtTime(140, now + 1.1);
+                    o.frequency.linearRampToValueAtTime(100, now + dur);
+                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(600, now); flt.Q.setValueAtTime(1.5, now);
+                    g.gain.setValueAtTime(0, now);
+                    g.gain.linearRampToValueAtTime(0.35, now + 0.08);
+                    g.gain.setValueAtTime(0.35, now + 0.7);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+                    o.connect(flt); flt.connect(g); g.connect(ctx.destination);
+                    o.start(now); o.stop(now + dur);
+                    // 비브라토
+                    const v = ctx.createOscillator(); const vg = ctx.createGain();
+                    v.frequency.setValueAtTime(4, now); vg.gain.setValueAtTime(6, now);
+                    v.connect(vg); vg.connect(o.frequency);
+                    v.start(now); v.stop(now + dur);
+                    // 서브
+                    makeOsc('sine', 55, now, dur, 0.18);
+                    break;
+                }
 
-            const osc2 = ctx.createOscillator();
-            const gain2 = ctx.createGain();
-            osc2.type = 'sine';
-            osc2.frequency.setValueAtTime(350, now + 0.8);
-            osc2.frequency.linearRampToValueAtTime(750, now + 1.0);
-            osc2.frequency.linearRampToValueAtTime(600, now + 1.15);
-            osc2.frequency.linearRampToValueAtTime(400, now + 1.3);
-            gain2.gain.setValueAtTime(0, now + 0.8);
-            gain2.gain.linearRampToValueAtTime(0.28, now + 0.85);
-            gain2.gain.setValueAtTime(0.28, now + 1.05);
-            gain2.gain.exponentialRampToValueAtTime(0.001, now + 1.35);
-            osc2.connect(gain2);
-            gain2.connect(ctx.destination);
-            osc2.start(now + 0.8);
-            osc2.stop(now + 1.35);
-        }
+                case 'chicken': {
+                    // 꼬-끼-오~ - 3음절, 점점 높아졌다 길게
+                    // 꼬
+                    const o1 = ctx.createOscillator(); const g1 = ctx.createGain();
+                    o1.type = 'sawtooth';
+                    o1.frequency.setValueAtTime(300, now);
+                    o1.frequency.linearRampToValueAtTime(500, now + 0.1);
+                    g1.gain.setValueAtTime(0, now);
+                    g1.gain.linearRampToValueAtTime(0.3, now + 0.02);
+                    g1.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+                    o1.connect(g1); g1.connect(ctx.destination);
+                    o1.start(now); o1.stop(now + 0.14);
+                    // 끼
+                    const o2 = ctx.createOscillator(); const g2 = ctx.createGain();
+                    o2.type = 'sawtooth';
+                    o2.frequency.setValueAtTime(550, now + 0.18);
+                    o2.frequency.linearRampToValueAtTime(800, now + 0.28);
+                    g2.gain.setValueAtTime(0, now + 0.18);
+                    g2.gain.linearRampToValueAtTime(0.3, now + 0.2);
+                    g2.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                    o2.connect(g2); g2.connect(ctx.destination);
+                    o2.start(now + 0.18); o2.stop(now + 0.35);
+                    // 오~~~ (길게 높은 음)
+                    const o3 = ctx.createOscillator(); const g3 = ctx.createGain();
+                    const flt = ctx.createBiquadFilter();
+                    o3.type = 'sawtooth';
+                    o3.frequency.setValueAtTime(850, now + 0.4);
+                    o3.frequency.linearRampToValueAtTime(950, now + 0.55);
+                    o3.frequency.linearRampToValueAtTime(700, now + 0.9);
+                    o3.frequency.linearRampToValueAtTime(450, now + 1.2);
+                    flt.type = 'bandpass'; flt.frequency.setValueAtTime(900, now + 0.4); flt.Q.setValueAtTime(1, now + 0.4);
+                    g3.gain.setValueAtTime(0, now + 0.4);
+                    g3.gain.linearRampToValueAtTime(0.3, now + 0.43);
+                    g3.gain.setValueAtTime(0.28, now + 0.7);
+                    g3.gain.exponentialRampToValueAtTime(0.001, now + 1.25);
+                    o3.connect(flt); flt.connect(g3); g3.connect(ctx.destination);
+                    o3.start(now + 0.4); o3.stop(now + 1.25);
+                    break;
+                }
 
-        // 사자: 낮은 으르렁 소리
-        function playLionSound(ctx) {
-            const now = ctx.currentTime;
-            const duration = 1.2;
+                case 'duck': {
+                    // 꽥꽥꽥 - 납작한 콧소리, 빠르게 3회
+                    for (let i = 0; i < 3; i++) {
+                        const t = now + i * 0.25;
+                        const o = ctx.createOscillator(); const g = ctx.createGain();
+                        const flt = ctx.createBiquadFilter();
+                        o.type = 'sawtooth';
+                        o.frequency.setValueAtTime(180, t);
+                        o.frequency.linearRampToValueAtTime(350, t + 0.03);
+                        o.frequency.linearRampToValueAtTime(220, t + 0.1);
+                        o.frequency.linearRampToValueAtTime(160, t + 0.16);
+                        flt.type = 'bandpass'; flt.frequency.setValueAtTime(800, t); flt.Q.setValueAtTime(4, t);
+                        g.gain.setValueAtTime(0, t);
+                        g.gain.linearRampToValueAtTime(0.3, t + 0.015);
+                        g.gain.setValueAtTime(0.28, t + 0.06);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+                        o.connect(flt); flt.connect(g); g.connect(ctx.destination);
+                        o.start(t); o.stop(t + 0.18);
+                    }
+                    break;
+                }
 
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(80, now);
-            osc.frequency.linearRampToValueAtTime(120, now + 0.3);
-            osc.frequency.linearRampToValueAtTime(100, now + 0.6);
-            osc.frequency.linearRampToValueAtTime(70, now + duration);
-            gain.gain.setValueAtTime(0, now);
-            gain.gain.linearRampToValueAtTime(0.35, now + 0.15);
-            gain.gain.setValueAtTime(0.35, now + 0.3);
-            gain.gain.linearRampToValueAtTime(0.4, now + 0.5);
-            gain.gain.linearRampToValueAtTime(0.3, now + 0.8);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start(now);
-            osc.stop(now + duration);
+                case 'sheep': {
+                    // 메~에~ - 떨리는 중간음 2회
+                    for (let i = 0; i < 2; i++) {
+                        const t = now + i * 0.6;
+                        const o = ctx.createOscillator(); const g = ctx.createGain();
+                        o.type = 'sawtooth';
+                        o.frequency.setValueAtTime(220, t);
+                        o.frequency.linearRampToValueAtTime(330, t + 0.08);
+                        o.frequency.setValueAtTime(330, t + 0.2);
+                        o.frequency.linearRampToValueAtTime(280, t + 0.4);
+                        const flt = ctx.createBiquadFilter();
+                        flt.type = 'lowpass'; flt.frequency.setValueAtTime(800, t);
+                        g.gain.setValueAtTime(0, t);
+                        g.gain.linearRampToValueAtTime(0.28, t + 0.03);
+                        g.gain.setValueAtTime(0.25, t + 0.2);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+                        o.connect(flt); flt.connect(g); g.connect(ctx.destination);
+                        o.start(t); o.stop(t + 0.45);
+                        // 강한 비브라토 (떨리는 양 울음)
+                        const v = ctx.createOscillator(); const vg = ctx.createGain();
+                        v.frequency.setValueAtTime(8, t); vg.gain.setValueAtTime(25, t);
+                        v.connect(vg); vg.connect(o.frequency);
+                        v.start(t); v.stop(t + 0.45);
+                    }
+                    break;
+                }
 
-            const sub = ctx.createOscillator();
-            const subGain = ctx.createGain();
-            sub.type = 'sine';
-            sub.frequency.setValueAtTime(55, now);
-            sub.frequency.linearRampToValueAtTime(45, now + duration);
-            subGain.gain.setValueAtTime(0, now);
-            subGain.gain.linearRampToValueAtTime(0.25, now + 0.15);
-            subGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-            sub.connect(subGain);
-            subGain.connect(ctx.destination);
-            sub.start(now);
-            sub.stop(now + duration);
+                case 'pig': {
+                    // 꿀꿀 - 낮고 짧은 코 고는 소리 2회
+                    for (let i = 0; i < 2; i++) {
+                        const t = now + i * 0.3;
+                        const o = ctx.createOscillator(); const g = ctx.createGain();
+                        const flt = ctx.createBiquadFilter();
+                        o.type = 'sawtooth';
+                        o.frequency.setValueAtTime(120, t);
+                        o.frequency.linearRampToValueAtTime(200, t + 0.04);
+                        o.frequency.linearRampToValueAtTime(140, t + 0.12);
+                        o.frequency.linearRampToValueAtTime(100, t + 0.2);
+                        flt.type = 'lowpass'; flt.frequency.setValueAtTime(500, t); flt.Q.setValueAtTime(3, t);
+                        g.gain.setValueAtTime(0, t);
+                        g.gain.linearRampToValueAtTime(0.35, t + 0.02);
+                        g.gain.setValueAtTime(0.3, t + 0.08);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+                        o.connect(flt); flt.connect(g); g.connect(ctx.destination);
+                        o.start(t); o.stop(t + 0.22);
+                        // 콧소리 노이즈
+                        const bs = Math.floor(ctx.sampleRate * 0.15);
+                        const nb = ctx.createBuffer(1, bs, ctx.sampleRate);
+                        const nd = nb.getChannelData(0);
+                        for (let j = 0; j < bs; j++) nd[j] = (Math.random()*2-1)*0.2*(1-j/bs);
+                        const ns = ctx.createBufferSource(); ns.buffer = nb;
+                        const ng = ctx.createGain(); ng.gain.setValueAtTime(0.12, t); ng.gain.exponentialRampToValueAtTime(0.001, t+0.15);
+                        const lp = ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.setValueAtTime(400, t);
+                        ns.connect(ng); ng.connect(lp); lp.connect(ctx.destination);
+                        ns.start(t); ns.stop(t + 0.15);
+                    }
+                    break;
+                }
 
-            const bufSize = Math.floor(ctx.sampleRate * duration);
-            const nBuf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
-            const nData = nBuf.getChannelData(0);
-            for (let i = 0; i < bufSize; i++) {
-                const env = Math.min(1, i / (ctx.sampleRate * 0.15)) *
-                            Math.max(0, 1 - (i - bufSize * 0.7) / (bufSize * 0.3));
-                nData[i] = (Math.random() * 2 - 1) * 0.15 * env;
-            }
-            const nSrc = ctx.createBufferSource();
-            nSrc.buffer = nBuf;
-            const nGain = ctx.createGain();
-            nGain.gain.setValueAtTime(0.2, now);
-            nSrc.connect(nGain);
+                case 'horse': {
+                    // 히힝~ - 높은 울음소리, 올라갔다 내려옴
+                    const dur = 1.0;
+                    const o = ctx.createOscillator(); const g = ctx.createGain();
+                    o.type = 'sawtooth';
+                    o.frequency.setValueAtTime(300, now);
+                    o.frequency.linearRampToValueAtTime(600, now + 0.15);
+                    o.frequency.linearRampToValueAtTime(700, now + 0.3);
+                    o.frequency.linearRampToValueAtTime(550, now + 0.6);
+                    o.frequency.linearRampToValueAtTime(350, now + dur);
+                    const flt = ctx.createBiquadFilter();
+                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(1500, now);
+                    g.gain.setValueAtTime(0, now);
+                    g.gain.linearRampToValueAtTime(0.3, now + 0.05);
+                    g.gain.setValueAtTime(0.3, now + 0.3);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+                    o.connect(flt); flt.connect(g); g.connect(ctx.destination);
+                    o.start(now); o.stop(now + dur);
+                    // 떨림
+                    const v = ctx.createOscillator(); const vg = ctx.createGain();
+                    v.frequency.setValueAtTime(6, now); vg.gain.setValueAtTime(20, now);
+                    v.connect(vg); vg.connect(o.frequency);
+                    v.start(now); v.stop(now + dur);
+                    // 콧바람
+                    const bs = Math.floor(ctx.sampleRate * 0.3);
+                    const nb = ctx.createBuffer(1, bs, ctx.sampleRate);
+                    const nd = nb.getChannelData(0);
+                    for (let j = 0; j < bs; j++) nd[j] = (Math.random()*2-1)*0.08*(1-j/bs);
+                    const ns = ctx.createBufferSource(); ns.buffer = nb;
+                    const ng = ctx.createGain(); ng.gain.setValueAtTime(0.1, now+0.7); ng.gain.exponentialRampToValueAtTime(0.001, now+1.0);
+                    ns.connect(ng); ng.connect(ctx.destination);
+                    ns.start(now+0.7); ns.stop(now+1.0);
+                    break;
+                }
 
-            const lpf = ctx.createBiquadFilter();
-            lpf.type = 'lowpass';
-            lpf.frequency.setValueAtTime(400, now);
-            nGain.connect(lpf);
-            lpf.connect(ctx.destination);
-            nSrc.start(now);
-            nSrc.stop(now + duration);
-
-            const tremolo = ctx.createOscillator();
-            const tremoloGain = ctx.createGain();
-            tremolo.type = 'sine';
-            tremolo.frequency.setValueAtTime(8, now);
-            tremoloGain.gain.setValueAtTime(20, now);
-            tremolo.connect(tremoloGain);
-            tremoloGain.connect(osc.frequency);
-            tremolo.start(now);
-            tremolo.stop(now + duration);
-        }
-
-        // 소: 음메~ 소리 (낮은 긴 톤)
-        function playCowSound(ctx) {
-            const now = ctx.currentTime;
-            const duration = 1.5;
-
-            // 메인 톤 (낮은 음메~)
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(130, now);
-            osc.frequency.linearRampToValueAtTime(180, now + 0.3);
-            osc.frequency.setValueAtTime(180, now + 0.6);
-            osc.frequency.linearRampToValueAtTime(160, now + 1.0);
-            osc.frequency.linearRampToValueAtTime(120, now + duration);
-            gain.gain.setValueAtTime(0, now);
-            gain.gain.linearRampToValueAtTime(0.3, now + 0.1);
-            gain.gain.setValueAtTime(0.3, now + 0.8);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start(now);
-            osc.stop(now + duration);
-
-            // 서브톤 보강
-            const sub = ctx.createOscillator();
-            const subGain = ctx.createGain();
-            sub.type = 'sine';
-            sub.frequency.setValueAtTime(65, now);
-            sub.frequency.linearRampToValueAtTime(90, now + 0.3);
-            sub.frequency.linearRampToValueAtTime(60, now + duration);
-            subGain.gain.setValueAtTime(0, now);
-            subGain.gain.linearRampToValueAtTime(0.2, now + 0.1);
-            subGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-            sub.connect(subGain);
-            subGain.connect(ctx.destination);
-            sub.start(now);
-            sub.stop(now + duration);
-
-            // 비브라토
-            const vib = ctx.createOscillator();
-            const vibGain = ctx.createGain();
-            vib.type = 'sine';
-            vib.frequency.setValueAtTime(4, now);
-            vibGain.gain.setValueAtTime(8, now);
-            vib.connect(vibGain);
-            vibGain.connect(osc.frequency);
-            vib.start(now);
-            vib.stop(now + duration);
-        }
-
-        // 닭: 꼬끼오~ 소리 (높은 짧은 반복)
-        function playChickenSound(ctx) {
-            const now = ctx.currentTime;
-
-            // 꼬 (짧은 상승)
-            const osc1 = ctx.createOscillator();
-            const gain1 = ctx.createGain();
-            osc1.type = 'sawtooth';
-            osc1.frequency.setValueAtTime(400, now);
-            osc1.frequency.linearRampToValueAtTime(600, now + 0.08);
-            gain1.gain.setValueAtTime(0, now);
-            gain1.gain.linearRampToValueAtTime(0.25, now + 0.02);
-            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-            osc1.connect(gain1);
-            gain1.connect(ctx.destination);
-            osc1.start(now);
-            osc1.stop(now + 0.12);
-
-            // 끼 (높은 음)
-            const osc2 = ctx.createOscillator();
-            const gain2 = ctx.createGain();
-            osc2.type = 'sawtooth';
-            osc2.frequency.setValueAtTime(700, now + 0.15);
-            osc2.frequency.linearRampToValueAtTime(900, now + 0.22);
-            gain2.gain.setValueAtTime(0, now + 0.15);
-            gain2.gain.linearRampToValueAtTime(0.28, now + 0.17);
-            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-            osc2.connect(gain2);
-            gain2.connect(ctx.destination);
-            osc2.start(now + 0.15);
-            osc2.stop(now + 0.3);
-
-            // 오~ (길게 내려오는 음)
-            const osc3 = ctx.createOscillator();
-            const gain3 = ctx.createGain();
-            osc3.type = 'sawtooth';
-            osc3.frequency.setValueAtTime(800, now + 0.35);
-            osc3.frequency.linearRampToValueAtTime(1000, now + 0.5);
-            osc3.frequency.linearRampToValueAtTime(600, now + 0.9);
-            osc3.frequency.linearRampToValueAtTime(400, now + 1.1);
-            gain3.gain.setValueAtTime(0, now + 0.35);
-            gain3.gain.linearRampToValueAtTime(0.3, now + 0.38);
-            gain3.gain.setValueAtTime(0.3, now + 0.6);
-            gain3.gain.exponentialRampToValueAtTime(0.001, now + 1.15);
-            osc3.connect(gain3);
-            gain3.connect(ctx.destination);
-            osc3.start(now + 0.35);
-            osc3.stop(now + 1.15);
-
-            // 노이즈 보강
-            const bufSize = Math.floor(ctx.sampleRate * 0.15);
-            const nBuf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
-            const nData = nBuf.getChannelData(0);
-            for (let j = 0; j < bufSize; j++) {
-                nData[j] = (Math.random() * 2 - 1) * 0.15 * (1 - j / bufSize);
-            }
-            const nSrc = ctx.createBufferSource();
-            nSrc.buffer = nBuf;
-            const nGain = ctx.createGain();
-            nGain.gain.setValueAtTime(0.1, now + 0.35);
-            nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-            nSrc.connect(nGain);
-            nGain.connect(ctx.destination);
-            nSrc.start(now + 0.35);
-            nSrc.stop(now + 0.5);
-        }
-
-        // 오리: 꽥꽥 소리 (중간 음, 콧소리 느낌)
-        function playDuckSound(ctx) {
-            const now = ctx.currentTime;
-            const quackCount = 3;
-            const quackGap = 0.3;
-
-            for (let i = 0; i < quackCount; i++) {
-                const t = now + i * quackGap;
-
-                // 메인 톤 (콧소리 느낌 - 사각파)
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'square';
-                osc.frequency.setValueAtTime(250, t);
-                osc.frequency.linearRampToValueAtTime(400, t + 0.05);
-                osc.frequency.linearRampToValueAtTime(300, t + 0.12);
-                osc.frequency.linearRampToValueAtTime(200, t + 0.18);
-                gain.gain.setValueAtTime(0, t);
-                gain.gain.linearRampToValueAtTime(0.2, t + 0.02);
-                gain.gain.setValueAtTime(0.2, t + 0.08);
-                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start(t);
-                osc.stop(t + 0.2);
-
-                // 밴드패스 필터로 콧소리 느낌 강화
-                const osc2 = ctx.createOscillator();
-                const gain2 = ctx.createGain();
-                const bpf = ctx.createBiquadFilter();
-                osc2.type = 'sawtooth';
-                osc2.frequency.setValueAtTime(250, t);
-                osc2.frequency.linearRampToValueAtTime(380, t + 0.05);
-                osc2.frequency.linearRampToValueAtTime(220, t + 0.18);
-                bpf.type = 'bandpass';
-                bpf.frequency.setValueAtTime(600, t);
-                bpf.Q.setValueAtTime(3, t);
-                gain2.gain.setValueAtTime(0, t);
-                gain2.gain.linearRampToValueAtTime(0.15, t + 0.02);
-                gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
-                osc2.connect(bpf);
-                bpf.connect(gain2);
-                gain2.connect(ctx.destination);
-                osc2.start(t);
-                osc2.stop(t + 0.18);
+                case 'elephant': {
+                    // 뿌우~ - 트럼펫 같은 낮고 웅장한 소리
+                    const dur = 1.5;
+                    const o = ctx.createOscillator(); const g = ctx.createGain();
+                    o.type = 'sawtooth';
+                    o.frequency.setValueAtTime(150, now);
+                    o.frequency.linearRampToValueAtTime(350, now + 0.15);
+                    o.frequency.setValueAtTime(350, now + 0.4);
+                    o.frequency.linearRampToValueAtTime(280, now + 0.8);
+                    o.frequency.linearRampToValueAtTime(200, now + dur);
+                    const flt = ctx.createBiquadFilter();
+                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(800, now); flt.Q.setValueAtTime(2, now);
+                    g.gain.setValueAtTime(0, now);
+                    g.gain.linearRampToValueAtTime(0.4, now + 0.08);
+                    g.gain.setValueAtTime(0.4, now + 0.4);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+                    o.connect(flt); flt.connect(g); g.connect(ctx.destination);
+                    o.start(now); o.stop(now + dur);
+                    // 서브베이스
+                    makeOsc('sine', 75, now, dur, 0.25);
+                    // 2번째 하모닉
+                    const o2 = ctx.createOscillator(); const g2 = ctx.createGain();
+                    o2.type = 'sine';
+                    o2.frequency.setValueAtTime(300, now);
+                    o2.frequency.linearRampToValueAtTime(700, now + 0.15);
+                    o2.frequency.linearRampToValueAtTime(560, now + 0.8);
+                    g2.gain.setValueAtTime(0, now);
+                    g2.gain.linearRampToValueAtTime(0.15, now + 0.08);
+                    g2.gain.exponentialRampToValueAtTime(0.001, now + dur);
+                    o2.connect(g2); g2.connect(ctx.destination);
+                    o2.start(now); o2.stop(now + dur);
+                    break;
+                }
             }
         }
 
@@ -1894,6 +2241,9 @@
             AnimalGame.running = false;
             AnimalGame.locked = false;
             AnimalGame.currentAnswer = null;
+            AnimalGame.stage = 1;
+            AnimalGame.stageScore = 0;
+            AnimalGame.usedAnswers = [];
 
             if (AnimalGame.advanceTimer) {
                 clearTimeout(AnimalGame.advanceTimer);
@@ -1905,15 +2255,560 @@
         }
 
         /* ==============================================
-         *  게임 3: 마법의 스케치북 (미구현 - Phase 3)
+         *  게임 3: 마법의 스케치북 (Magic Sketchbook)
+         *  - Canvas 그리기 (터치/마우스)
+         *  - 윤곽선 배경 (물고기)
+         *  - 6색 색상 버튼 + 3단계 브러시
+         *  - 마법 보내기 → 수족관 애니메이션
          * ============================================== */
+        const SketchGame = {
+            drawCanvas: null,
+            drawCtx: null,
+            outlineCanvas: null,
+            outlineCtx: null,
+            drawing: false,
+            currentColor: '#FF1744',
+            brushSize: 12,
+            lastX: 0,
+            lastY: 0,
+            mode: 'draw',  // 'draw' | 'aquarium'
+            aquariumAnim: null,
+            aquariumDrawings: [],
+
+            colors: [
+                { name: '빨강', hex: '#FF1744' },
+                { name: '노랑', hex: '#FFD600' },
+                { name: '파랑', hex: '#2979FF' },
+                { name: '초록', hex: '#00C853' },
+                { name: '보라', hex: '#AA00FF' },
+                { name: '주황', hex: '#FF6D00' }
+            ],
+
+            brushes: [
+                { label: '작게', size: 6 },
+                { label: '보통', size: 14 },
+                { label: '크게', size: 26 }
+            ]
+        };
+
         function initCanvasGame() {
-            console.log('마법의 스케치북 시작!');
-            // TODO: Phase 3에서 구현
+            const area = document.getElementById('canvas-area');
+            area.innerHTML = '';
+
+            // 시작 오버레이
+            const overlay = document.createElement('div');
+            overlay.className = 'sketch-start-overlay';
+            overlay.id = 'sketch-start-overlay';
+            overlay.innerHTML = `
+                <div class="start-emoji">🎨</div>
+                <div class="start-text">그림을 그리고 움직여요!</div>
+                <button class="sketch-start-btn" id="sketch-start-btn">시작! 🎉</button>
+            `;
+            area.appendChild(overlay);
+
+            document.getElementById('sketch-start-btn').addEventListener('click', startSketchGameplay);
+            document.getElementById('sketch-start-btn').addEventListener('touchend', (e) => {
+                e.preventDefault();
+                startSketchGameplay();
+            });
+        }
+
+        function startSketchGameplay() {
+            const overlay = document.getElementById('sketch-start-overlay');
+            if (overlay) overlay.remove();
+
+            SketchGame.mode = 'draw';
+            buildSketchDrawScreen();
+        }
+
+        function buildSketchDrawScreen() {
+            const area = document.getElementById('canvas-area');
+            area.innerHTML = '';
+
+            const drawScreen = document.createElement('div');
+            drawScreen.className = 'sketch-draw-screen';
+            drawScreen.id = 'sketch-draw-screen';
+
+            // 캔버스 영역
+            const canvasWrap = document.createElement('div');
+            canvasWrap.className = 'sketch-canvas-wrap';
+            canvasWrap.id = 'sketch-canvas-wrap';
+
+            const outlineCanvas = document.createElement('canvas');
+            outlineCanvas.id = 'sketch-outline-canvas';
+            const drawCanvas = document.createElement('canvas');
+            drawCanvas.id = 'sketch-draw-canvas';
+
+            canvasWrap.appendChild(outlineCanvas);
+            canvasWrap.appendChild(drawCanvas);
+
+            // 툴바
+            const toolbar = document.createElement('div');
+            toolbar.className = 'sketch-toolbar';
+            toolbar.id = 'sketch-toolbar';
+
+            // 색상 버튼
+            SketchGame.colors.forEach((c, i) => {
+                const btn = document.createElement('div');
+                btn.className = 'sketch-color-btn' + (i === 0 ? ' active' : '');
+                btn.style.background = c.hex;
+                btn.dataset.color = c.hex;
+                btn.addEventListener('click', () => selectSketchColor(c.hex, btn));
+                btn.addEventListener('touchend', (e) => { e.preventDefault(); selectSketchColor(c.hex, btn); });
+                toolbar.appendChild(btn);
+            });
+
+            // 구분선
+            const div1 = document.createElement('div');
+            div1.className = 'sketch-divider';
+            toolbar.appendChild(div1);
+
+            // 브러시 크기 버튼
+            SketchGame.brushes.forEach((b, i) => {
+                const btn = document.createElement('div');
+                btn.className = 'sketch-brush-btn' + (i === 1 ? ' active' : '');
+                btn.dataset.size = b.size;
+                const dot = document.createElement('div');
+                dot.className = 'sketch-brush-dot';
+                const dotSize = Math.max(6, b.size * 0.7);
+                dot.style.width = dotSize + 'px';
+                dot.style.height = dotSize + 'px';
+                btn.appendChild(dot);
+                btn.addEventListener('click', () => selectSketchBrush(b.size, btn));
+                btn.addEventListener('touchend', (e) => { e.preventDefault(); selectSketchBrush(b.size, btn); });
+                toolbar.appendChild(btn);
+            });
+
+            // 구분선
+            const div2 = document.createElement('div');
+            div2.className = 'sketch-divider';
+            toolbar.appendChild(div2);
+
+            // 액션 버튼들
+            const actionBtns = document.createElement('div');
+            actionBtns.className = 'sketch-action-btns';
+
+            const clearBtn = document.createElement('button');
+            clearBtn.className = 'sketch-action-btn sketch-clear-btn';
+            clearBtn.textContent = '🔄 다시';
+            clearBtn.addEventListener('click', clearSketchCanvas);
+            clearBtn.addEventListener('touchend', (e) => { e.preventDefault(); clearSketchCanvas(); });
+
+            const magicBtn = document.createElement('button');
+            magicBtn.className = 'sketch-action-btn sketch-magic-btn';
+            magicBtn.textContent = '마법 보내기 🪄';
+            magicBtn.addEventListener('click', sendToAquarium);
+            magicBtn.addEventListener('touchend', (e) => { e.preventDefault(); sendToAquarium(); });
+
+            actionBtns.appendChild(clearBtn);
+            actionBtns.appendChild(magicBtn);
+            toolbar.appendChild(actionBtns);
+
+            drawScreen.appendChild(canvasWrap);
+            drawScreen.appendChild(toolbar);
+            area.appendChild(drawScreen);
+
+            // 캔버스 초기화 (약간 딜레이 후 크기 설정)
+            requestAnimationFrame(() => {
+                setupSketchCanvases();
+                drawOutlineFish();
+            });
+        }
+
+        function setupSketchCanvases() {
+            const wrap = document.getElementById('sketch-canvas-wrap');
+            if (!wrap) return;
+
+            const rect = wrap.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            const w = rect.width;
+            const h = rect.height;
+
+            const outline = document.getElementById('sketch-outline-canvas');
+            const draw = document.getElementById('sketch-draw-canvas');
+
+            [outline, draw].forEach(c => {
+                c.width = w * dpr;
+                c.height = h * dpr;
+                c.style.width = w + 'px';
+                c.style.height = h + 'px';
+                c.getContext('2d').scale(dpr, dpr);
+            });
+
+            SketchGame.outlineCanvas = outline;
+            SketchGame.outlineCtx = outline.getContext('2d');
+            SketchGame.drawCanvas = draw;
+            SketchGame.drawCtx = draw.getContext('2d');
+
+            SketchGame.drawCtx.lineCap = 'round';
+            SketchGame.drawCtx.lineJoin = 'round';
+            SketchGame.drawCtx.strokeStyle = SketchGame.currentColor;
+            SketchGame.drawCtx.lineWidth = SketchGame.brushSize;
+
+            // 터치/마우스 이벤트
+            draw.addEventListener('mousedown', sketchStart);
+            draw.addEventListener('mousemove', sketchMove);
+            draw.addEventListener('mouseup', sketchEnd);
+            draw.addEventListener('mouseleave', sketchEnd);
+
+            draw.addEventListener('touchstart', sketchTouchStart, { passive: false });
+            draw.addEventListener('touchmove', sketchTouchMove, { passive: false });
+            draw.addEventListener('touchend', sketchTouchEnd, { passive: false });
+        }
+
+        function drawOutlineFish() {
+            const ctx = SketchGame.outlineCtx;
+            if (!ctx) return;
+
+            const c = SketchGame.outlineCanvas;
+            const dpr = window.devicePixelRatio || 1;
+            const w = c.width / dpr;
+            const h = c.height / dpr;
+
+            ctx.clearRect(0, 0, w, h);
+            ctx.strokeStyle = '#BDBDBD';
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            // 물고기 - 화면 중앙에 크게
+            const cx = w * 0.45;
+            const cy = h * 0.48;
+            const scale = Math.min(w, h) * 0.0035;
+
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.scale(scale, scale);
+
+            // 몸통 (타원)
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 80, 50, 0, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // 꼬리
+            ctx.beginPath();
+            ctx.moveTo(70, -10);
+            ctx.lineTo(110, -40);
+            ctx.lineTo(110, 40);
+            ctx.lineTo(70, 10);
+            ctx.stroke();
+
+            // 눈
+            ctx.beginPath();
+            ctx.arc(-35, -10, 10, 0, Math.PI * 2);
+            ctx.stroke();
+            // 눈동자
+            ctx.beginPath();
+            ctx.arc(-33, -10, 4, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // 입
+            ctx.beginPath();
+            ctx.moveTo(-65, 5);
+            ctx.quadraticCurveTo(-55, 15, -45, 5);
+            ctx.stroke();
+
+            // 지느러미 (위)
+            ctx.beginPath();
+            ctx.moveTo(-15, -45);
+            ctx.quadraticCurveTo(0, -80, 25, -48);
+            ctx.stroke();
+
+            // 지느러미 (아래)
+            ctx.beginPath();
+            ctx.moveTo(0, 45);
+            ctx.quadraticCurveTo(15, 70, 30, 45);
+            ctx.stroke();
+
+            // 비늘 무늬
+            for (let i = 0; i < 3; i++) {
+                ctx.beginPath();
+                ctx.arc(-10 + i * 25, 0, 12, 0.3, Math.PI - 0.3);
+                ctx.stroke();
+            }
+
+            // 거품들
+            ctx.restore();
+
+            // 물거품 장식
+            const bubbles = [
+                { x: w * 0.15, y: h * 0.2, r: 8 },
+                { x: w * 0.12, y: h * 0.35, r: 5 },
+                { x: w * 0.2, y: h * 0.15, r: 6 },
+                { x: w * 0.78, y: h * 0.7, r: 7 },
+                { x: w * 0.82, y: h * 0.6, r: 4 },
+                { x: w * 0.75, y: h * 0.8, r: 9 },
+            ];
+            bubbles.forEach(b => {
+                ctx.beginPath();
+                ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+                ctx.stroke();
+            });
+        }
+
+        // ===== 그리기 이벤트 =====
+        function getSketchPos(e) {
+            const rect = SketchGame.drawCanvas.getBoundingClientRect();
+            return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+            };
+        }
+
+        function sketchStart(e) {
+            SketchGame.drawing = true;
+            const pos = getSketchPos(e);
+            SketchGame.lastX = pos.x;
+            SketchGame.lastY = pos.y;
+            // 점 찍기
+            SketchGame.drawCtx.beginPath();
+            SketchGame.drawCtx.arc(pos.x, pos.y, SketchGame.brushSize / 2, 0, Math.PI * 2);
+            SketchGame.drawCtx.fillStyle = SketchGame.currentColor;
+            SketchGame.drawCtx.fill();
+        }
+
+        function sketchMove(e) {
+            if (!SketchGame.drawing) return;
+            const pos = getSketchPos(e);
+            const ctx = SketchGame.drawCtx;
+            ctx.strokeStyle = SketchGame.currentColor;
+            ctx.lineWidth = SketchGame.brushSize;
+            ctx.beginPath();
+            ctx.moveTo(SketchGame.lastX, SketchGame.lastY);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+            SketchGame.lastX = pos.x;
+            SketchGame.lastY = pos.y;
+        }
+
+        function sketchEnd() {
+            SketchGame.drawing = false;
+        }
+
+        function sketchTouchStart(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            sketchStart({ clientX: touch.clientX, clientY: touch.clientY });
+        }
+
+        function sketchTouchMove(e) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            sketchMove({ clientX: touch.clientX, clientY: touch.clientY });
+        }
+
+        function sketchTouchEnd(e) {
+            e.preventDefault();
+            sketchEnd();
+        }
+
+        // ===== 색상/브러시 선택 =====
+        function selectSketchColor(hex, btn) {
+            SketchGame.currentColor = hex;
+            document.querySelectorAll('.sketch-color-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function selectSketchBrush(size, btn) {
+            SketchGame.brushSize = size;
+            document.querySelectorAll('.sketch-brush-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function clearSketchCanvas() {
+            if (!SketchGame.drawCtx) return;
+            const c = SketchGame.drawCanvas;
+            const dpr = window.devicePixelRatio || 1;
+            SketchGame.drawCtx.clearRect(0, 0, c.width / dpr, c.height / dpr);
+        }
+
+        // ===== 마법 보내기 → 수족관 =====
+        function sendToAquarium() {
+            if (!SketchGame.drawCanvas) return;
+
+            // 그린 그림 캡처 (윤곽선 + 그림 합성)
+            const dpr = window.devicePixelRatio || 1;
+            const w = SketchGame.drawCanvas.width;
+            const h = SketchGame.drawCanvas.height;
+
+            const mergeCanvas = document.createElement('canvas');
+            mergeCanvas.width = w;
+            mergeCanvas.height = h;
+            const mergeCtx = mergeCanvas.getContext('2d');
+            mergeCtx.drawImage(SketchGame.outlineCanvas, 0, 0);
+            mergeCtx.drawImage(SketchGame.drawCanvas, 0, 0);
+
+            // 내용 영역만 잘라내기 (여백 제거)
+            const imgData = mergeCtx.getImageData(0, 0, w, h);
+            let minX = w, minY = h, maxX = 0, maxY = 0;
+            for (let y = 0; y < h; y++) {
+                for (let x = 0; x < w; x++) {
+                    const a = imgData.data[(y * w + x) * 4 + 3];
+                    if (a > 10) {
+                        if (x < minX) minX = x;
+                        if (x > maxX) maxX = x;
+                        if (y < minY) minY = y;
+                        if (y > maxY) maxY = y;
+                    }
+                }
+            }
+
+            // 여백 패딩
+            const pad = 10;
+            minX = Math.max(0, minX - pad);
+            minY = Math.max(0, minY - pad);
+            maxX = Math.min(w, maxX + pad);
+            maxY = Math.min(h, maxY + pad);
+
+            const cropW = maxX - minX;
+            const cropH = maxY - minY;
+
+            if (cropW < 10 || cropH < 10) {
+                // 거의 안 그렸음
+                return;
+            }
+
+            const cropCanvas = document.createElement('canvas');
+            cropCanvas.width = cropW;
+            cropCanvas.height = cropH;
+            cropCanvas.getContext('2d').drawImage(mergeCanvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
+
+            const drawingDataURL = cropCanvas.toDataURL('image/png');
+
+            SketchGame.mode = 'aquarium';
+            buildAquariumScreen(drawingDataURL, cropW / dpr, cropH / dpr);
+            playMagicSound();
+        }
+
+        function buildAquariumScreen(drawingURL, drawW, drawH) {
+            const area = document.getElementById('canvas-area');
+            area.innerHTML = '';
+
+            const aquarium = document.createElement('div');
+            aquarium.className = 'aquarium-screen';
+            aquarium.id = 'aquarium-screen';
+
+            // 배경
+            const bg = document.createElement('div');
+            bg.className = 'aquarium-bg';
+            aquarium.appendChild(bg);
+
+            // 바닥
+            const floor = document.createElement('div');
+            floor.className = 'aquarium-floor';
+            aquarium.appendChild(floor);
+
+            // 해초
+            for (let i = 0; i < 6; i++) {
+                const sw = document.createElement('div');
+                sw.className = 'aquarium-seaweed';
+                sw.style.left = (8 + i * 17 + Math.random() * 5) + '%';
+                sw.style.height = (40 + Math.random() * 50) + 'px';
+                sw.style.animationDelay = (Math.random() * 2) + 's';
+                sw.style.background = i % 2 === 0 ? '#388E3C' : '#2E7D32';
+                aquarium.appendChild(sw);
+            }
+
+            // 거품
+            for (let i = 0; i < 10; i++) {
+                const bub = document.createElement('div');
+                bub.className = 'aquarium-bubble';
+                bub.style.left = (Math.random() * 90 + 5) + '%';
+                bub.style.bottom = (Math.random() * 20) + '%';
+                const bubSize = 6 + Math.random() * 12;
+                bub.style.width = bubSize + 'px';
+                bub.style.height = bubSize + 'px';
+                bub.style.animationDuration = (4 + Math.random() * 6) + 's';
+                bub.style.animationDelay = (Math.random() * 5) + 's';
+                aquarium.appendChild(bub);
+            }
+
+            // 그린 그림 수영시키기 (여러 개)
+            const maxH = 120;
+            const displayH = Math.min(maxH, drawH * 0.6);
+            const displayW = drawW * (displayH / drawH);
+
+            for (let i = 0; i < 3; i++) {
+                const img = document.createElement('img');
+                img.src = drawingURL;
+                img.className = 'aquarium-drawing';
+                img.style.width = displayW + 'px';
+                img.style.height = displayH + 'px';
+                img.style.top = (15 + i * 25 + Math.random() * 10) + '%';
+                img.style.animationDuration = (6 + i * 3 + Math.random() * 3) + 's';
+                img.style.animationDelay = (i * 2.5) + 's';
+                img.draggable = false;
+                aquarium.appendChild(img);
+            }
+
+            // 다시 그리기 버튼
+            const redrawBtn = document.createElement('button');
+            redrawBtn.className = 'aquarium-redraw-btn';
+            redrawBtn.textContent = '다시 그리기 🔄';
+            redrawBtn.addEventListener('click', () => {
+                SketchGame.mode = 'draw';
+                buildSketchDrawScreen();
+            });
+            redrawBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                SketchGame.mode = 'draw';
+                buildSketchDrawScreen();
+            });
+            aquarium.appendChild(redrawBtn);
+
+            area.appendChild(aquarium);
+        }
+
+        function playMagicSound() {
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+
+            // 마법 효과음 (글리산도 + 벨)
+            const notes = [523, 659, 784, 1047, 1319, 1568];
+            notes.forEach((freq, i) => {
+                const t = now + i * 0.07;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, t);
+                gain.gain.setValueAtTime(0, t);
+                gain.gain.linearRampToValueAtTime(0.2, t + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(t);
+                osc.stop(t + 0.4);
+            });
+
+            // 반짝이 노이즈
+            const bufSize = Math.floor(ctx.sampleRate * 0.3);
+            const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+            const data = buf.getChannelData(0);
+            for (let i = 0; i < bufSize; i++) {
+                data[i] = (Math.random() * 2 - 1) * 0.05 * (1 - i / bufSize);
+            }
+            const src = ctx.createBufferSource();
+            src.buffer = buf;
+            const g = ctx.createGain();
+            g.gain.setValueAtTime(0.1, now);
+            g.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+            src.connect(g);
+            g.connect(ctx.destination);
+            src.start(now + 0.2);
+            src.stop(now + 0.5);
         }
 
         function cleanupCanvasGame() {
-            console.log('마법의 스케치북 종료');
+            SketchGame.drawing = false;
+            SketchGame.drawCanvas = null;
+            SketchGame.drawCtx = null;
+            SketchGame.outlineCanvas = null;
+            SketchGame.outlineCtx = null;
+            SketchGame.mode = 'draw';
+
+            const area = document.getElementById('canvas-area');
+            if (area) area.innerHTML = '';
         }
 
         /* ===== 초기화 ===== */
