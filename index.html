@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>KidsArcade 3in1 - 아빠표 통합 놀이 앱</title>
+    <style>
+        /* ===== 전역 리셋 & 기본 설정 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+        }
+
+        /* ===== 화면(Screen) 공통 ===== */
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.3s ease;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        /* ===== 메인 메뉴 화면 ===== */
+        #menu-screen {
+            background: linear-gradient(135deg, #FFF3E0, #E1F5FE, #F3E5F5, #E8F5E9);
+            background-size: 400% 400%;
+            animation: gradientMove 8s ease infinite;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .menu-title {
+            font-size: clamp(1.8rem, 6vw, 3.5rem);
+            font-weight: 900;
+            color: #FF6B6B;
+            text-shadow: 2px 2px 0px #FFE0E0;
+            margin-bottom: 5vh;
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        .menu-title .emoji {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* ===== 게임 선택 버튼 그리드 ===== */
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(250px, 80vw), 1fr));
+            gap: clamp(12px, 3vw, 24px);
+            width: 90%;
+            max-width: 900px;
+            padding: 10px;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: clamp(16px, 3vw, 28px);
+            padding: clamp(20px, 4vw, 40px);
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border: 3px solid transparent;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: clamp(120px, 20vh, 200px);
+        }
+
+        .game-card:active {
+            transform: scale(0.95);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .game-card:nth-child(1) { border-color: #FFCDD2; background: linear-gradient(145deg, #FFF, #FFEBEE); }
+        .game-card:nth-child(2) { border-color: #C8E6C9; background: linear-gradient(145deg, #FFF, #E8F5E9); }
+        .game-card:nth-child(3) { border-color: #BBDEFB; background: linear-gradient(145deg, #FFF, #E3F2FD); }
+
+        .game-card .card-emoji {
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            margin-bottom: 10px;
+        }
+
+        .game-card .card-title {
+            font-size: clamp(1rem, 3.5vw, 1.5rem);
+            font-weight: 800;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .game-card .card-desc {
+            font-size: clamp(0.7rem, 2.2vw, 0.95rem);
+            color: #777;
+            line-height: 1.4;
+        }
+
+        /* ===== 게임 화면 공통 ===== */
+        .game-screen {
+            padding: 0;
+            overflow: hidden;
+        }
+
+        /* 게임별 배경색 */
+        #game-bubble { background: linear-gradient(180deg, #E3F2FD, #BBDEFB); }
+        #game-animal { background: linear-gradient(180deg, #E8F5E9, #C8E6C9); }
+        #game-canvas { background: linear-gradient(180deg, #FFF3E0, #FFE0B2); }
+
+        /* ===== 홈 버튼 ===== */
+        .home-btn {
+            position: absolute;
+            top: clamp(10px, 2vh, 20px);
+            left: clamp(10px, 2vw, 20px);
+            width: clamp(44px, 10vw, 64px);
+            height: clamp(44px, 10vw, 64px);
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            border: 3px solid #FFB74D;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1.3rem, 4vw, 2rem);
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            transition: transform 0.2s;
+        }
+
+        .home-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* ===== 게임 영역 (각 게임 콘텐츠가 들어갈 곳) ===== */
+        .game-area {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .game-placeholder {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .game-placeholder .placeholder-emoji {
+            font-size: clamp(3rem, 12vw, 6rem);
+            margin-bottom: 20px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        .game-placeholder .placeholder-text {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            color: #555;
+            font-weight: 600;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        /* ===== 비누방울 팡팡 게임 스타일 ===== */
+        .bubble-score {
+            position: absolute;
+            top: clamp(10px, 2vh, 20px);
+            right: clamp(10px, 2vw, 20px);
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: clamp(1rem, 3vw, 1.4rem);
+            font-weight: 800;
+            color: #FF6B6B;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+        .bubble {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: none;
+            will-change: transform;
+        }
+
+        .bubble.popping {
+            animation: popBubble 0.35s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes popBubble {
+            0% { transform: scale(1); opacity: 1; }
+            40% { transform: scale(1.4); opacity: 0.8; }
+            100% { transform: scale(0); opacity: 0; }
+        }
+
+        .pop-particles {
+            position: absolute;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        .pop-particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: particleFly 0.5s ease-out forwards;
+        }
+
+        @keyframes particleFly {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+        }
+
+        .bubble-start-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.85);
+            z-index: 200;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .bubble-start-overlay .start-emoji {
+            font-size: clamp(4rem, 15vw, 8rem);
+            margin-bottom: 20px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        .bubble-start-overlay .start-text {
+            font-size: clamp(1.2rem, 4vw, 2rem);
+            font-weight: 800;
+            color: #5C6BC0;
+            margin-bottom: 30px;
+        }
+
+        .bubble-start-btn {
+            font-size: clamp(1.2rem, 4vw, 1.8rem);
+            font-weight: 800;
+            padding: 16px 48px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(135deg, #7C4DFF, #536DFE);
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(124, 77, 255, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .bubble-start-btn:active {
+            transform: scale(0.93);
+        }
+
+        /* ===== 동물 친구 찾기 게임 스타일 ===== */
+        .animal-score {
+            position: absolute;
+            top: clamp(10px, 2vh, 20px);
+            right: clamp(10px, 2vw, 20px);
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: clamp(1rem, 3vw, 1.4rem);
+            font-weight: 800;
+            color: #4CAF50;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+        .animal-game-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(16px, 3vh, 30px);
+            width: 100%;
+            height: 100%;
+            padding: clamp(60px, 10vh, 80px) 20px 20px 20px;
+        }
+
+        .animal-question {
+            font-size: clamp(1.2rem, 4vw, 2rem);
+            font-weight: 800;
+            color: #2E7D32;
+            text-align: center;
+        }
+
+        .animal-listen-btn {
+            font-size: clamp(1.1rem, 3.5vw, 1.6rem);
+            font-weight: 800;
+            padding: clamp(12px, 2vh, 20px) clamp(24px, 5vw, 48px);
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(135deg, #66BB6A, #43A047);
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+            transition: transform 0.2s;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .animal-listen-btn:active {
+            transform: scale(0.93);
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .animal-cards {
+            display: flex;
+            gap: clamp(12px, 3vw, 24px);
+            justify-content: center;
+            flex-wrap: wrap;
+            width: 90%;
+            max-width: 600px;
+        }
+
+        .animal-card {
+            flex: 1 1 0;
+            min-width: clamp(80px, 22vw, 150px);
+            max-width: 180px;
+            aspect-ratio: 1;
+            background: white;
+            border-radius: clamp(16px, 3vw, 28px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            border: 4px solid #E0E0E0;
+            transition: transform 0.15s, border-color 0.15s;
+            gap: 4px;
+        }
+
+        .animal-card:active {
+            transform: scale(0.92);
+        }
+
+        .animal-card .animal-emoji {
+            font-size: clamp(2.5rem, 10vw, 5rem);
+        }
+
+        .animal-card .animal-name {
+            font-size: clamp(0.8rem, 2.5vw, 1.2rem);
+            font-weight: 800;
+            color: #555;
+        }
+
+        .animal-card.correct-flash {
+            border-color: #4CAF50;
+            background: #E8F5E9;
+            animation: correctPulse 0.5s ease;
+        }
+
+        .animal-card.wrong-flash {
+            border-color: #EF5350;
+            background: #FFEBEE;
+            animation: wrongShake 0.4s ease;
+        }
+
+        @keyframes correctPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes wrongShake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-6px); }
+            80% { transform: translateX(6px); }
+        }
+
+        /* 정답/오답 오버레이 */
+        .animal-result-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 300;
+            pointer-events: none;
+            animation: resultFadeIn 0.3s ease;
+        }
+
+        .animal-result-symbol {
+            font-size: clamp(8rem, 30vw, 16rem);
+            animation: resultPop 0.5s ease;
+        }
+
+        @keyframes resultFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes resultPop {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .animal-start-overlay {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.85);
+            z-index: 200;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .animal-start-overlay .start-emoji {
+            font-size: clamp(4rem, 15vw, 8rem);
+            margin-bottom: 20px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        .animal-start-overlay .start-text {
+            font-size: clamp(1.2rem, 4vw, 2rem);
+            font-weight: 800;
+            color: #2E7D32;
+            margin-bottom: 30px;
+        }
+
+        .animal-start-btn {
+            font-size: clamp(1.2rem, 4vw, 1.8rem);
+            font-weight: 800;
+            padding: 16px 48px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(135deg, #66BB6A, #43A047);
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .animal-start-btn:active {
+            transform: scale(0.93);
+        }
+
+        /* ===== 반응형 세부 조정 ===== */
+        @media (max-width: 480px) {
+            .game-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .game-card {
+                min-height: 100px;
+                padding: 16px;
+                flex-direction: row;
+                gap: 12px;
+            }
+            .game-card .card-emoji {
+                margin-bottom: 0;
+            }
+            .game-card .card-text {
+                text-align: left;
+            }
+        }
+
+        @media (min-width: 481px) and (max-width: 768px) {
+            .game-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .game-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* 가로 모드에서 메뉴 최적화 */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .menu-title {
+                font-size: 1.3rem;
+                margin-bottom: 2vh;
+            }
+            .menu-title .emoji {
+                font-size: 2rem;
+                display: inline;
+            }
+            .game-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .game-card {
+                min-height: 80px;
+                padding: 12px;
+            }
+            /* 동물 게임 가로모드 조정 */
+            .animal-game-content {
+                padding-top: 50px;
+                gap: 8px;
+            }
+            .animal-card {
+                min-width: 80px;
+            }
+        }
+
+        /* ===== 화면 전환 애니메이션 ===== */
+        .fade-in {
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========== 메인 메뉴 화면 ========== -->
+    <div id="menu-screen" class="screen active">
+        <h1 class="menu-title">
+            <span class="emoji">🎮</span>
+            KidsArcade 3in1
+        </h1>
+        <div class="game-grid" id="game-grid">
+            <!-- 게임 카드들은 JavaScript에서 동적 생성 -->
+        </div>
+    </div>
+
+    <!-- ========== 게임 1: 비누방울 팡팡 ========== -->
+    <div id="game-bubble" class="screen game-screen">
+        <div class="home-btn" onclick="goHome()">🏠</div>
+        <div class="bubble-score" id="bubble-score">⭐ 0</div>
+        <div class="game-area" id="bubble-area">
+            <!-- 방울들이 여기에 동적 생성됨 -->
+        </div>
+    </div>
+
+    <!-- ========== 게임 2: 동물 친구 찾기 ========== -->
+    <div id="game-animal" class="screen game-screen">
+        <div class="home-btn" onclick="goHome()">🏠</div>
+        <div class="animal-score" id="animal-score">⭐ 0</div>
+        <div class="game-area" id="animal-area">
+            <!-- 동물 게임 콘텐츠가 여기에 동적 생성됨 -->
+        </div>
+    </div>
+
+    <!-- ========== 게임 3: 마법의 스케치북 ========== -->
+    <div id="game-canvas" class="screen game-screen">
+        <div class="home-btn" onclick="goHome()">🏠</div>
+        <div class="game-area" id="canvas-area">
+            <div class="game-placeholder">
+                <div class="placeholder-emoji">🎨</div>
+                <div class="placeholder-text">마법의 스케치북!<br>곧 만나요!</div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ========== JavaScript ========== -->
+    <script>
+        /* ==============================================
+         *  KidsArcade 3in1
+         *  마지막 구현: Phase 2 - 동물 친구 찾기 (Animal Sound) 완성
+         *  날짜: 2026-05-22
+         *  구현 내용:
+         *    Phase 1 - 비누방울 팡팡 ✅
+         *    Phase 2 - 동물 친구 찾기 ✅
+         *      - 3장의 동물 카드 (🐶 강아지, 🐱 고양이, 🦁 사자)
+         *      - "정답 소리 듣기" 버튼 → Web Audio API로 동물 소리 합성
+         *      - 정답 시 ⭕ 오버레이 + 축하 효과음 + 2초 후 자동 진행
+         *      - 오답 시 ❌ 오버레이 + 다시 시도 효과음 (진행 안함)
+         *      - 라운드별 랜덤 정답, 점수 카운터
+         *    Phase 3 - 마법의 스케치북 (미구현)
+         * ============================================== */
+
+        const GAMES = [
+            {
+                id: 'bubble',
+                screenId: 'game-bubble',
+                title: '비누방울 팡팡',
+                emoji: '🫧',
+                description: '방울을 톡톡 터뜨려요!',
+                borderColor: '#FFCDD2',
+                bgGradient: 'linear-gradient(145deg, #FFF, #FFEBEE)',
+                onEnter: initBubbleGame,
+                onExit: cleanupBubbleGame
+            },
+            {
+                id: 'animal',
+                screenId: 'game-animal',
+                title: '동물 친구 찾기',
+                emoji: '🦁',
+                description: '어떤 동물일까요?',
+                borderColor: '#C8E6C9',
+                bgGradient: 'linear-gradient(145deg, #FFF, #E8F5E9)',
+                onEnter: initAnimalGame,
+                onExit: cleanupAnimalGame
+            },
+            {
+                id: 'canvas',
+                screenId: 'game-canvas',
+                title: '마법의 스케치북',
+                emoji: '🎨',
+                description: '그림을 그리고 움직여요!',
+                borderColor: '#BBDEFB',
+                bgGradient: 'linear-gradient(145deg, #FFF, #E3F2FD)',
+                onEnter: initCanvasGame,
+                onExit: cleanupCanvasGame
+            }
+        ];
+
+        let currentGame = null;
+
+        /* ===== 메인 메뉴 카드 동적 생성 ===== */
+        function buildMenu() {
+            const grid = document.getElementById('game-grid');
+            grid.innerHTML = '';
+
+            GAMES.forEach((game, index) => {
+                const card = document.createElement('div');
+                card.className = 'game-card';
+                card.style.borderColor = game.borderColor;
+                card.style.background = game.bgGradient;
+                card.onclick = () => openGame(game);
+
+                card.innerHTML = `
+                    <div class="card-emoji">${game.emoji}</div>
+                    <div class="card-text">
+                        <div class="card-title">${game.title}</div>
+                        <div class="card-desc">${game.description}</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        /* ===== 화면 전환 ===== */
+        function openGame(game) {
+            document.getElementById('menu-screen').classList.remove('active');
+            const screen = document.getElementById(game.screenId);
+            screen.classList.add('active', 'fade-in');
+            currentGame = game;
+
+            if (game.onEnter && typeof game.onEnter === 'function') {
+                game.onEnter();
+            }
+        }
+
+        function goHome() {
+            if (currentGame && currentGame.onExit && typeof currentGame.onExit === 'function') {
+                currentGame.onExit();
+            }
+            document.querySelectorAll('.game-screen').forEach(screen => {
+                screen.classList.remove('active', 'fade-in');
+            });
+            document.getElementById('menu-screen').classList.add('active');
+            currentGame = null;
+        }
+
+        /* ==============================================
+         *  Web Audio API 컨텍스트 (공유)
+         * ============================================== */
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        /* ==============================================
+         *  게임 1: 비누방울 팡팡 (Bubble Pop)
+         * ============================================== */
+        const BubbleGame = {
+            score: 0,
+            bubbles: [],
+            animFrameId: null,
+            spawnTimer: null,
+            running: false,
+            startTime: 0,
+            emojis: ['🫧', '🔵', '🟣', '🟢', '⚪', '💜', '💙', '🩵'],
+
+            getDifficulty() {
+                const elapsed = (Date.now() - this.startTime) / 1000;
+                const level = Math.min(elapsed / 30, 5);
+                return {
+                    minSize: Math.max(40, 70 - level * 6),
+                    maxSize: Math.max(60, 110 - level * 8),
+                    minSpeed: 0.5 + level * 0.2,
+                    maxSpeed: 1.5 + level * 0.3,
+                    spawnInterval: Math.max(400, 1200 - level * 150),
+                    maxBubbles: Math.min(15, 6 + Math.floor(level * 2))
+                };
+            }
+        };
+
+        function initBubbleGame() {
+            const area = document.getElementById('bubble-area');
+            area.innerHTML = '';
+
+            const overlay = document.createElement('div');
+            overlay.className = 'bubble-start-overlay';
+            overlay.id = 'bubble-start-overlay';
+            overlay.innerHTML = `
+                <div class="start-emoji">🫧</div>
+                <div class="start-text">방울을 톡톡 터뜨려요!</div>
+                <button class="bubble-start-btn" id="bubble-start-btn">시작! 🎉</button>
+            `;
+            area.appendChild(overlay);
+
+            document.getElementById('bubble-start-btn').addEventListener('click', startBubbleGameplay);
+            document.getElementById('bubble-start-btn').addEventListener('touchend', (e) => {
+                e.preventDefault();
+                startBubbleGameplay();
+            });
+        }
+
+        function startBubbleGameplay() {
+            getAudioContext();
+
+            const overlay = document.getElementById('bubble-start-overlay');
+            if (overlay) overlay.remove();
+
+            BubbleGame.score = 0;
+            BubbleGame.bubbles = [];
+            BubbleGame.running = true;
+            BubbleGame.startTime = Date.now();
+            updateBubbleScore();
+
+            scheduleBubbleSpawn();
+            BubbleGame.animFrameId = requestAnimationFrame(updateBubbles);
+        }
+
+        function scheduleBubbleSpawn() {
+            if (!BubbleGame.running) return;
+            const diff = BubbleGame.getDifficulty();
+
+            if (BubbleGame.bubbles.length < diff.maxBubbles) {
+                spawnBubble();
+            }
+
+            BubbleGame.spawnTimer = setTimeout(scheduleBubbleSpawn, diff.spawnInterval);
+        }
+
+        function spawnBubble() {
+            const area = document.getElementById('bubble-area');
+            if (!area) return;
+
+            const diff = BubbleGame.getDifficulty();
+            const size = diff.minSize + Math.random() * (diff.maxSize - diff.minSize);
+            const areaRect = area.getBoundingClientRect();
+
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble';
+
+            const emoji = BubbleGame.emojis[Math.floor(Math.random() * BubbleGame.emojis.length)];
+            bubble.textContent = emoji;
+            bubble.style.fontSize = size + 'px';
+            bubble.style.width = size + 'px';
+            bubble.style.height = size + 'px';
+
+            const x = Math.random() * (areaRect.width - size);
+            const y = areaRect.height + size;
+
+            bubble.style.left = x + 'px';
+            bubble.style.top = y + 'px';
+
+            const bubbleData = {
+                el: bubble,
+                x: x,
+                y: y,
+                size: size,
+                speedY: -(diff.minSpeed + Math.random() * (diff.maxSpeed - diff.minSpeed)),
+                speedX: (Math.random() - 0.5) * 1.2,
+                wobblePhase: Math.random() * Math.PI * 2,
+                wobbleSpeed: 0.02 + Math.random() * 0.02
+            };
+
+            const popHandler = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                popBubble(bubbleData);
+            };
+
+            bubble.addEventListener('touchstart', popHandler, { passive: false });
+            bubble.addEventListener('mousedown', popHandler);
+
+            area.appendChild(bubble);
+            BubbleGame.bubbles.push(bubbleData);
+        }
+
+        function updateBubbles() {
+            if (!BubbleGame.running) return;
+
+            const area = document.getElementById('bubble-area');
+            if (!area) return;
+            const areaRect = area.getBoundingClientRect();
+
+            for (let i = BubbleGame.bubbles.length - 1; i >= 0; i--) {
+                const b = BubbleGame.bubbles[i];
+
+                b.y += b.speedY;
+                b.wobblePhase += b.wobbleSpeed;
+                b.x += Math.sin(b.wobblePhase) * 0.5;
+
+                if (b.x < 0) { b.x = 0; b.speedX *= -1; }
+                if (b.x > areaRect.width - b.size) { b.x = areaRect.width - b.size; b.speedX *= -1; }
+
+                b.el.style.left = b.x + 'px';
+                b.el.style.top = b.y + 'px';
+
+                if (b.y < -b.size - 20) {
+                    b.el.remove();
+                    BubbleGame.bubbles.splice(i, 1);
+                }
+            }
+
+            BubbleGame.animFrameId = requestAnimationFrame(updateBubbles);
+        }
+
+        function popBubble(bubbleData) {
+            if (!BubbleGame.running) return;
+
+            BubbleGame.score++;
+            updateBubbleScore();
+            playPopSound();
+            createPopParticles(bubbleData.x + bubbleData.size / 2, bubbleData.y + bubbleData.size / 2);
+
+            bubbleData.el.classList.add('popping');
+
+            const idx = BubbleGame.bubbles.indexOf(bubbleData);
+            if (idx > -1) BubbleGame.bubbles.splice(idx, 1);
+
+            setTimeout(() => {
+                bubbleData.el.remove();
+            }, 350);
+        }
+
+        function updateBubbleScore() {
+            const scoreEl = document.getElementById('bubble-score');
+            if (scoreEl) {
+                scoreEl.textContent = `⭐ ${BubbleGame.score}`;
+                scoreEl.style.transform = 'scale(1.2)';
+                setTimeout(() => { scoreEl.style.transform = 'scale(1)'; }, 150);
+            }
+        }
+
+        function createPopParticles(cx, cy) {
+            const area = document.getElementById('bubble-area');
+            if (!area) return;
+
+            const colors = ['#FF6B6B', '#FFCA28', '#66BB6A', '#42A5F5', '#AB47BC', '#FF7043'];
+            const container = document.createElement('div');
+            container.className = 'pop-particles';
+            container.style.left = cx + 'px';
+            container.style.top = cy + 'px';
+
+            for (let i = 0; i < 8; i++) {
+                const p = document.createElement('div');
+                p.className = 'pop-particle';
+                const angle = (i / 8) * Math.PI * 2;
+                const dist = 25 + Math.random() * 25;
+                const dx = Math.cos(angle) * dist;
+                const dy = Math.sin(angle) * dist;
+                p.style.setProperty('--dx', dx + 'px');
+                p.style.setProperty('--dy', dy + 'px');
+                p.style.background = colors[Math.floor(Math.random() * colors.length)];
+                container.appendChild(p);
+            }
+
+            area.appendChild(container);
+            setTimeout(() => container.remove(), 600);
+        }
+
+        function playPopSound() {
+            const ctx = getAudioContext();
+            if (!ctx) return;
+
+            const now = ctx.currentTime;
+
+            const osc = ctx.createOscillator();
+            const oscGain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800 + Math.random() * 400, now);
+            osc.frequency.exponentialRampToValueAtTime(200, now + 0.1);
+            oscGain.gain.setValueAtTime(0.3, now);
+            oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+            osc.connect(oscGain);
+            oscGain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.12);
+
+            const bufferSize = ctx.sampleRate * 0.06;
+            const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+            const data = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+            }
+            const noise = ctx.createBufferSource();
+            noise.buffer = noiseBuffer;
+            const noiseGain = ctx.createGain();
+            noiseGain.gain.setValueAtTime(0.15, now);
+            noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+            noise.connect(noiseGain);
+            noiseGain.connect(ctx.destination);
+            noise.start(now);
+            noise.stop(now + 0.06);
+        }
+
+        function cleanupBubbleGame() {
+            BubbleGame.running = false;
+
+            if (BubbleGame.spawnTimer) {
+                clearTimeout(BubbleGame.spawnTimer);
+                BubbleGame.spawnTimer = null;
+            }
+
+            if (BubbleGame.animFrameId) {
+                cancelAnimationFrame(BubbleGame.animFrameId);
+                BubbleGame.animFrameId = null;
+            }
+
+            BubbleGame.bubbles.forEach(b => b.el.remove());
+            BubbleGame.bubbles = [];
+
+            const area = document.getElementById('bubble-area');
+            if (area) area.innerHTML = '';
+        }
+
+        /* ==============================================
+         *  게임 2: 동물 친구 찾기 (Animal Sound)
+         * ============================================== */
+        const AnimalGame = {
+            score: 0,
+            currentAnswer: null, // 현재 라운드 정답 동물 ID
+            locked: false,       // 답 선택 후 잠금 (중복 터치 방지)
+            advanceTimer: null,  // 자동 진행 타이머
+            running: false,
+
+            animals: [
+                { id: 'dog', emoji: '🐶', name: '강아지' },
+                { id: 'cat', emoji: '🐱', name: '고양이' },
+                { id: 'lion', emoji: '🦁', name: '사자' }
+            ]
+        };
+
+        function initAnimalGame() {
+            const area = document.getElementById('animal-area');
+            area.innerHTML = '';
+
+            // 시작 오버레이 (오디오 정책 대응)
+            const overlay = document.createElement('div');
+            overlay.className = 'animal-start-overlay';
+            overlay.id = 'animal-start-overlay';
+            overlay.innerHTML = `
+                <div class="start-emoji">🦁</div>
+                <div class="start-text">어떤 동물 소리일까요?</div>
+                <button class="animal-start-btn" id="animal-start-btn">시작! 🎉</button>
+            `;
+            area.appendChild(overlay);
+
+            document.getElementById('animal-start-btn').addEventListener('click', startAnimalGameplay);
+            document.getElementById('animal-start-btn').addEventListener('touchend', (e) => {
+                e.preventDefault();
+                startAnimalGameplay();
+            });
+        }
+
+        function startAnimalGameplay() {
+            getAudioContext();
+
+            const overlay = document.getElementById('animal-start-overlay');
+            if (overlay) overlay.remove();
+
+            AnimalGame.score = 0;
+            AnimalGame.running = true;
+            AnimalGame.locked = false;
+            updateAnimalScore();
+
+            buildAnimalGameUI();
+            startAnimalRound();
+        }
+
+        function buildAnimalGameUI() {
+            const area = document.getElementById('animal-area');
+            area.innerHTML = '';
+
+            const content = document.createElement('div');
+            content.className = 'animal-game-content';
+            content.id = 'animal-game-content';
+
+            // 질문 텍스트
+            const question = document.createElement('div');
+            question.className = 'animal-question';
+            question.id = 'animal-question';
+            question.textContent = '소리를 듣고 맞춰보세요!';
+
+            // 소리 듣기 버튼
+            const listenBtn = document.createElement('button');
+            listenBtn.className = 'animal-listen-btn';
+            listenBtn.id = 'animal-listen-btn';
+            listenBtn.textContent = '🔊 정답 소리 듣기';
+            listenBtn.addEventListener('click', () => {
+                if (AnimalGame.currentAnswer) {
+                    playAnimalSound(AnimalGame.currentAnswer);
+                }
+            });
+            listenBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                if (AnimalGame.currentAnswer) {
+                    playAnimalSound(AnimalGame.currentAnswer);
+                }
+            });
+
+            // 동물 카드 컨테이너
+            const cardsContainer = document.createElement('div');
+            cardsContainer.className = 'animal-cards';
+            cardsContainer.id = 'animal-cards';
+
+            AnimalGame.animals.forEach(animal => {
+                const card = document.createElement('div');
+                card.className = 'animal-card';
+                card.dataset.animalId = animal.id;
+                card.innerHTML = `
+                    <div class="animal-emoji">${animal.emoji}</div>
+                    <div class="animal-name">${animal.name}</div>
+                `;
+
+                const tapHandler = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onAnimalCardTap(animal.id);
+                };
+
+                card.addEventListener('click', tapHandler);
+                card.addEventListener('touchend', tapHandler, { passive: false });
+
+                cardsContainer.appendChild(card);
+            });
+
+            content.appendChild(question);
+            content.appendChild(listenBtn);
+            content.appendChild(cardsContainer);
+            area.appendChild(content);
+        }
+
+        function startAnimalRound() {
+            if (!AnimalGame.running) return;
+
+            AnimalGame.locked = false;
+
+            // 이전 결과 오버레이 제거
+            const oldOverlay = document.querySelector('.animal-result-overlay');
+            if (oldOverlay) oldOverlay.remove();
+
+            // 카드 스타일 초기화
+            document.querySelectorAll('.animal-card').forEach(card => {
+                card.classList.remove('correct-flash', 'wrong-flash');
+                card.style.borderColor = '#E0E0E0';
+                card.style.background = 'white';
+            });
+
+            // 랜덤으로 정답 동물 선택
+            const randomIndex = Math.floor(Math.random() * AnimalGame.animals.length);
+            AnimalGame.currentAnswer = AnimalGame.animals[randomIndex].id;
+
+            // 질문 텍스트 업데이트
+            const question = document.getElementById('animal-question');
+            if (question) {
+                question.textContent = '이 소리는 어떤 동물일까요?';
+            }
+
+            // 자동으로 소리 재생
+            setTimeout(() => {
+                if (AnimalGame.running && AnimalGame.currentAnswer) {
+                    playAnimalSound(AnimalGame.currentAnswer);
+                }
+            }, 500);
+        }
+
+        function onAnimalCardTap(selectedId) {
+            if (!AnimalGame.running || AnimalGame.locked) return;
+
+            const isCorrect = selectedId === AnimalGame.currentAnswer;
+            const selectedCard = document.querySelector(`.animal-card[data-animal-id="${selectedId}"]`);
+            const area = document.getElementById('animal-area');
+
+            if (isCorrect) {
+                // 정답!
+                AnimalGame.locked = true;
+                AnimalGame.score++;
+                updateAnimalScore();
+
+                // 카드 반짝
+                if (selectedCard) selectedCard.classList.add('correct-flash');
+
+                // ⭕ 오버레이
+                showAnimalResultOverlay('⭕', area);
+
+                // 축하 소리
+                playCorrectSound();
+
+                // 2초 후 다음 라운드
+                AnimalGame.advanceTimer = setTimeout(() => {
+                    if (AnimalGame.running) {
+                        startAnimalRound();
+                    }
+                }, 2000);
+
+            } else {
+                // 오답
+                AnimalGame.locked = true; // 잠시 잠금
+
+                // 카드 흔들기
+                if (selectedCard) selectedCard.classList.add('wrong-flash');
+
+                // ❌ 오버레이
+                showAnimalResultOverlay('❌', area);
+
+                // 다시 시도 소리
+                playWrongSound();
+
+                // 1초 후 잠금 해제 (진행하지 않음)
+                setTimeout(() => {
+                    if (AnimalGame.running) {
+                        AnimalGame.locked = false;
+                        // ❌ 오버레이 제거
+                        const overlay = document.querySelector('.animal-result-overlay');
+                        if (overlay) overlay.remove();
+                        // 카드 스타일 복구
+                        if (selectedCard) {
+                            selectedCard.classList.remove('wrong-flash');
+                            selectedCard.style.borderColor = '#E0E0E0';
+                            selectedCard.style.background = 'white';
+                        }
+                    }
+                }, 1000);
+            }
+        }
+
+        function showAnimalResultOverlay(symbol, parent) {
+            // 기존 오버레이 제거
+            const old = parent.querySelector('.animal-result-overlay');
+            if (old) old.remove();
+
+            const overlay = document.createElement('div');
+            overlay.className = 'animal-result-overlay';
+            overlay.innerHTML = `<div class="animal-result-symbol">${symbol}</div>`;
+            parent.appendChild(overlay);
+        }
+
+        function updateAnimalScore() {
+            const scoreEl = document.getElementById('animal-score');
+            if (scoreEl) {
+                scoreEl.textContent = `⭐ ${AnimalGame.score}`;
+                scoreEl.style.transform = 'scale(1.2)';
+                setTimeout(() => { scoreEl.style.transform = 'scale(1)'; }, 150);
+            }
+        }
+
+        /* ===== Web Audio API: 동물 소리 합성 ===== */
+
+        function playAnimalSound(animalId) {
+            const ctx = getAudioContext();
+            if (!ctx) return;
+
+            switch (animalId) {
+                case 'dog':
+                    playDogSound(ctx);
+                    break;
+                case 'cat':
+                    playCatSound(ctx);
+                    break;
+                case 'lion':
+                    playLionSound(ctx);
+                    break;
+            }
+        }
+
+        // 강아지: 짧은 반복 짖는 소리 (멍멍! - 2~3회 짧은 톤 반복)
+        function playDogSound(ctx) {
+            const now = ctx.currentTime;
+            const barkCount = 3;
+            const barkGap = 0.22;
+
+            for (let i = 0; i < barkCount; i++) {
+                const t = now + i * barkGap;
+
+                // 메인 톤 (사각파 → 짖는 느낌)
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(350, t);
+                osc.frequency.linearRampToValueAtTime(250, t + 0.08);
+                osc.frequency.linearRampToValueAtTime(400, t + 0.12);
+                gain.gain.setValueAtTime(0, t);
+                gain.gain.linearRampToValueAtTime(0.35, t + 0.02);
+                gain.gain.setValueAtTime(0.35, t + 0.08);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(t);
+                osc.stop(t + 0.15);
+
+                // 노이즈 레이어 (거친 느낌 추가)
+                const bufSize = Math.floor(ctx.sampleRate * 0.1);
+                const nBuf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+                const nData = nBuf.getChannelData(0);
+                for (let j = 0; j < bufSize; j++) {
+                    nData[j] = (Math.random() * 2 - 1) * 0.3 * (1 - j / bufSize);
+                }
+                const nSrc = ctx.createBufferSource();
+                nSrc.buffer = nBuf;
+                const nGain = ctx.createGain();
+                nGain.gain.setValueAtTime(0.12, t);
+                nGain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+                nSrc.connect(nGain);
+                nGain.connect(ctx.destination);
+                nSrc.start(t);
+                nSrc.stop(t + 0.1);
+            }
+        }
+
+        // 고양이: 올라가는 야옹 소리 (부드럽게 주파수 상승)
+        function playCatSound(ctx) {
+            const now = ctx.currentTime;
+
+            // 메인 톤 (사인파 → 부드러운 야옹)
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            // 야옹: 낮은 음에서 올라갔다 내려오기
+            osc.frequency.setValueAtTime(300, now);
+            osc.frequency.linearRampToValueAtTime(600, now + 0.2);
+            osc.frequency.linearRampToValueAtTime(700, now + 0.35);
+            osc.frequency.linearRampToValueAtTime(500, now + 0.5);
+            osc.frequency.linearRampToValueAtTime(350, now + 0.65);
+
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(0.3, now + 0.05);
+            gain.gain.setValueAtTime(0.3, now + 0.3);
+            gain.gain.linearRampToValueAtTime(0.25, now + 0.5);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.7);
+
+            // 비브라토 효과 (떨림)
+            const vibrato = ctx.createOscillator();
+            const vibratoGain = ctx.createGain();
+            vibrato.type = 'sine';
+            vibrato.frequency.setValueAtTime(6, now);
+            vibratoGain.gain.setValueAtTime(15, now);
+            vibrato.connect(vibratoGain);
+            vibratoGain.connect(osc.frequency);
+            vibrato.start(now);
+            vibrato.stop(now + 0.7);
+
+            // 두 번째 야옹 (약간 높게)
+            const osc2 = ctx.createOscillator();
+            const gain2 = ctx.createGain();
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(350, now + 0.8);
+            osc2.frequency.linearRampToValueAtTime(750, now + 1.0);
+            osc2.frequency.linearRampToValueAtTime(600, now + 1.15);
+            osc2.frequency.linearRampToValueAtTime(400, now + 1.3);
+
+            gain2.gain.setValueAtTime(0, now + 0.8);
+            gain2.gain.linearRampToValueAtTime(0.28, now + 0.85);
+            gain2.gain.setValueAtTime(0.28, now + 1.05);
+            gain2.gain.exponentialRampToValueAtTime(0.001, now + 1.35);
+
+            osc2.connect(gain2);
+            gain2.connect(ctx.destination);
+            osc2.start(now + 0.8);
+            osc2.stop(now + 1.35);
+        }
+
+        // 사자: 낮은 으르렁 소리 (저음 + 노이즈)
+        function playLionSound(ctx) {
+            const now = ctx.currentTime;
+            const duration = 1.2;
+
+            // 메인 저음 으르렁
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(80, now);
+            osc.frequency.linearRampToValueAtTime(120, now + 0.3);
+            osc.frequency.linearRampToValueAtTime(100, now + 0.6);
+            osc.frequency.linearRampToValueAtTime(70, now + duration);
+
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(0.35, now + 0.15);
+            gain.gain.setValueAtTime(0.35, now + 0.3);
+            gain.gain.linearRampToValueAtTime(0.4, now + 0.5);
+            gain.gain.linearRampToValueAtTime(0.3, now + 0.8);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + duration);
+
+            // 서브베이스 보강
+            const sub = ctx.createOscillator();
+            const subGain = ctx.createGain();
+            sub.type = 'sine';
+            sub.frequency.setValueAtTime(55, now);
+            sub.frequency.linearRampToValueAtTime(45, now + duration);
+            subGain.gain.setValueAtTime(0, now);
+            subGain.gain.linearRampToValueAtTime(0.25, now + 0.15);
+            subGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+            sub.connect(subGain);
+            subGain.connect(ctx.destination);
+            sub.start(now);
+            sub.stop(now + duration);
+
+            // 노이즈 레이어 (거친 숨소리)
+            const bufSize = Math.floor(ctx.sampleRate * duration);
+            const nBuf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+            const nData = nBuf.getChannelData(0);
+            for (let i = 0; i < bufSize; i++) {
+                const env = Math.min(1, i / (ctx.sampleRate * 0.15)) *
+                            Math.max(0, 1 - (i - bufSize * 0.7) / (bufSize * 0.3));
+                nData[i] = (Math.random() * 2 - 1) * 0.15 * env;
+            }
+            const nSrc = ctx.createBufferSource();
+            nSrc.buffer = nBuf;
+            const nGain = ctx.createGain();
+            nGain.gain.setValueAtTime(0.2, now);
+            nSrc.connect(nGain);
+
+            // 저역 통과 필터 (노이즈를 낮고 둔탁하게)
+            const lpf = ctx.createBiquadFilter();
+            lpf.type = 'lowpass';
+            lpf.frequency.setValueAtTime(400, now);
+            nGain.connect(lpf);
+            lpf.connect(ctx.destination);
+            nSrc.start(now);
+            nSrc.stop(now + duration);
+
+            // 트레몰로 (떨리는 으르렁)
+            const tremolo = ctx.createOscillator();
+            const tremoloGain = ctx.createGain();
+            tremolo.type = 'sine';
+            tremolo.frequency.setValueAtTime(8, now);
+            tremoloGain.gain.setValueAtTime(20, now);
+            tremolo.connect(tremoloGain);
+            tremoloGain.connect(osc.frequency);
+            tremolo.start(now);
+            tremolo.stop(now + duration);
+        }
+
+        // 정답 효과음 (밝은 상승 멜로디)
+        function playCorrectSound() {
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+
+            const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
+            notes.forEach((freq, i) => {
+                const t = now + i * 0.1;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, t);
+                gain.gain.setValueAtTime(0, t);
+                gain.gain.linearRampToValueAtTime(0.25, t + 0.02);
+                gain.gain.setValueAtTime(0.25, t + 0.08);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(t);
+                osc.stop(t + 0.25);
+            });
+        }
+
+        // 오답 효과음 (짧은 하강 톤)
+        function playWrongSound() {
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(350, now);
+            osc.frequency.linearRampToValueAtTime(200, now + 0.25);
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + 0.3);
+
+            // 두 번째 하강 톤
+            const osc2 = ctx.createOscillator();
+            const gain2 = ctx.createGain();
+            osc2.type = 'triangle';
+            osc2.frequency.setValueAtTime(300, now + 0.15);
+            osc2.frequency.linearRampToValueAtTime(150, now + 0.4);
+            gain2.gain.setValueAtTime(0.18, now + 0.15);
+            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+            osc2.connect(gain2);
+            gain2.connect(ctx.destination);
+            osc2.start(now + 0.15);
+            osc2.stop(now + 0.45);
+        }
+
+        function cleanupAnimalGame() {
+            AnimalGame.running = false;
+            AnimalGame.locked = false;
+            AnimalGame.currentAnswer = null;
+
+            if (AnimalGame.advanceTimer) {
+                clearTimeout(AnimalGame.advanceTimer);
+                AnimalGame.advanceTimer = null;
+            }
+
+            const area = document.getElementById('animal-area');
+            if (area) area.innerHTML = '';
+        }
+
+        /* ==============================================
+         *  게임 3: 마법의 스케치북 (미구현 - Phase 3)
+         * ============================================== */
+        function initCanvasGame() {
+            console.log('🎨 마법의 스케치북 시작!');
+            // TODO: Phase 3에서 구현
+        }
+
+        function cleanupCanvasGame() {
+            console.log('🎨 마법의 스케치북 종료');
+        }
+
+        /* ===== 초기화 ===== */
+        document.addEventListener('DOMContentLoaded', () => {
+            buildMenu();
+        });
+
+        /* ===== PWA 풀스크린 지원 (iOS 홈화면 추가 시) ===== */
+        if ('standalone' in navigator && navigator.standalone) {
+            document.documentElement.style.height = '100vh';
+        }
+    </script>
+</body>
+</html>
