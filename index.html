@@ -6,6 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>KidsArcade 3in1 - 아빠표 통합 놀이 앱</title>
+    <!-- Updated: 2026-05-22 | Changes: Game1 bigger bubbles/particles/outlines/score, Game3 bidirectional movement + canvas path outlines, UI polish -->
     <style>
         /* ===== 전역 리셋 & 기본 설정 ===== */
         * {
@@ -45,9 +46,9 @@
 
         /* ===== 메인 메뉴 화면 ===== */
         #menu-screen {
-            background: linear-gradient(135deg, #FFF3E0, #E1F5FE, #F3E5F5, #E8F5E9);
+            background: linear-gradient(135deg, #FFF8E1, #E3F2FD, #FCE4EC, #E8F5E9);
             background-size: 400% 400%;
-            animation: gradientMove 8s ease infinite;
+            animation: gradientMove 10s ease infinite;
         }
 
         @keyframes gradientMove {
@@ -77,15 +78,15 @@
             position: absolute;
             top: clamp(10px, 2vh, 20px);
             right: clamp(10px, 2vw, 20px);
-            width: clamp(44px, 10vw, 64px);
-            height: clamp(44px, 10vw, 64px);
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.95);
             border: 3px solid #FFA726;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: clamp(1.5rem, 4.5vw, 2.2rem);
+            font-size: 1.5rem;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             z-index: 1000;
@@ -201,19 +202,20 @@
 
         .game-card {
             background: white;
-            border-radius: clamp(16px, 3vw, 28px);
-            padding: clamp(20px, 4vw, 40px);
+            border-radius: clamp(20px, 4vw, 32px);
+            padding: clamp(24px, 5vw, 44px);
             text-align: center;
             cursor: pointer;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
             border: 3px solid transparent;
             transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: clamp(120px, 20vh, 200px);
+            min-height: clamp(130px, 22vh, 220px);
             will-change: transform;
+            backdrop-filter: blur(8px);
         }
 
         .game-card:active {
@@ -278,6 +280,19 @@
             transform: scale(0.9);
         }
 
+        .home-btn.mini-pause {
+            width: clamp(32px, 7vw, 44px);
+            height: clamp(32px, 7vw, 44px);
+            opacity: 0.4;
+            font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+            border: 2px solid #ccc;
+            background: rgba(255,255,255,0.5);
+        }
+
+        .home-btn.mini-pause:active {
+            opacity: 1;
+        }
+
         /* ===== 게임 영역 ===== */
         .game-area {
             width: 100%;
@@ -326,8 +341,8 @@
         .bubble-score {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 24px;
-            padding: clamp(8px, 1.5vh, 14px) clamp(16px, 3vw, 28px);
-            font-size: clamp(1.4rem, 4.5vw, 2.2rem);
+            padding: clamp(10px, 2vh, 18px) clamp(20px, 4vw, 36px);
+            font-size: clamp(1.8rem, 6vw, 3rem);
             font-weight: 900;
             color: #FF3D00;
             box-shadow: 0 4px 16px rgba(255,61,0,0.2);
@@ -401,22 +416,24 @@
             cursor: pointer;
             transition: none;
             will-change: transform;
+            font-size: clamp(3rem, 8vw, 5rem);
+            line-height: 1;
         }
 
         .bubble.circle-shape {
             border-radius: 50%;
+            border: 4px solid;
         }
 
         .bubble.square-shape {
-            border-radius: 18%;
+            border-radius: 15%;
+            border: 4px solid;
         }
 
         .bubble.triangle-shape {
-            clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
         }
 
         .bubble.heart-shape {
-            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
         }
 
         .bubble.popping {
@@ -431,7 +448,7 @@
 
         .score-float {
             position: absolute;
-            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            font-size: clamp(2rem, 6vw, 3rem);
             font-weight: 900;
             color: #FF3D00;
             pointer-events: none;
@@ -452,10 +469,13 @@
 
         .pop-particle {
             position: absolute;
-            width: 14px;
-            height: 14px;
             border-radius: 50%;
-            animation: particleFloat 0.6s ease-out forwards;
+            animation: particleFloat 0.9s ease-out forwards;
+        }
+
+        .pop-particle.sparkle {
+            border-radius: 2px;
+            transform: rotate(45deg);
         }
 
         @keyframes particleFloat {
@@ -513,6 +533,7 @@
             cursor: pointer;
             box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
             transition: transform 0.2s, box-shadow 0.2s;
+            min-height: 48px;
         }
 
         .bubble-start-btn:active, .animal-start-btn:active, .sketch-start-btn:active {
@@ -597,6 +618,7 @@
             cursor: pointer;
             box-shadow: 0 6px 16px rgba(66, 165, 245, 0.3);
             transition: transform 0.2s;
+            min-height: 48px;
         }
 
         .animal-listen-btn:active {
@@ -613,7 +635,7 @@
 
         .animal-card {
             background: white;
-            border: 3px solid #E0E0E0;
+            border: none;
             border-radius: clamp(16px, 3vw, 24px);
             padding: clamp(12px, 2.5vw, 20px);
             cursor: pointer;
@@ -622,7 +644,9 @@
             align-items: center;
             gap: clamp(8px, 1.5vw, 12px);
             transition: all 0.2s;
-            will-change: transform, border-color;
+            will-change: transform, box-shadow;
+            min-height: 48px;
+            min-width: 48px;
         }
 
         .animal-card:active {
@@ -631,13 +655,11 @@
 
         .animal-card.correct-flash {
             background: #C8E6C9;
-            border-color: #66BB6A;
             animation: correctFlash 0.4s ease;
         }
 
         .animal-card.wrong-flash {
             background: #FFCDD2;
-            border-color: #EF5350;
             animation: wrongFlash 0.4s ease;
         }
 
@@ -651,18 +673,20 @@
             50% { background: #FFCDD2; }
         }
 
-        .animal-img-wrap {
-            width: 80px;
-            height: 80px;
-            border-radius: 12px;
+        .animal-photo-circle {
+            width: clamp(100px, 30vw, 160px);
+            height: clamp(100px, 30vw, 160px);
+            border-radius: 20px;
             overflow: hidden;
             background: #F5F5F5;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
-        .animal-img-wrap img {
+        .animal-photo-circle img {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -686,7 +710,7 @@
         }
 
         .animal-result-symbol {
-            font-size: clamp(4rem, 20vw, 8rem);
+            font-size: clamp(12rem, 40vw, 20rem);
             animation: resultPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
@@ -696,22 +720,27 @@
             100% { transform: scale(1); }
         }
 
-        .celebration-stars {
+        .confetti-container {
             position: fixed;
             inset: 0;
             z-index: 220;
             pointer-events: none;
         }
 
-        .celebration-star {
+        .confetti {
             position: absolute;
-            font-size: clamp(2rem, 8vw, 4rem);
-            animation: starFall 1.5s ease-out forwards;
+            animation: confettiFall 2s ease-out forwards;
         }
 
-        @keyframes starFall {
-            0% { transform: translateY(-100px) scale(1) rotate(0deg); opacity: 1; }
-            100% { transform: translateY(100vh) scale(0) rotate(360deg); opacity: 0; }
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-100px) rotateZ(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotateZ(720deg);
+                opacity: 0;
+            }
         }
 
         /* ===== Canvas 게임 ===== */
@@ -725,6 +754,44 @@
             justify-content: center;
             gap: 20px;
             z-index: 200;
+        }
+
+        .sketch-selection {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: clamp(12px, 3vw, 20px);
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .sketch-option {
+            background: white;
+            border: 3px solid #E0E0E0;
+            border-radius: 20px;
+            padding: clamp(16px, 3vw, 24px);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: clamp(8px, 2vw, 12px);
+            transition: all 0.2s;
+            min-height: 120px;
+            justify-content: center;
+        }
+
+        .sketch-option:active {
+            transform: scale(0.95);
+        }
+
+        .sketch-option-emoji {
+            font-size: clamp(2.5rem, 10vw, 3.5rem);
+        }
+
+        .sketch-option-text {
+            font-size: clamp(0.95rem, 2.5vw, 1.2rem);
+            font-weight: 700;
+            color: #333;
+            text-align: center;
         }
 
         .sketch-draw-screen {
@@ -772,6 +839,8 @@
             border: 3px solid transparent;
             cursor: pointer;
             transition: transform 0.2s, border-color 0.2s;
+            min-height: 48px;
+            min-width: 48px;
         }
 
         .sketch-color-btn:active {
@@ -801,6 +870,8 @@
             justify-content: center;
             cursor: pointer;
             transition: transform 0.2s, border-color 0.2s;
+            min-height: 48px;
+            min-width: 48px;
         }
 
         .sketch-brush-btn:active {
@@ -835,6 +906,7 @@
             font-weight: 700;
             cursor: pointer;
             transition: transform 0.2s;
+            min-height: 48px;
         }
 
         .sketch-action-btn:active {
@@ -863,33 +935,23 @@
         .aquarium-bg {
             position: absolute;
             inset: 0;
-            background: linear-gradient(180deg, #1565C0, #0277BD, #00838F);
+            background: linear-gradient(180deg, #0D47A1 0%, #1565C0 25%, #0277BD 50%, #00838F 75%, #004D40 100%);
             z-index: 1;
         }
 
-        .aquarium-floor {
+        .aquarium-bg::before {
+            content: '';
             position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 20%;
-            background: linear-gradient(180deg, #D7CCC8, #A1887F, #8D6E63);
-            z-index: 5;
+            inset: 0;
+            background: radial-gradient(ellipse at 30% 20%, rgba(100,181,246,0.3) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 80%, rgba(0,150,136,0.2) 0%, transparent 50%);
+            z-index: 1;
         }
 
-        .aquarium-seaweed {
+        .aquarium-bubbles {
             position: absolute;
-            bottom: 20%;
-            width: clamp(12px, 2vw, 20px);
-            border-radius: 50% 50% 0 0;
-            opacity: 0.8;
-            animation: seaweedWave 3s ease-in-out infinite;
-            z-index: 3;
-        }
-
-        @keyframes seaweedWave {
-            0%, 100% { transform: translateX(0) scaleX(1); }
-            50% { transform: translateX(8px) scaleX(1.1); }
+            inset: 0;
+            z-index: 2;
         }
 
         .aquarium-bubble {
@@ -898,7 +960,6 @@
             border: 2px solid rgba(255,255,255,0.4);
             border-radius: 50%;
             animation: bubbleRise 5s ease-in forwards infinite;
-            z-index: 2;
         }
 
         @keyframes bubbleRise {
@@ -908,19 +969,66 @@
             100% { bottom: 120%; opacity: 0; }
         }
 
-        .aquarium-drawing {
+        .aquarium-decorations {
             position: absolute;
-            z-index: 4;
-            animation: fishSwim 8s linear infinite;
-            will-change: transform;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 25%;
+            z-index: 3;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            padding-bottom: 20px;
         }
 
-        @keyframes fishSwim {
-            0% { left: -100px; transform: scaleX(1); }
-            45% { transform: scaleX(1); }
-            50% { transform: scaleX(-1); }
-            95% { transform: scaleX(-1); }
-            100% { left: 120vw; }
+        .aquarium-coral {
+            width: clamp(30px, 6vw, 60px);
+            height: clamp(40px, 8vw, 80px);
+            border-radius: 50% 50% 0 0;
+            opacity: 0.7;
+        }
+
+        .aquarium-wave {
+            position: absolute;
+            top: 25%;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 10px,
+                rgba(255,255,255,0.2) 10px,
+                rgba(255,255,255,0.2) 20px
+            );
+            animation: wave 3s linear infinite;
+            z-index: 4;
+        }
+
+        @keyframes wave {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(20px); }
+        }
+
+        .aquarium-drawing {
+            position: absolute;
+            z-index: 5;
+            will-change: transform;
+            font-size: clamp(3rem, 12vw, 6rem);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes swimRight {
+            0% { left: -120%; }
+            100% { left: calc(100vw + 120%); }
+        }
+
+        @keyframes swimLeft {
+            0% { right: -120%; }
+            100% { right: calc(100vw + 120%); }
         }
 
         .aquarium-redraw-btn {
@@ -937,6 +1045,7 @@
             box-shadow: 0 6px 16px rgba(255, 167, 38, 0.3);
             z-index: 100;
             transition: transform 0.2s;
+            min-height: 48px;
         }
 
         .aquarium-redraw-btn:active {
@@ -949,6 +1058,9 @@
                 grid-template-columns: 1fr;
                 max-width: 100%;
                 padding: 0 16px;
+            }
+            .sketch-selection {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -965,7 +1077,7 @@
 
     <!-- ========== 게임 1: 비누방울 팡팡 ========== -->
     <div id="game-bubble" class="screen game-screen">
-        <div class="home-btn" onclick="goHome()">🏠</div>
+        <div class="home-btn" id="home-btn" onclick="goHome()">🏠</div>
         <div class="bubble-hud" id="bubble-hud">
             <div class="bubble-score" id="bubble-score">⭐ 0</div>
             <div class="bubble-stage" id="bubble-stage">1단계</div>
@@ -980,7 +1092,7 @@
 
     <!-- ========== 게임 2: 동물 친구 찾기 ========== -->
     <div id="game-animal" class="screen game-screen">
-        <div class="home-btn" onclick="goHome()">🏠</div>
+        <div class="home-btn" id="home-btn-2" onclick="goHome()">🏠</div>
         <div class="animal-hud" id="animal-hud">
             <div class="animal-score" id="animal-score">⭐ 0</div>
             <div class="animal-stage" id="animal-stage">1단계</div>
@@ -995,7 +1107,7 @@
 
     <!-- ========== 게임 3: 마법의 스케치북 ========== -->
     <div id="game-canvas" class="screen game-screen">
-        <div class="home-btn" onclick="goHome()">🏠</div>
+        <div class="home-btn" id="home-btn-3" onclick="goHome()">🏠</div>
         <div class="game-area" id="canvas-area">
             <div class="game-placeholder">
                 <div class="placeholder-emoji">🎨</div>
@@ -1165,20 +1277,27 @@
 
             shapes: ['circle', 'square', 'triangle', 'heart'],
 
+            shapeEmojis: {
+                circle: '●',
+                triangle: '▲',
+                heart: '♥',
+                square: '■'
+            },
+
             getStageGoal(stage) {
                 return 10 + stage * 10;
             },
 
             getStageDifficulty() {
                 const s = this.stage;
-                const speedMult = Math.pow(1.4, s - 1);
+                const speedMult = 1 + (s - 1) * 0.5; // x1, x1.5, x2, x2.5 ...
                 return {
-                    minSize: 65,
-                    maxSize: 110,
-                    minSpeed: Math.min(0.6 * speedMult, 4.0),
-                    maxSpeed: Math.min(1.2 * speedMult, 6.0),
-                    spawnInterval: Math.max(300, 1100 - s * 80),
-                    maxBubbles: Math.min(18, 6 + s * 2)
+                    minSize: 100,
+                    maxSize: 170,
+                    minSpeed: Math.min(0.7 * speedMult, 4.0),
+                    maxSpeed: Math.min(1.3 * speedMult, 6.0),
+                    spawnInterval: Math.max(350, 1100 - s * 80),
+                    maxBubbles: Math.min(16, 6 + s * 2)
                 };
             }
         };
@@ -1209,6 +1328,10 @@
 
             const overlay = document.getElementById('bubble-start-overlay');
             if (overlay) overlay.remove();
+
+            // Minimize home button during gameplay
+            const homeBtn = document.getElementById('home-btn');
+            if (homeBtn) homeBtn.classList.add('mini-pause');
 
             BubbleGame.score = 0;
             BubbleGame.stage = 1;
@@ -1248,19 +1371,21 @@
             bubble.className = 'bubble ' + shape + '-shape';
             bubble.style.width = size + 'px';
             bubble.style.height = size + 'px';
+            bubble.style.color = color;
 
             if (shape === 'circle') {
-                bubble.style.background = `radial-gradient(circle at 35% 35%, rgba(255,255,255,0.6), ${color}88, ${color})`;
-                bubble.style.border = `3px solid ${color}`;
-                bubble.style.boxShadow = `0 0 12px ${color}55, inset 0 -4px 8px rgba(0,0,0,0.1)`;
+                bubble.style.background = `radial-gradient(circle at 35% 35%, rgba(255,255,255,0.7), ${color}88, ${color})`;
+                bubble.style.borderColor = color;
+                bubble.style.boxShadow = `0 0 18px ${color}66, inset 0 -6px 12px rgba(0,0,0,0.12)`;
             } else if (shape === 'square') {
-                bubble.style.background = `linear-gradient(135deg, ${color}, ${color}CC)`;
-                bubble.style.border = `3px solid ${color}`;
-                bubble.style.boxShadow = `0 4px 12px ${color}44`;
+                bubble.style.background = `linear-gradient(135deg, rgba(255,255,255,0.4), ${color}CC, ${color})`;
+                bubble.style.borderColor = color;
+                bubble.style.boxShadow = `0 4px 16px ${color}55`;
             } else if (shape === 'triangle' || shape === 'heart') {
-                bubble.style.background = color;
-                bubble.style.border = `none`;
-                bubble.style.boxShadow = `0 4px 12px ${color}44`;
+                bubble.style.fontSize = size * 0.85 + 'px';
+                bubble.textContent = BubbleGame.shapeEmojis[shape];
+                bubble.style.filter = `drop-shadow(0 0 6px ${color}88)`;
+                bubble.style.textShadow = `0 0 4px ${color}`;
             }
 
             const x = Math.random() * (areaRect.width - size);
@@ -1413,28 +1538,51 @@
             const area = document.getElementById('bubble-area');
             if (!area) return;
 
-            const colors = color ? [color, '#FFCA28', '#FF6B6B', '#66BB6A', '#42A5F5'] :
-                ['#FF6B6B', '#FFCA28', '#66BB6A', '#42A5F5', '#AB47BC', '#FF7043'];
+            const colors = color ? [color, '#FFCA28', '#FF6B6B', '#66BB6A', '#42A5F5', '#FFD700'] :
+                ['#FF6B6B', '#FFCA28', '#66BB6A', '#42A5F5', '#AB47BC', '#FF7043', '#FFD700'];
             const container = document.createElement('div');
             container.className = 'pop-particles';
             container.style.left = cx + 'px';
             container.style.top = cy + 'px';
 
-            for (let i = 0; i < 15; i++) {
+            // Big round particles
+            for (let i = 0; i < 14; i++) {
                 const p = document.createElement('div');
                 p.className = 'pop-particle';
-                const angle = (i / 15) * Math.PI * 2;
-                const dist = 50 + Math.random() * 70;
+                const angle = (i / 14) * Math.PI * 2;
+                const dist = 80 + Math.random() * 120;
                 const dx = Math.cos(angle) * dist;
                 const dy = Math.sin(angle) * dist;
+                const size = 14 + Math.random() * 12;
+                p.style.width = size + 'px';
+                p.style.height = size + 'px';
                 p.style.setProperty('--dx', dx + 'px');
                 p.style.setProperty('--dy', dy + 'px');
                 p.style.background = colors[Math.floor(Math.random() * colors.length)];
+                p.style.boxShadow = `0 0 8px ${p.style.background}`;
+                container.appendChild(p);
+            }
+
+            // Sparkle diamond particles
+            for (let i = 0; i < 10; i++) {
+                const p = document.createElement('div');
+                p.className = 'pop-particle sparkle';
+                const angle = (i / 10) * Math.PI * 2 + 0.3;
+                const dist = 50 + Math.random() * 100;
+                const dx = Math.cos(angle) * dist;
+                const dy = Math.sin(angle) * dist;
+                const size = 8 + Math.random() * 10;
+                p.style.width = size + 'px';
+                p.style.height = size + 'px';
+                p.style.setProperty('--dx', dx + 'px');
+                p.style.setProperty('--dy', dy + 'px');
+                p.style.background = '#FFD700';
+                p.style.boxShadow = '0 0 6px #FFD700';
                 container.appendChild(p);
             }
 
             area.appendChild(container);
-            setTimeout(() => container.remove(), 600);
+            setTimeout(() => container.remove(), 1000);
         }
 
         function playPopSound() {
@@ -1512,6 +1660,9 @@
 
             BubbleGame.bubbles.forEach(b => b.el.remove());
             BubbleGame.bubbles = [];
+
+            const homeBtn = document.getElementById('home-btn');
+            if (homeBtn) homeBtn.classList.remove('mini-pause');
 
             const area = document.getElementById('bubble-area');
             if (area) area.innerHTML = '';
@@ -1591,6 +1742,10 @@
             const overlay = document.getElementById('animal-start-overlay');
             if (overlay) overlay.remove();
 
+            // Minimize home button during gameplay
+            const homeBtn = document.getElementById('home-btn-2');
+            if (homeBtn) homeBtn.classList.add('mini-pause');
+
             AnimalGame.score = 0;
             AnimalGame.stage = 1;
             AnimalGame.stageScore = 0;
@@ -1610,7 +1765,7 @@
 
             const oldOverlay = document.querySelector('.animal-result-overlay');
             if (oldOverlay) oldOverlay.remove();
-            const oldCelebration = document.querySelector('.celebration-stars');
+            const oldCelebration = document.querySelector('.confetti-container');
             if (oldCelebration) oldCelebration.remove();
             const oldStageUp = document.querySelector('.bubble-stage-up');
             if (oldStageUp) oldStageUp.remove();
@@ -1681,7 +1836,7 @@
                 card.className = 'animal-card';
                 card.dataset.animalId = animal.id;
                 card.innerHTML = `
-                    <div class="animal-img-wrap">${getAnimalImage(animal.id)}</div>
+                    <div class="animal-photo-circle">${getAnimalImage(animal.id)}</div>
                     <div class="animal-name">${animal.name}</div>
                 `;
 
@@ -1718,7 +1873,7 @@
 
                 if (selectedCard) selectedCard.classList.add('correct-flash');
                 showAnimalResultOverlay('⭕', area);
-                showCelebrationStars(area);
+                showConfetti(area);
                 playCorrectSound();
 
                 const isStageUp = AnimalGame.stageScore >= AnimalGame.getStageGoal();
@@ -1759,7 +1914,6 @@
                         if (overlay) overlay.remove();
                         if (selectedCard) {
                             selectedCard.classList.remove('wrong-flash');
-                            selectedCard.style.borderColor = '#E0E0E0';
                             selectedCard.style.background = 'white';
                         }
                     }
@@ -1777,23 +1931,43 @@
             parent.appendChild(overlay);
         }
 
-        function showCelebrationStars(parent) {
+        function showConfetti(parent) {
             const container = document.createElement('div');
-            container.className = 'celebration-stars';
-            const emojis = ['⭐', '🌟', '✨', '💫', '🎉', '🎊'];
+            container.className = 'confetti-container';
+            const colors = ['#FFD700', '#FF6B6B', '#1E88E5', '#43A047', '#FF6D00', '#E040FB', '#00E5FF'];
+            const sparkleEmojis = ['✨', '⭐', '🌟', '💫', '🎉', '🎊'];
 
-            for (let i = 0; i < 16; i++) {
-                const star = document.createElement('div');
-                star.className = 'celebration-star';
-                star.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-                star.style.left = (Math.random() * 100) + '%';
-                star.style.animationDelay = (Math.random() * 0.6) + 's';
-                star.style.animationDuration = (1.2 + Math.random() * 0.8) + 's';
-                container.appendChild(star);
+            // Colored rectangle confetti
+            for (let i = 0; i < 35; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = (Math.random() * 100) + '%';
+                const w = 4 + Math.random() * 6;
+                const h = 8 + Math.random() * 12;
+                confetti.style.width = w + 'px';
+                confetti.style.height = h + 'px';
+                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.boxShadow = `0 0 4px ${confetti.style.background}`;
+                confetti.style.animationDelay = (Math.random() * 0.5) + 's';
+                confetti.style.animationDuration = (1.5 + Math.random() * 1.0) + 's';
+                container.appendChild(confetti);
+            }
+
+            // Sparkle emoji confetti
+            for (let i = 0; i < 12; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'confetti';
+                sparkle.textContent = sparkleEmojis[Math.floor(Math.random() * sparkleEmojis.length)];
+                sparkle.style.left = (Math.random() * 100) + '%';
+                sparkle.style.fontSize = (16 + Math.random() * 16) + 'px';
+                sparkle.style.animationDelay = (Math.random() * 0.5) + 's';
+                sparkle.style.animationDuration = (1.8 + Math.random() * 0.8) + 's';
+                container.appendChild(sparkle);
             }
 
             parent.appendChild(container);
-            setTimeout(() => container.remove(), 2300);
+            setTimeout(() => container.remove(), 3000);
         }
 
         function updateAnimalScore() {
@@ -1821,100 +1995,95 @@
             switch (animalId) {
                 case 'dog': {
                     for (let i = 0; i < 2; i++) {
-                        const t = now + i * 0.35;
+                        const t = now + i * 0.4;
                         const o = ctx.createOscillator();
                         const g = ctx.createGain();
                         const flt = ctx.createBiquadFilter();
-                        o.type = 'sawtooth';
+                        o.type = 'square';
                         o.frequency.setValueAtTime(200, t);
-                        o.frequency.linearRampToValueAtTime(450, t + 0.04);
-                        o.frequency.setValueAtTime(400, t + 0.06);
-                        o.frequency.linearRampToValueAtTime(250, t + 0.18);
+                        o.frequency.linearRampToValueAtTime(400, t + 0.05);
                         flt.type = 'lowpass';
-                        flt.frequency.setValueAtTime(1200, t);
-                        flt.Q.setValueAtTime(2, t);
-                        g.gain.setValueAtTime(0, t);
+                        flt.frequency.setValueAtTime(1500, t);
+                        g.gain.setValueAtTime(0.01, t);
                         g.gain.linearRampToValueAtTime(0.4, t + 0.02);
-                        g.gain.setValueAtTime(0.4, t + 0.06);
-                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
                         o.connect(flt); flt.connect(g); g.connect(ctx.destination);
-                        o.start(t); o.stop(t + 0.22);
+                        o.start(t); o.stop(t + 0.25);
                     }
                     break;
                 }
 
                 case 'cat': {
                     for (let i = 0; i < 2; i++) {
-                        const t = now + i * 0.7;
+                        const t = now + i * 0.85;
                         const o = ctx.createOscillator();
                         const g = ctx.createGain();
                         o.type = 'sine';
-                        o.frequency.setValueAtTime(250, t);
-                        o.frequency.linearRampToValueAtTime(520, t + 0.15);
-                        o.frequency.setValueAtTime(520, t + 0.25);
-                        o.frequency.linearRampToValueAtTime(380, t + 0.45);
-                        o.frequency.linearRampToValueAtTime(280, t + 0.55);
+                        o.frequency.setValueAtTime(300, t);
+                        o.frequency.linearRampToValueAtTime(550, t + 0.2);
+                        o.frequency.setValueAtTime(550, t + 0.35);
+                        o.frequency.linearRampToValueAtTime(350, t + 0.65);
                         g.gain.setValueAtTime(0, t);
-                        g.gain.linearRampToValueAtTime(0.3, t + 0.04);
-                        g.gain.setValueAtTime(0.28, t + 0.25);
-                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.58);
+                        g.gain.linearRampToValueAtTime(0.35, t + 0.05);
+                        g.gain.setValueAtTime(0.32, t + 0.35);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.70);
                         o.connect(g); g.connect(ctx.destination);
-                        o.start(t); o.stop(t + 0.58);
+                        o.start(t); o.stop(t + 0.70);
                         const v = ctx.createOscillator();
                         const vg = ctx.createGain();
-                        v.frequency.setValueAtTime(5.5, t);
-                        vg.gain.setValueAtTime(12, t);
+                        v.frequency.setValueAtTime(6, t);
+                        vg.gain.setValueAtTime(15, t);
                         v.connect(vg); vg.connect(o.frequency);
-                        v.start(t); v.stop(t + 0.58);
+                        v.start(t); v.stop(t + 0.70);
                     }
                     break;
                 }
 
                 case 'lion': {
-                    const dur = 1.4;
+                    const dur = 1.5;
                     const o = ctx.createOscillator();
                     const g = ctx.createGain();
                     const flt = ctx.createBiquadFilter();
                     o.type = 'sawtooth';
                     o.frequency.setValueAtTime(70, now);
-                    o.frequency.linearRampToValueAtTime(110, now + 0.3);
-                    o.frequency.linearRampToValueAtTime(85, now + 0.8);
+                    o.frequency.linearRampToValueAtTime(120, now + 0.4);
+                    o.frequency.linearRampToValueAtTime(90, now + 1.0);
                     o.frequency.linearRampToValueAtTime(60, now + dur);
-                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(500, now);
+                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(400, now);
                     g.gain.setValueAtTime(0, now);
-                    g.gain.linearRampToValueAtTime(0.4, now + 0.15);
-                    g.gain.setValueAtTime(0.4, now + 0.5);
+                    g.gain.linearRampToValueAtTime(0.45, now + 0.2);
+                    g.gain.setValueAtTime(0.42, now + 0.6);
                     g.gain.exponentialRampToValueAtTime(0.001, now + dur);
                     o.connect(flt); flt.connect(g); g.connect(ctx.destination);
                     o.start(now); o.stop(now + dur);
                     const tr = ctx.createOscillator();
                     const trg = ctx.createGain();
-                    tr.frequency.setValueAtTime(7, now); trg.gain.setValueAtTime(18, now);
+                    tr.frequency.setValueAtTime(8, now); trg.gain.setValueAtTime(20, now);
                     tr.connect(trg); trg.connect(o.frequency);
                     tr.start(now); tr.stop(now + dur);
                     break;
                 }
 
                 case 'cow': {
-                    const dur = 1.6;
+                    const dur = 1.7;
                     const o = ctx.createOscillator();
                     const g = ctx.createGain();
                     const flt = ctx.createBiquadFilter();
                     o.type = 'sawtooth';
                     o.frequency.setValueAtTime(110, now);
-                    o.frequency.linearRampToValueAtTime(155, now + 0.25);
-                    o.frequency.setValueAtTime(155, now + 0.7);
-                    o.frequency.linearRampToValueAtTime(140, now + 1.1);
+                    o.frequency.linearRampToValueAtTime(160, now + 0.3);
+                    o.frequency.setValueAtTime(160, now + 0.8);
+                    o.frequency.linearRampToValueAtTime(120, now + 1.3);
                     o.frequency.linearRampToValueAtTime(100, now + dur);
-                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(600, now); flt.Q.setValueAtTime(1.5, now);
+                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(700, now); flt.Q.setValueAtTime(1.2, now);
                     g.gain.setValueAtTime(0, now);
-                    g.gain.linearRampToValueAtTime(0.35, now + 0.08);
-                    g.gain.setValueAtTime(0.35, now + 0.7);
+                    g.gain.linearRampToValueAtTime(0.4, now + 0.1);
+                    g.gain.setValueAtTime(0.38, now + 0.8);
                     g.gain.exponentialRampToValueAtTime(0.001, now + dur);
                     o.connect(flt); flt.connect(g); g.connect(ctx.destination);
                     o.start(now); o.stop(now + dur);
                     const v = ctx.createOscillator(); const vg = ctx.createGain();
-                    v.frequency.setValueAtTime(4, now); vg.gain.setValueAtTime(6, now);
+                    v.frequency.setValueAtTime(5, now); vg.gain.setValueAtTime(8, now);
                     v.connect(vg); vg.connect(o.frequency);
                     v.start(now); v.stop(now + dur);
                     break;
@@ -1922,100 +2091,53 @@
 
                 case 'chicken': {
                     const o1 = ctx.createOscillator(); const g1 = ctx.createGain();
-                    o1.type = 'sawtooth';
-                    o1.frequency.setValueAtTime(300, now);
-                    o1.frequency.linearRampToValueAtTime(500, now + 0.1);
-                    g1.gain.setValueAtTime(0, now);
-                    g1.gain.linearRampToValueAtTime(0.3, now + 0.02);
-                    g1.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+                    o1.type = 'square';
+                    o1.frequency.setValueAtTime(350, now);
+                    o1.frequency.linearRampToValueAtTime(600, now + 0.12);
+                    g1.gain.setValueAtTime(0.01, now);
+                    g1.gain.linearRampToValueAtTime(0.35, now + 0.03);
+                    g1.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
                     o1.connect(g1); g1.connect(ctx.destination);
-                    o1.start(now); o1.stop(now + 0.14);
+                    o1.start(now); o1.stop(now + 0.16);
                     const o2 = ctx.createOscillator(); const g2 = ctx.createGain();
-                    o2.type = 'sawtooth';
-                    o2.frequency.setValueAtTime(550, now + 0.18);
-                    o2.frequency.linearRampToValueAtTime(800, now + 0.28);
-                    g2.gain.setValueAtTime(0, now + 0.18);
-                    g2.gain.linearRampToValueAtTime(0.3, now + 0.2);
-                    g2.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                    o2.type = 'square';
+                    o2.frequency.setValueAtTime(700, now + 0.2);
+                    o2.frequency.linearRampToValueAtTime(950, now + 0.32);
+                    g2.gain.setValueAtTime(0.01, now + 0.2);
+                    g2.gain.linearRampToValueAtTime(0.35, now + 0.22);
+                    g2.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
                     o2.connect(g2); g2.connect(ctx.destination);
-                    o2.start(now + 0.18); o2.stop(now + 0.35);
+                    o2.start(now + 0.2); o2.stop(now + 0.4);
                     const o3 = ctx.createOscillator(); const g3 = ctx.createGain();
                     const flt = ctx.createBiquadFilter();
-                    o3.type = 'sawtooth';
-                    o3.frequency.setValueAtTime(850, now + 0.4);
-                    o3.frequency.linearRampToValueAtTime(950, now + 0.55);
-                    o3.frequency.linearRampToValueAtTime(700, now + 0.9);
-                    o3.frequency.linearRampToValueAtTime(450, now + 1.2);
-                    flt.type = 'bandpass'; flt.frequency.setValueAtTime(900, now + 0.4); flt.Q.setValueAtTime(1, now + 0.4);
-                    g3.gain.setValueAtTime(0, now + 0.4);
-                    g3.gain.linearRampToValueAtTime(0.3, now + 0.43);
-                    g3.gain.setValueAtTime(0.28, now + 0.7);
-                    g3.gain.exponentialRampToValueAtTime(0.001, now + 1.25);
+                    o3.type = 'square';
+                    o3.frequency.setValueAtTime(900, now + 0.45);
+                    o3.frequency.linearRampToValueAtTime(1050, now + 0.65);
+                    o3.frequency.linearRampToValueAtTime(600, now + 1.3);
+                    flt.type = 'bandpass'; flt.frequency.setValueAtTime(950, now + 0.45); flt.Q.setValueAtTime(1.2, now + 0.45);
+                    g3.gain.setValueAtTime(0.01, now + 0.45);
+                    g3.gain.linearRampToValueAtTime(0.35, now + 0.48);
+                    g3.gain.setValueAtTime(0.32, now + 0.8);
+                    g3.gain.exponentialRampToValueAtTime(0.001, now + 1.35);
                     o3.connect(flt); flt.connect(g3); g3.connect(ctx.destination);
-                    o3.start(now + 0.4); o3.stop(now + 1.25);
+                    o3.start(now + 0.45); o3.stop(now + 1.35);
                     break;
                 }
 
                 case 'duck': {
-                    for (let i = 0; i < 3; i++) {
-                        const t = now + i * 0.25;
-                        const o = ctx.createOscillator(); const g = ctx.createGain();
-                        const flt = ctx.createBiquadFilter();
-                        o.type = 'sawtooth';
-                        o.frequency.setValueAtTime(180, t);
-                        o.frequency.linearRampToValueAtTime(350, t + 0.03);
-                        o.frequency.linearRampToValueAtTime(220, t + 0.1);
-                        o.frequency.linearRampToValueAtTime(160, t + 0.16);
-                        flt.type = 'bandpass'; flt.frequency.setValueAtTime(800, t); flt.Q.setValueAtTime(4, t);
-                        g.gain.setValueAtTime(0, t);
-                        g.gain.linearRampToValueAtTime(0.3, t + 0.015);
-                        g.gain.setValueAtTime(0.28, t + 0.06);
-                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
-                        o.connect(flt); flt.connect(g); g.connect(ctx.destination);
-                        o.start(t); o.stop(t + 0.18);
-                    }
-                    break;
-                }
-
-                case 'sheep': {
                     for (let i = 0; i < 2; i++) {
-                        const t = now + i * 0.6;
-                        const o = ctx.createOscillator(); const g = ctx.createGain();
-                        o.type = 'sawtooth';
-                        o.frequency.setValueAtTime(220, t);
-                        o.frequency.linearRampToValueAtTime(330, t + 0.08);
-                        o.frequency.setValueAtTime(330, t + 0.2);
-                        o.frequency.linearRampToValueAtTime(280, t + 0.4);
-                        const flt = ctx.createBiquadFilter();
-                        flt.type = 'lowpass'; flt.frequency.setValueAtTime(800, t);
-                        g.gain.setValueAtTime(0, t);
-                        g.gain.linearRampToValueAtTime(0.28, t + 0.03);
-                        g.gain.setValueAtTime(0.25, t + 0.2);
-                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
-                        o.connect(flt); flt.connect(g); g.connect(ctx.destination);
-                        o.start(t); o.stop(t + 0.45);
-                        const v = ctx.createOscillator(); const vg = ctx.createGain();
-                        v.frequency.setValueAtTime(8, t); vg.gain.setValueAtTime(25, t);
-                        v.connect(vg); vg.connect(o.frequency);
-                        v.start(t); v.stop(t + 0.45);
-                    }
-                    break;
-                }
-
-                case 'pig': {
-                    for (let i = 0; i < 2; i++) {
-                        const t = now + i * 0.3;
+                        const t = now + i * 0.35;
                         const o = ctx.createOscillator(); const g = ctx.createGain();
                         const flt = ctx.createBiquadFilter();
                         o.type = 'sawtooth';
-                        o.frequency.setValueAtTime(120, t);
-                        o.frequency.linearRampToValueAtTime(200, t + 0.04);
-                        o.frequency.linearRampToValueAtTime(140, t + 0.12);
-                        o.frequency.linearRampToValueAtTime(100, t + 0.2);
-                        flt.type = 'lowpass'; flt.frequency.setValueAtTime(500, t); flt.Q.setValueAtTime(3, t);
-                        g.gain.setValueAtTime(0, t);
+                        o.frequency.setValueAtTime(200, t);
+                        o.frequency.linearRampToValueAtTime(380, t + 0.04);
+                        o.frequency.linearRampToValueAtTime(240, t + 0.12);
+                        o.frequency.linearRampToValueAtTime(180, t + 0.20);
+                        flt.type = 'bandpass'; flt.frequency.setValueAtTime(900, t); flt.Q.setValueAtTime(5, t);
+                        g.gain.setValueAtTime(0.01, t);
                         g.gain.linearRampToValueAtTime(0.35, t + 0.02);
-                        g.gain.setValueAtTime(0.3, t + 0.08);
+                        g.gain.setValueAtTime(0.32, t + 0.08);
                         g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
                         o.connect(flt); flt.connect(g); g.connect(ctx.destination);
                         o.start(t); o.stop(t + 0.22);
@@ -2023,25 +2145,68 @@
                     break;
                 }
 
+                case 'sheep': {
+                    for (let i = 0; i < 2; i++) {
+                        const t = now + i * 0.7;
+                        const o = ctx.createOscillator(); const g = ctx.createGain();
+                        o.type = 'sawtooth';
+                        o.frequency.setValueAtTime(240, t);
+                        o.frequency.linearRampToValueAtTime(360, t + 0.1);
+                        o.frequency.setValueAtTime(360, t + 0.25);
+                        o.frequency.linearRampToValueAtTime(300, t + 0.5);
+                        const flt = ctx.createBiquadFilter();
+                        flt.type = 'lowpass'; flt.frequency.setValueAtTime(900, t);
+                        g.gain.setValueAtTime(0, t);
+                        g.gain.linearRampToValueAtTime(0.32, t + 0.04);
+                        g.gain.setValueAtTime(0.30, t + 0.25);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.55);
+                        o.connect(flt); flt.connect(g); g.connect(ctx.destination);
+                        o.start(t); o.stop(t + 0.55);
+                        const v = ctx.createOscillator(); const vg = ctx.createGain();
+                        v.frequency.setValueAtTime(10, t); vg.gain.setValueAtTime(30, t);
+                        v.connect(vg); vg.connect(o.frequency);
+                        v.start(t); v.stop(t + 0.55);
+                    }
+                    break;
+                }
+
+                case 'pig': {
+                    for (let i = 0; i < 2; i++) {
+                        const t = now + i * 0.5;
+                        const o = ctx.createOscillator(); const g = ctx.createGain();
+                        const flt = ctx.createBiquadFilter();
+                        o.type = 'sawtooth';
+                        o.frequency.setValueAtTime(120, t);
+                        o.frequency.linearRampToValueAtTime(200, t + 0.06);
+                        o.frequency.linearRampToValueAtTime(140, t + 0.22);
+                        flt.type = 'lowpass'; flt.frequency.setValueAtTime(600, t);
+                        g.gain.setValueAtTime(0.01, t);
+                        g.gain.linearRampToValueAtTime(0.36, t + 0.02);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+                        o.connect(flt); flt.connect(g); g.connect(ctx.destination);
+                        o.start(t); o.stop(t + 0.25);
+                    }
+                    break;
+                }
+
                 case 'horse': {
-                    const dur = 1.0;
-                    const o = ctx.createOscillator(); const g = ctx.createGain();
-                    o.type = 'sawtooth';
-                    o.frequency.setValueAtTime(300, now);
-                    o.frequency.linearRampToValueAtTime(600, now + 0.15);
-                    o.frequency.linearRampToValueAtTime(700, now + 0.3);
-                    o.frequency.linearRampToValueAtTime(550, now + 0.6);
-                    o.frequency.linearRampToValueAtTime(350, now + dur);
-                    const flt = ctx.createBiquadFilter();
-                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(1500, now);
+                    const dur = 1.2;
+                    const o = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(320, now);
+                    o.frequency.linearRampToValueAtTime(750, now + 0.25);
+                    o.frequency.setValueAtTime(750, now + 0.4);
+                    o.frequency.linearRampToValueAtTime(450, now + dur);
                     g.gain.setValueAtTime(0, now);
-                    g.gain.linearRampToValueAtTime(0.3, now + 0.05);
-                    g.gain.setValueAtTime(0.3, now + 0.3);
+                    g.gain.linearRampToValueAtTime(0.38, now + 0.06);
+                    g.gain.setValueAtTime(0.36, now + 0.4);
                     g.gain.exponentialRampToValueAtTime(0.001, now + dur);
-                    o.connect(flt); flt.connect(g); g.connect(ctx.destination);
+                    o.connect(g); g.connect(ctx.destination);
                     o.start(now); o.stop(now + dur);
-                    const v = ctx.createOscillator(); const vg = ctx.createGain();
-                    v.frequency.setValueAtTime(6, now); vg.gain.setValueAtTime(20, now);
+                    const v = ctx.createOscillator();
+                    const vg = ctx.createGain();
+                    v.frequency.setValueAtTime(7, now); vg.gain.setValueAtTime(14, now);
                     v.connect(vg); vg.connect(o.frequency);
                     v.start(now); v.stop(now + dur);
                     break;
@@ -2049,31 +2214,21 @@
 
                 case 'elephant': {
                     const dur = 1.5;
-                    const o = ctx.createOscillator(); const g = ctx.createGain();
+                    const o = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    const flt = ctx.createBiquadFilter();
                     o.type = 'sawtooth';
                     o.frequency.setValueAtTime(150, now);
-                    o.frequency.linearRampToValueAtTime(350, now + 0.15);
-                    o.frequency.setValueAtTime(350, now + 0.4);
-                    o.frequency.linearRampToValueAtTime(280, now + 0.8);
+                    o.frequency.linearRampToValueAtTime(380, now + 0.35);
+                    o.frequency.setValueAtTime(380, now + 0.7);
                     o.frequency.linearRampToValueAtTime(200, now + dur);
-                    const flt = ctx.createBiquadFilter();
-                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(800, now); flt.Q.setValueAtTime(2, now);
+                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(800, now); flt.Q.setValueAtTime(0.8, now);
                     g.gain.setValueAtTime(0, now);
-                    g.gain.linearRampToValueAtTime(0.4, now + 0.08);
-                    g.gain.setValueAtTime(0.4, now + 0.4);
+                    g.gain.linearRampToValueAtTime(0.42, now + 0.15);
+                    g.gain.setValueAtTime(0.40, now + 0.7);
                     g.gain.exponentialRampToValueAtTime(0.001, now + dur);
                     o.connect(flt); flt.connect(g); g.connect(ctx.destination);
                     o.start(now); o.stop(now + dur);
-                    const o2 = ctx.createOscillator(); const g2 = ctx.createGain();
-                    o2.type = 'sine';
-                    o2.frequency.setValueAtTime(300, now);
-                    o2.frequency.linearRampToValueAtTime(700, now + 0.15);
-                    o2.frequency.linearRampToValueAtTime(560, now + 0.8);
-                    g2.gain.setValueAtTime(0, now);
-                    g2.gain.linearRampToValueAtTime(0.15, now + 0.08);
-                    g2.gain.exponentialRampToValueAtTime(0.001, now + dur);
-                    o2.connect(g2); g2.connect(ctx.destination);
-                    o2.start(now); o2.stop(now + dur);
                     break;
                 }
             }
@@ -2085,21 +2240,21 @@
             if (!ctx) return;
             const now = ctx.currentTime;
 
-            const notes = [523, 659, 784, 1047];
+            const notes = [523, 659, 784, 1047, 1319];
             notes.forEach((freq, i) => {
-                const t = now + i * 0.1;
+                const t = now + i * 0.08;
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(freq, t);
                 gain.gain.setValueAtTime(0, t);
                 gain.gain.linearRampToValueAtTime(0.25, t + 0.02);
-                gain.gain.setValueAtTime(0.25, t + 0.08);
-                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+                gain.gain.setValueAtTime(0.25, t + 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
                 osc.connect(gain);
                 gain.connect(ctx.destination);
                 osc.start(t);
-                osc.stop(t + 0.25);
+                osc.stop(t + 0.3);
             });
         }
 
@@ -2111,82 +2266,39 @@
 
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(350, now);
-            osc.frequency.linearRampToValueAtTime(200, now + 0.25);
-            gain.gain.setValueAtTime(0.2, now);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(150, now);
+            osc.frequency.linearRampToValueAtTime(100, now + 0.3);
+            gain.gain.setValueAtTime(0.25, now);
             gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
             osc.connect(gain);
             gain.connect(ctx.destination);
             osc.start(now);
             osc.stop(now + 0.3);
-
-            const osc2 = ctx.createOscillator();
-            const gain2 = ctx.createGain();
-            osc2.type = 'triangle';
-            osc2.frequency.setValueAtTime(300, now + 0.15);
-            osc2.frequency.linearRampToValueAtTime(150, now + 0.4);
-            gain2.gain.setValueAtTime(0.18, now + 0.15);
-            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
-            osc2.connect(gain2);
-            gain2.connect(ctx.destination);
-            osc2.start(now + 0.15);
-            osc2.stop(now + 0.45);
         }
 
         function cleanupAnimalGame() {
             AnimalGame.running = false;
-            AnimalGame.locked = false;
-            AnimalGame.currentAnswer = null;
-            AnimalGame.stage = 1;
-            AnimalGame.stageScore = 0;
-            AnimalGame.usedAnswers = [];
 
             if (AnimalGame.advanceTimer) {
                 clearTimeout(AnimalGame.advanceTimer);
                 AnimalGame.advanceTimer = null;
             }
 
+            const homeBtn = document.getElementById('home-btn-2');
+            if (homeBtn) homeBtn.classList.remove('mini-pause');
+
             const area = document.getElementById('animal-area');
             if (area) area.innerHTML = '';
         }
 
         /* ===== GAME 3: 마법의 스케치북 ===== */
-        const SketchGame = {
-            drawCanvas: null,
-            drawCtx: null,
-            outlineCanvas: null,
-            outlineCtx: null,
-            drawing: false,
-            currentColor: '#FF1744',
-            brushSize: 12,
-            lastX: 0,
-            lastY: 0,
-            mode: 'draw',
-            selectedOutline: 'fish',
-            aquariumDrawings: [],
-
-            colors: [
-                { name: '빨강', hex: '#FF1744' },
-                { name: '노랑', hex: '#FFD600' },
-                { name: '파랑', hex: '#2979FF' },
-                { name: '초록', hex: '#00C853' },
-                { name: '보라', hex: '#AA00FF' },
-                { name: '주황', hex: '#FF6D00' }
-            ],
-
-            brushes: [
-                { label: '작게', size: 6 },
-                { label: '보통', size: 14 },
-                { label: '크게', size: 26 }
-            ],
-
-            outlines: [
-                { id: 'fish', label: '물고기' },
-                { id: 'car', label: '자동차' },
-                { id: 'house', label: '집' },
-                { id: 'butterfly', label: '나비' }
-            ]
+        const CanvasGame = {
+            currentShape: null,
+            drawingMode: false,
+            canvases: { outline: null, draw: null },
+            canvasCtx: { outline: null, draw: null },
+            running: false
         };
 
         function initCanvasGame() {
@@ -2196,40 +2308,54 @@
             const overlay = document.createElement('div');
             overlay.className = 'sketch-start-overlay';
             overlay.id = 'sketch-start-overlay';
-            overlay.innerHTML = `
-                <div class="start-emoji">🎨</div>
-                <div class="start-text">윤곽선을 선택하세요!</div>
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; width: 100%; max-width: 300px;">
-                    ${SketchGame.outlines.map((out, i) => `
-                        <button style="background: linear-gradient(135deg, #FFB74D, #FFA726); color: white; border: none; border-radius: 16px; padding: 16px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: transform 0.2s;" onclick="selectOutline('${out.id}')">${out.label}</button>
-                    `).join('')}
-                </div>
-            `;
+
+            const selection = document.createElement('div');
+            selection.className = 'sketch-selection';
+
+            const shapes = [
+                { id: 'fish', emoji: '🐟', name: '물고기' },
+                { id: 'car', emoji: '🚗', name: '자동차' },
+                { id: 'house', emoji: '🏠', name: '집' },
+                { id: 'butterfly', emoji: '🦋', name: '나비' }
+            ];
+
+            shapes.forEach(shape => {
+                const option = document.createElement('div');
+                option.className = 'sketch-option';
+                option.innerHTML = `
+                    <div class="sketch-option-emoji">${shape.emoji}</div>
+                    <div class="sketch-option-text">${shape.name}</div>
+                `;
+                option.onclick = () => startSketchDrawing(shape.id);
+                option.ontouchend = (e) => { e.preventDefault(); startSketchDrawing(shape.id); };
+                selection.appendChild(option);
+            });
+
+            overlay.appendChild(selection);
             area.appendChild(overlay);
         }
 
-        function selectOutline(id) {
-            SketchGame.selectedOutline = id;
+        function startSketchDrawing(shapeId) {
+            getAudioContext().resume();
+
             const overlay = document.getElementById('sketch-start-overlay');
             if (overlay) overlay.remove();
-            startSketchGameplay();
-        }
 
-        function startSketchGameplay() {
-            buildSketchDrawScreen();
-        }
+            // Minimize home button during gameplay
+            const homeBtn = document.getElementById('home-btn-3');
+            if (homeBtn) homeBtn.classList.add('mini-pause');
 
-        function buildSketchDrawScreen() {
+            CanvasGame.currentShape = shapeId;
+            CanvasGame.running = true;
+
             const area = document.getElementById('canvas-area');
             area.innerHTML = '';
 
-            const drawScreen = document.createElement('div');
-            drawScreen.className = 'sketch-draw-screen';
-            drawScreen.id = 'sketch-draw-screen';
+            const screenDiv = document.createElement('div');
+            screenDiv.className = 'sketch-draw-screen';
 
             const canvasWrap = document.createElement('div');
             canvasWrap.className = 'sketch-canvas-wrap';
-            canvasWrap.id = 'sketch-canvas-wrap';
 
             const outlineCanvas = document.createElement('canvas');
             outlineCanvas.id = 'sketch-outline-canvas';
@@ -2241,422 +2367,514 @@
 
             const toolbar = document.createElement('div');
             toolbar.className = 'sketch-toolbar';
-            toolbar.id = 'sketch-toolbar';
 
-            SketchGame.colors.forEach((c, i) => {
-                const btn = document.createElement('div');
-                btn.className = 'sketch-color-btn' + (i === 0 ? ' active' : '');
-                btn.style.background = c.hex;
-                btn.dataset.color = c.hex;
-                btn.addEventListener('click', () => selectSketchColor(c.hex, btn));
-                btn.addEventListener('touchend', (e) => { e.preventDefault(); selectSketchColor(c.hex, btn); });
+            const colors = ['#FF1744', '#FF6D00', '#FFD600', '#00C853', '#2979FF', '#9C27B0', '#FF4081', '#00BFA5'];
+            colors.forEach(color => {
+                const btn = document.createElement('button');
+                btn.className = 'sketch-color-btn';
+                btn.style.background = color;
+                if (color === '#FF1744') btn.classList.add('active');
+                btn.style.minHeight = '48px';
+                btn.onclick = () => selectColor(color, btn);
                 toolbar.appendChild(btn);
             });
 
-            const div1 = document.createElement('div');
-            div1.className = 'sketch-divider';
-            toolbar.appendChild(div1);
+            toolbar.innerHTML += '<div class="sketch-divider"></div>';
 
-            SketchGame.brushes.forEach((b, i) => {
-                const btn = document.createElement('div');
-                btn.className = 'sketch-brush-btn' + (i === 1 ? ' active' : '');
-                btn.dataset.size = b.size;
-                const dot = document.createElement('div');
-                dot.className = 'sketch-brush-dot';
-                const dotSize = Math.max(6, b.size * 0.7);
-                dot.style.width = dotSize + 'px';
-                dot.style.height = dotSize + 'px';
-                btn.appendChild(dot);
-                btn.addEventListener('click', () => selectSketchBrush(b.size, btn));
-                btn.addEventListener('touchend', (e) => { e.preventDefault(); selectSketchBrush(b.size, btn); });
-                toolbar.appendChild(btn);
-            });
+            const brushBtn = document.createElement('button');
+            brushBtn.className = 'sketch-brush-btn active';
+            brushBtn.innerHTML = '<div class="sketch-brush-dot" style="width: 12px; height: 12px;"></div>';
+            brushBtn.style.minHeight = '48px';
+            brushBtn.style.minWidth = '48px';
+            toolbar.appendChild(brushBtn);
 
-            const div2 = document.createElement('div');
-            div2.className = 'sketch-divider';
-            toolbar.appendChild(div2);
+            toolbar.innerHTML += '<div style="flex: 1;"></div>';
 
             const actionBtns = document.createElement('div');
             actionBtns.className = 'sketch-action-btns';
 
             const clearBtn = document.createElement('button');
             clearBtn.className = 'sketch-action-btn sketch-clear-btn';
-            clearBtn.textContent = '🔄 다시';
-            clearBtn.addEventListener('click', clearSketchCanvas);
-            clearBtn.addEventListener('touchend', (e) => { e.preventDefault(); clearSketchCanvas(); });
+            clearBtn.textContent = '지우기';
+            clearBtn.style.minHeight = '48px';
+            clearBtn.onclick = clearCanvas;
+            actionBtns.appendChild(clearBtn);
 
             const magicBtn = document.createElement('button');
             magicBtn.className = 'sketch-action-btn sketch-magic-btn';
-            magicBtn.textContent = '마법 보내기 🪄';
-            magicBtn.addEventListener('click', sendToAnimation);
-            magicBtn.addEventListener('touchend', (e) => { e.preventDefault(); sendToAnimation(); });
-
-            actionBtns.appendChild(clearBtn);
+            magicBtn.textContent = '완성! 🎬';
+            magicBtn.style.minHeight = '48px';
+            magicBtn.onclick = startAquarium;
             actionBtns.appendChild(magicBtn);
+
             toolbar.appendChild(actionBtns);
+            screenDiv.appendChild(canvasWrap);
+            screenDiv.appendChild(toolbar);
+            area.appendChild(screenDiv);
 
-            drawScreen.appendChild(canvasWrap);
-            drawScreen.appendChild(toolbar);
-            area.appendChild(drawScreen);
+            resizeCanvases(outlineCanvas, drawCanvas);
+            window.addEventListener('resize', () => resizeCanvases(outlineCanvas, drawCanvas));
 
-            requestAnimationFrame(() => {
-                setupSketchCanvases();
-                drawOutlineShape();
-            });
+            CanvasGame.canvases.outline = outlineCanvas;
+            CanvasGame.canvases.draw = drawCanvas;
+            CanvasGame.canvasCtx.outline = outlineCanvas.getContext('2d');
+            CanvasGame.canvasCtx.draw = drawCanvas.getContext('2d');
+
+            drawOutline(outlineCanvas);
+            setupDrawing(drawCanvas);
         }
 
-        function setupSketchCanvases() {
-            const wrap = document.getElementById('sketch-canvas-wrap');
+        function resizeCanvases(outlineCanvas, drawCanvas) {
+            const wrap = document.querySelector('.sketch-canvas-wrap');
             if (!wrap) return;
-
             const rect = wrap.getBoundingClientRect();
-            const dpr = window.devicePixelRatio || 1;
-            const w = rect.width;
-            const h = rect.height;
-
-            const outline = document.getElementById('sketch-outline-canvas');
-            const draw = document.getElementById('sketch-draw-canvas');
-
-            [outline, draw].forEach(c => {
-                c.width = w * dpr;
-                c.height = h * dpr;
-                c.style.width = w + 'px';
-                c.style.height = h + 'px';
-                c.getContext('2d').scale(dpr, dpr);
-            });
-
-            SketchGame.outlineCanvas = outline;
-            SketchGame.outlineCtx = outline.getContext('2d');
-            SketchGame.drawCanvas = draw;
-            SketchGame.drawCtx = draw.getContext('2d');
-
-            SketchGame.drawCtx.lineCap = 'round';
-            SketchGame.drawCtx.lineJoin = 'round';
-            SketchGame.drawCtx.strokeStyle = SketchGame.currentColor;
-            SketchGame.drawCtx.lineWidth = SketchGame.brushSize;
-
-            draw.addEventListener('mousedown', sketchStart);
-            draw.addEventListener('mousemove', sketchMove);
-            draw.addEventListener('mouseup', sketchEnd);
-            draw.addEventListener('mouseleave', sketchEnd);
-
-            draw.addEventListener('touchstart', sketchTouchStart, { passive: false });
-            draw.addEventListener('touchmove', sketchTouchMove, { passive: false });
-            draw.addEventListener('touchend', sketchTouchEnd, { passive: false });
+            outlineCanvas.width = rect.width;
+            outlineCanvas.height = rect.height;
+            drawCanvas.width = rect.width;
+            drawCanvas.height = rect.height;
+            drawOutline(outlineCanvas);
         }
 
-        function drawOutlineShape() {
-            const ctx = SketchGame.outlineCtx;
-            if (!ctx) return;
+        function drawOutline(canvas) {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            const c = SketchGame.outlineCanvas;
-            const dpr = window.devicePixelRatio || 1;
-            const w = c.width / dpr;
-            const h = c.height / dpr;
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const scale = Math.min(canvas.width, canvas.height) * 0.003;
 
-            ctx.clearRect(0, 0, w, h);
-            ctx.strokeStyle = '#333';
-            ctx.lineWidth = 4;
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.scale(scale, scale);
+            ctx.strokeStyle = 'rgba(100, 100, 100, 0.35)';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([8, 6]);
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
-            const cx = w * 0.5;
-            const cy = h * 0.5;
-
-            if (SketchGame.selectedOutline === 'fish') {
-                const scale = Math.min(w, h) * 0.003;
-                ctx.save();
-                ctx.translate(cx, cy);
-                ctx.scale(scale, scale);
-                ctx.beginPath();
-                ctx.ellipse(0, 0, 80, 50, 0, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(70, -10);
-                ctx.lineTo(110, -40);
-                ctx.lineTo(110, 40);
-                ctx.lineTo(70, 10);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.arc(-35, -10, 10, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(-15, -45);
-                ctx.quadraticCurveTo(0, -80, 25, -48);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(0, 45);
-                ctx.quadraticCurveTo(15, 70, 30, 45);
-                ctx.stroke();
-                ctx.restore();
-            } else if (SketchGame.selectedOutline === 'car') {
-                ctx.beginPath();
-                ctx.rect(cx - 80, cy - 20, 160, 40);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.arc(cx - 50, cy + 25, 12, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.arc(cx + 50, cy + 25, 12, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.rect(cx - 60, cy - 45, 120, 30);
-                ctx.stroke();
-            } else if (SketchGame.selectedOutline === 'house') {
-                ctx.beginPath();
-                ctx.moveTo(cx - 70, cy + 50);
-                ctx.lineTo(cx, cy - 50);
-                ctx.lineTo(cx + 70, cy + 50);
-                ctx.closePath();
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.rect(cx - 60, cy - 20, 120, 70);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.rect(cx - 25, cy, 50, 50);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.arc(cx + 45, cy + 20, 10, 0, Math.PI * 2);
-                ctx.stroke();
-            } else if (SketchGame.selectedOutline === 'butterfly') {
-                ctx.beginPath();
-                ctx.ellipse(cx - 40, cy - 20, 35, 45, -0.3, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.ellipse(cx + 40, cy - 20, 35, 45, 0.3, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.ellipse(cx - 40, cy + 20, 35, 45, 0.3, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.ellipse(cx + 40, cy + 20, 35, 45, -0.3, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(cx, cy - 50);
-                ctx.lineTo(cx, cy + 50);
-                ctx.stroke();
+            switch (CanvasGame.currentShape) {
+                case 'fish':
+                    drawFishOutline(ctx);
+                    break;
+                case 'car':
+                    drawCarOutline(ctx);
+                    break;
+                case 'house':
+                    drawHouseOutline(ctx);
+                    break;
+                case 'butterfly':
+                    drawButterflyOutline(ctx);
+                    break;
+                default:
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 60, 0, Math.PI * 2);
+                    ctx.stroke();
             }
+
+            ctx.restore();
         }
 
-        function getSketchPos(e) {
-            const rect = SketchGame.drawCanvas.getBoundingClientRect();
-            return {
-                x: e.clientX - rect.left,
-                y: e.clientY - rect.top
+        function drawFishOutline(ctx) {
+            // Body
+            ctx.beginPath();
+            ctx.ellipse(0, 0, 80, 50, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            // Tail
+            ctx.beginPath();
+            ctx.moveTo(-70, 0);
+            ctx.lineTo(-120, -40);
+            ctx.lineTo(-120, 40);
+            ctx.closePath();
+            ctx.stroke();
+            // Eye
+            ctx.beginPath();
+            ctx.arc(35, -12, 10, 0, Math.PI * 2);
+            ctx.stroke();
+            // Pupil
+            ctx.beginPath();
+            ctx.arc(38, -12, 4, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(100,100,100,0.25)';
+            ctx.fill();
+            // Mouth
+            ctx.beginPath();
+            ctx.arc(60, 8, 8, 0.2, 1.2);
+            ctx.stroke();
+            // Dorsal fin
+            ctx.beginPath();
+            ctx.moveTo(-10, -48);
+            ctx.quadraticCurveTo(10, -85, 40, -48);
+            ctx.stroke();
+            // Belly fin
+            ctx.beginPath();
+            ctx.moveTo(0, 48);
+            ctx.quadraticCurveTo(15, 72, 30, 48);
+            ctx.stroke();
+            // Scale lines
+            ctx.beginPath();
+            ctx.arc(-10, 0, 30, -0.5, 0.5);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(20, 0, 25, -0.5, 0.5);
+            ctx.stroke();
+        }
+
+        function drawCarOutline(ctx) {
+            // Body
+            ctx.beginPath();
+            ctx.moveTo(-90, 10);
+            ctx.lineTo(-90, -10);
+            ctx.quadraticCurveTo(-90, -30, -70, -30);
+            ctx.lineTo(-40, -30);
+            ctx.lineTo(-25, -65);
+            ctx.lineTo(40, -65);
+            ctx.lineTo(60, -30);
+            ctx.lineTo(80, -30);
+            ctx.quadraticCurveTo(95, -30, 95, -10);
+            ctx.lineTo(95, 10);
+            ctx.quadraticCurveTo(95, 25, 80, 25);
+            ctx.lineTo(-75, 25);
+            ctx.quadraticCurveTo(-90, 25, -90, 10);
+            ctx.closePath();
+            ctx.stroke();
+            // Windows
+            ctx.beginPath();
+            ctx.moveTo(-20, -58);
+            ctx.lineTo(-35, -35);
+            ctx.lineTo(0, -35);
+            ctx.closePath();
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(5, -35);
+            ctx.lineTo(5, -58);
+            ctx.lineTo(35, -58);
+            ctx.lineTo(50, -35);
+            ctx.closePath();
+            ctx.stroke();
+            // Wheels
+            ctx.beginPath();
+            ctx.arc(-50, 25, 18, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(-50, 25, 8, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(55, 25, 18, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(55, 25, 8, 0, Math.PI * 2);
+            ctx.stroke();
+            // Headlight
+            ctx.beginPath();
+            ctx.ellipse(90, -10, 8, 12, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            // Taillight
+            ctx.beginPath();
+            ctx.ellipse(-85, -10, 6, 10, 0, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+
+        function drawHouseOutline(ctx) {
+            // Roof
+            ctx.beginPath();
+            ctx.moveTo(0, -90);
+            ctx.lineTo(-90, -20);
+            ctx.lineTo(90, -20);
+            ctx.closePath();
+            ctx.stroke();
+            // Walls
+            ctx.beginPath();
+            ctx.rect(-70, -20, 140, 100);
+            ctx.stroke();
+            // Door
+            ctx.beginPath();
+            ctx.rect(-15, 25, 30, 55);
+            ctx.stroke();
+            // Door knob
+            ctx.beginPath();
+            ctx.arc(10, 55, 3, 0, Math.PI * 2);
+            ctx.stroke();
+            // Left window
+            ctx.beginPath();
+            ctx.rect(-58, 0, 30, 30);
+            ctx.stroke();
+            ctx.moveTo(-43, 0);
+            ctx.lineTo(-43, 30);
+            ctx.stroke();
+            ctx.moveTo(-58, 15);
+            ctx.lineTo(-28, 15);
+            ctx.stroke();
+            // Right window
+            ctx.beginPath();
+            ctx.rect(28, 0, 30, 30);
+            ctx.stroke();
+            ctx.moveTo(43, 0);
+            ctx.lineTo(43, 30);
+            ctx.stroke();
+            ctx.moveTo(28, 15);
+            ctx.lineTo(58, 15);
+            ctx.stroke();
+            // Chimney
+            ctx.beginPath();
+            ctx.rect(40, -75, 20, 40);
+            ctx.stroke();
+        }
+
+        function drawButterflyOutline(ctx) {
+            // Upper left wing
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.bezierCurveTo(-40, -80, -120, -60, -70, -10);
+            ctx.bezierCurveTo(-110, -20, -100, 30, -50, 20);
+            ctx.bezierCurveTo(-30, 50, -20, 60, 0, 30);
+            ctx.stroke();
+            // Upper right wing
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.bezierCurveTo(40, -80, 120, -60, 70, -10);
+            ctx.bezierCurveTo(110, -20, 100, 30, 50, 20);
+            ctx.bezierCurveTo(30, 50, 20, 60, 0, 30);
+            ctx.stroke();
+            // Wing patterns (circles)
+            ctx.beginPath();
+            ctx.arc(-55, -25, 15, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(55, -25, 15, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(-45, 15, 10, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(45, 15, 10, 0, Math.PI * 2);
+            ctx.stroke();
+            // Body
+            ctx.beginPath();
+            ctx.ellipse(0, 10, 6, 30, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            // Head
+            ctx.beginPath();
+            ctx.arc(0, -22, 8, 0, Math.PI * 2);
+            ctx.stroke();
+            // Antennae
+            ctx.beginPath();
+            ctx.moveTo(-3, -28);
+            ctx.quadraticCurveTo(-20, -55, -25, -50);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(3, -28);
+            ctx.quadraticCurveTo(20, -55, 25, -50);
+            ctx.stroke();
+            // Antenna dots
+            ctx.beginPath();
+            ctx.arc(-25, -50, 4, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(100,100,100,0.25)';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(25, -50, 4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function setupDrawing(canvas) {
+            let isDrawing = false;
+            let currentColor = '#FF1744';
+
+            canvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                isDrawing = true;
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches[0];
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+                const ctx = CanvasGame.canvasCtx.draw;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+            });
+
+            canvas.addEventListener('touchmove', (e) => {
+                if (!isDrawing) return;
+                e.preventDefault();
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches[0];
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+                const ctx = CanvasGame.canvasCtx.draw;
+                ctx.strokeStyle = currentColor;
+                ctx.lineWidth = 6;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            });
+
+            canvas.addEventListener('touchend', () => {
+                isDrawing = false;
+            });
+
+            canvas.addEventListener('mousedown', (e) => {
+                isDrawing = true;
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const ctx = CanvasGame.canvasCtx.draw;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+            });
+
+            canvas.addEventListener('mousemove', (e) => {
+                if (!isDrawing) return;
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const ctx = CanvasGame.canvasCtx.draw;
+                ctx.strokeStyle = currentColor;
+                ctx.lineWidth = 6;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                isDrawing = false;
+            });
+
+            canvas.addEventListener('mouseleave', () => {
+                isDrawing = false;
+            });
+
+            window.selectColor = (color, btn) => {
+                currentColor = color;
+                document.querySelectorAll('.sketch-color-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
             };
         }
 
-        function sketchStart(e) {
-            SketchGame.drawing = true;
-            const pos = getSketchPos(e);
-            SketchGame.lastX = pos.x;
-            SketchGame.lastY = pos.y;
-            SketchGame.drawCtx.beginPath();
-            SketchGame.drawCtx.arc(pos.x, pos.y, SketchGame.brushSize / 2, 0, Math.PI * 2);
-            SketchGame.drawCtx.fillStyle = SketchGame.currentColor;
-            SketchGame.drawCtx.fill();
+        function clearCanvas() {
+            const ctx = CanvasGame.canvasCtx.draw;
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         }
 
-        function sketchMove(e) {
-            if (!SketchGame.drawing) return;
-            const pos = getSketchPos(e);
-            const ctx = SketchGame.drawCtx;
-            ctx.strokeStyle = SketchGame.currentColor;
-            ctx.lineWidth = SketchGame.brushSize;
-            ctx.beginPath();
-            ctx.moveTo(SketchGame.lastX, SketchGame.lastY);
-            ctx.lineTo(pos.x, pos.y);
-            ctx.stroke();
-            SketchGame.lastX = pos.x;
-            SketchGame.lastY = pos.y;
-        }
-
-        function sketchEnd() {
-            SketchGame.drawing = false;
-        }
-
-        function sketchTouchStart(e) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            sketchStart({ clientX: touch.clientX, clientY: touch.clientY });
-        }
-
-        function sketchTouchMove(e) {
-            e.preventDefault();
-            const touch = e.touches[0];
-            sketchMove({ clientX: touch.clientX, clientY: touch.clientY });
-        }
-
-        function sketchTouchEnd(e) {
-            e.preventDefault();
-            sketchEnd();
-        }
-
-        function selectSketchColor(hex, btn) {
-            SketchGame.currentColor = hex;
-            document.querySelectorAll('.sketch-color-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        }
-
-        function selectSketchBrush(size, btn) {
-            SketchGame.brushSize = size;
-            document.querySelectorAll('.sketch-brush-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        }
-
-        function clearSketchCanvas() {
-            if (!SketchGame.drawCtx) return;
-            const c = SketchGame.drawCanvas;
-            const dpr = window.devicePixelRatio || 1;
-            SketchGame.drawCtx.clearRect(0, 0, c.width / dpr, c.height / dpr);
-        }
-
-        function sendToAnimation() {
-            if (!SketchGame.drawCanvas) return;
-
-            const dpr = window.devicePixelRatio || 1;
-            const w = SketchGame.drawCanvas.width;
-            const h = SketchGame.drawCanvas.height;
-
-            const mergeCanvas = document.createElement('canvas');
-            mergeCanvas.width = w;
-            mergeCanvas.height = h;
-            const mergeCtx = mergeCanvas.getContext('2d');
-            mergeCtx.drawImage(SketchGame.outlineCanvas, 0, 0);
-            mergeCtx.drawImage(SketchGame.drawCanvas, 0, 0);
-
-            const imgData = mergeCtx.getImageData(0, 0, w, h);
-            let minX = w, minY = h, maxX = 0, maxY = 0;
-            for (let y = 0; y < h; y++) {
-                for (let x = 0; x < w; x++) {
-                    const a = imgData.data[(y * w + x) * 4 + 3];
-                    if (a > 10) {
-                        if (x < minX) minX = x;
-                        if (x > maxX) maxX = x;
-                        if (y < minY) minY = y;
-                        if (y > maxY) maxY = y;
-                    }
-                }
-            }
-
-            const pad = 10;
-            minX = Math.max(0, minX - pad);
-            minY = Math.max(0, minY - pad);
-            maxX = Math.min(w, maxX + pad);
-            maxY = Math.min(h, maxY + pad);
-
-            const cropW = maxX - minX;
-            const cropH = maxY - minY;
-
-            if (cropW < 10 || cropH < 10) {
-                return;
-            }
-
-            const cropCanvas = document.createElement('canvas');
-            cropCanvas.width = cropW;
-            cropCanvas.height = cropH;
-            cropCanvas.getContext('2d').drawImage(mergeCanvas, minX, minY, cropW, cropH, 0, 0, cropW, cropH);
-
-            const drawingDataURL = cropCanvas.toDataURL('image/png');
-
-            SketchGame.mode = 'animation';
-            buildAnimationScreen(drawingDataURL, cropW / dpr, cropH / dpr);
-            playMagicSound();
-        }
-
-        function buildAnimationScreen(drawingURL, drawW, drawH) {
+        function startAquarium() {
             const area = document.getElementById('canvas-area');
             area.innerHTML = '';
 
-            const screen = document.createElement('div');
-            screen.className = 'aquarium-screen';
-            screen.id = 'aquarium-screen';
+            const aquarium = document.createElement('div');
+            aquarium.className = 'aquarium-screen';
 
             const bg = document.createElement('div');
             bg.className = 'aquarium-bg';
-            screen.appendChild(bg);
+            aquarium.appendChild(bg);
 
-            const floor = document.createElement('div');
-            floor.className = 'aquarium-floor';
-            screen.appendChild(floor);
+            const bubblesContainer = document.createElement('div');
+            bubblesContainer.className = 'aquarium-bubbles';
+            for (let i = 0; i < 8; i++) {
+                const bubble = document.createElement('div');
+                bubble.className = 'aquarium-bubble';
+                const size = 8 + Math.random() * 20;
+                bubble.style.width = size + 'px';
+                bubble.style.height = size + 'px';
+                bubble.style.left = Math.random() * 100 + '%';
+                bubble.style.animationDelay = Math.random() * 2 + 's';
+                bubble.style.animationDuration = (3 + Math.random() * 3) + 's';
+                bubblesContainer.appendChild(bubble);
+            }
+            aquarium.appendChild(bubblesContainer);
 
-            const maxH = 120;
-            const displayH = Math.min(maxH, drawH * 0.6);
-            const displayW = drawW * (displayH / drawH);
+            const wave = document.createElement('div');
+            wave.className = 'aquarium-wave';
+            aquarium.appendChild(wave);
 
-            for (let i = 0; i < 3; i++) {
-                const img = document.createElement('img');
-                img.src = drawingURL;
-                img.className = 'aquarium-drawing';
-                img.style.width = displayW + 'px';
-                img.style.height = displayH + 'px';
-                img.style.top = (15 + i * 25 + Math.random() * 10) + '%';
-                img.style.animationDuration = (6 + i * 3 + Math.random() * 3) + 's';
-                img.style.animationDelay = (i * 2.5) + 's';
-                img.draggable = false;
-                screen.appendChild(img);
+            const decorations = document.createElement('div');
+            decorations.className = 'aquarium-decorations';
+            const coralColors = ['#FF7043', '#FF5722', '#FF6D00', '#FFA726', '#FFB74D'];
+            for (let i = 0; i < 5; i++) {
+                const coral = document.createElement('div');
+                coral.className = 'aquarium-coral';
+                coral.style.background = coralColors[i];
+                decorations.appendChild(coral);
+            }
+            aquarium.appendChild(decorations);
+
+            const canvas = CanvasGame.canvases.draw;
+            if (canvas) {
+                const drawing = document.createElement('div');
+                drawing.className = 'aquarium-drawing';
+                const shapeEmojis = { fish: '🐟', car: '🚗', house: '🏠', butterfly: '🦋' };
+                drawing.textContent = shapeEmojis[CanvasGame.currentShape] || '🎨';
+                drawing.style.top = Math.random() * 50 + 15 + '%';
+                drawing.style.left = '-120px';
+                aquarium.appendChild(drawing);
+
+                // Bidirectional swimming animation
+                let posX = -120;
+                let speed = 1.2 + Math.random() * 0.8;
+                let goingRight = true;
+                drawing.style.transform = 'scaleX(1)';
+
+                function animateSwim() {
+                    if (!CanvasGame.aquariumAnimId) return;
+                    const maxX = window.innerWidth + 60;
+                    const minX = -120;
+
+                    if (goingRight) {
+                        posX += speed;
+                        if (posX > maxX) {
+                            goingRight = false;
+                            drawing.style.transform = 'scaleX(-1)';
+                            // Vary vertical position slightly
+                            const newTop = Math.random() * 50 + 15;
+                            drawing.style.top = newTop + '%';
+                        }
+                    } else {
+                        posX -= speed;
+                        if (posX < minX) {
+                            goingRight = true;
+                            drawing.style.transform = 'scaleX(1)';
+                            const newTop = Math.random() * 50 + 15;
+                            drawing.style.top = newTop + '%';
+                        }
+                    }
+
+                    // Gentle bobbing motion
+                    const bob = Math.sin(Date.now() / 600) * 5;
+                    drawing.style.left = posX + 'px';
+                    drawing.style.marginTop = bob + 'px';
+
+                    CanvasGame.aquariumAnimId = requestAnimationFrame(animateSwim);
+                }
+
+                CanvasGame.aquariumAnimId = requestAnimationFrame(animateSwim);
             }
 
             const redrawBtn = document.createElement('button');
             redrawBtn.className = 'aquarium-redraw-btn';
-            redrawBtn.textContent = '다시 그리기 🔄';
-            redrawBtn.addEventListener('click', () => {
-                SketchGame.mode = 'draw';
-                buildSketchDrawScreen();
-            });
-            redrawBtn.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                SketchGame.mode = 'draw';
-                buildSketchDrawScreen();
-            });
-            screen.appendChild(redrawBtn);
+            redrawBtn.textContent = '다시 그리기';
+            redrawBtn.onclick = initCanvasGame;
+            aquarium.appendChild(redrawBtn);
 
-            area.appendChild(screen);
-        }
-
-        function playMagicSound() {
-            if (!Settings.soundEnabled) return;
-            const ctx = getAudioContext();
-            if (!ctx) return;
-            const now = ctx.currentTime;
-
-            const notes = [523, 659, 784, 1047, 1319, 1568];
-            notes.forEach((freq, i) => {
-                const t = now + i * 0.07;
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(freq, t);
-                gain.gain.setValueAtTime(0, t);
-                gain.gain.linearRampToValueAtTime(0.2, t + 0.02);
-                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start(t);
-                osc.stop(t + 0.4);
-            });
+            area.appendChild(aquarium);
         }
 
         function cleanupCanvasGame() {
-            SketchGame.drawing = false;
-            SketchGame.drawCanvas = null;
-            SketchGame.drawCtx = null;
-            SketchGame.outlineCanvas = null;
-            SketchGame.outlineCtx = null;
-            SketchGame.mode = 'draw';
+            CanvasGame.running = false;
+            CanvasGame.currentShape = null;
+
+            if (CanvasGame.aquariumAnimId) {
+                cancelAnimationFrame(CanvasGame.aquariumAnimId);
+                CanvasGame.aquariumAnimId = null;
+            }
+
+            window.removeEventListener('resize', () => resizeCanvases);
+
+            const homeBtn = document.getElementById('home-btn-3');
+            if (homeBtn) homeBtn.classList.remove('mini-pause');
 
             const area = document.getElementById('canvas-area');
             if (area) area.innerHTML = '';
         }
 
-        /* ===== 초기화 ===== */
-        document.addEventListener('DOMContentLoaded', () => {
-            buildMenu();
-        });
-
-        if ('standalone' in navigator && navigator.standalone) {
-            document.documentElement.style.height = '100vh';
-        }
+        /* ===== Initialize ===== */
+        buildMenu();
     </script>
 </body>
 </html>
