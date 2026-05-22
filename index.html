@@ -1266,8 +1266,9 @@
             const x = Math.random() * (areaRect.width - size);
             const y = areaRect.height + size;
 
-            bubble.style.left = x + 'px';
-            bubble.style.top = y + 'px';
+            bubble.style.left = '0px';
+            bubble.style.top = '0px';
+            bubble.style.transform = `translate3d(${x}px, ${y}px, 0)`;
 
             const bubbleData = {
                 el: bubble,
