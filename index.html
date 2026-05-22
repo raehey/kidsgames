@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>KidsArcade 3in1 - 아빠표 통합 놀이 앱</title>
-    <!-- Updated: 2026-05-22 | Changes: Game1 bigger bubbles/particles/outlines/score, Game3 bidirectional movement + canvas path outlines, UI polish -->
+    <!-- Updated: 2026-05-22 Run5 | Changes: Fixed home button size bug, improved animal sounds, fixed sketch result to show actual drawing instead of emoji, fixed head direction in aquarium -->
     <style>
         /* ===== 전역 리셋 & 기본 설정 ===== */
         * {
@@ -42,6 +42,21 @@
 
         .screen.active {
             display: flex;
+            animation: screenFadeIn 0.4s ease-out;
+        }
+
+        @keyframes screenFadeIn {
+            0% { opacity: 0; transform: scale(0.97); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .screen.exit-anim {
+            animation: screenFadeOut 0.25s ease-in forwards;
+        }
+
+        @keyframes screenFadeOut {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.97); }
         }
 
         /* ===== 메인 메뉴 화면 ===== */
@@ -57,14 +72,39 @@
             100% { background-position: 0% 50%; }
         }
 
+        /* Floating background decorations */
+        .menu-floaters {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .menu-floater {
+            position: absolute;
+            opacity: 0.15;
+            animation: menuFloat 8s ease-in-out infinite;
+            will-change: transform;
+        }
+
+        @keyframes menuFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-15px) rotate(5deg); }
+            50% { transform: translateY(-5px) rotate(-3deg); }
+            75% { transform: translateY(-20px) rotate(2deg); }
+        }
+
         .menu-title {
             font-size: clamp(1.8rem, 6vw, 3.5rem);
             font-weight: 900;
             color: #FF6B6B;
-            text-shadow: 2px 2px 0px #FFE0E0;
+            text-shadow: 2px 2px 0px #FFE0E0, 0 4px 12px rgba(255,107,107,0.15);
             margin-bottom: 5vh;
             text-align: center;
             line-height: 1.3;
+            z-index: 1;
+            position: relative;
         }
 
         .menu-title .emoji {
@@ -198,6 +238,8 @@
             width: 90%;
             max-width: 900px;
             padding: 10px;
+            z-index: 1;
+            position: relative;
         }
 
         .game-card {
@@ -221,6 +263,26 @@
         .game-card:active {
             transform: scale(0.95);
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .game-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: radial-gradient(circle at var(--tap-x, 50%) var(--tap-y, 50%), rgba(255,255,255,0.6), transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .game-card:active::after {
+            opacity: 1;
+        }
+
+        .game-card {
+            position: relative;
+            overflow: hidden;
         }
 
         .game-card:nth-child(1) { border-color: #FFCDD2; background: linear-gradient(145deg, #FFF, #FFEBEE); }
@@ -278,19 +340,6 @@
 
         .home-btn:active {
             transform: scale(0.9);
-        }
-
-        .home-btn.mini-pause {
-            width: clamp(32px, 7vw, 44px);
-            height: clamp(32px, 7vw, 44px);
-            opacity: 0.4;
-            font-size: clamp(0.9rem, 2.5vw, 1.2rem);
-            border: 2px solid #ccc;
-            background: rgba(255,255,255,0.5);
-        }
-
-        .home-btn.mini-pause:active {
-            opacity: 1;
         }
 
         /* ===== 게임 영역 ===== */
@@ -637,16 +686,17 @@
             background: white;
             border: none;
             border-radius: clamp(16px, 3vw, 24px);
-            padding: clamp(12px, 2.5vw, 20px);
+            padding: clamp(8px, 1.5vw, 14px);
             cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: clamp(8px, 1.5vw, 12px);
+            gap: clamp(4px, 1vw, 8px);
             transition: all 0.2s;
             will-change: transform, box-shadow;
             min-height: 48px;
             min-width: 48px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
         }
 
         .animal-card:active {
@@ -674,22 +724,21 @@
         }
 
         .animal-photo-circle {
-            width: clamp(100px, 30vw, 160px);
-            height: clamp(100px, 30vw, 160px);
+            width: clamp(140px, 42vw, 220px);
+            height: clamp(140px, 42vw, 220px);
             border-radius: 20px;
             overflow: hidden;
-            background: #F5F5F5;
+            background: transparent;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 4px;
         }
 
-        .animal-photo-circle img {
+        .animal-photo-circle svg {
             width: 100%;
             height: 100%;
-            object-fit: cover;
         }
 
         .animal-name {
@@ -1052,6 +1101,57 @@
             transform: scale(0.95);
         }
 
+        /* ===== Onomatopoeia text display ===== */
+        .onomatopoeia-float {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            font-size: clamp(3rem, 12vw, 5rem);
+            font-weight: 900;
+            color: #FF6D00;
+            text-shadow: 3px 3px 0px rgba(255,109,0,0.3), 0 0 20px rgba(255,109,0,0.2);
+            pointer-events: none;
+            z-index: 180;
+            animation: onomatopoeiaShow 1.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            letter-spacing: 4px;
+        }
+
+        @keyframes onomatopoeiaShow {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(-8deg); opacity: 0; }
+            20% { transform: translate(-50%, -50%) scale(1.3) rotate(3deg); opacity: 1; }
+            40% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
+            80% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
+            100% { transform: translate(-50%, -60%) scale(0.8) rotate(0deg); opacity: 0; }
+        }
+
+        /* ===== Bubble combo display ===== */
+        .bubble-combo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-weight: 900;
+            color: #FF6D00;
+            text-shadow: 2px 2px 0px rgba(255,109,0,0.3);
+            pointer-events: none;
+            z-index: 200;
+            animation: comboPopIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .bubble-combo.x3 { color: #FFD600; }
+        .bubble-combo.x5 { color: #FF3D00; font-size: clamp(3rem, 10vw, 5rem); }
+        .bubble-combo.x8 { color: #AA00FF; font-size: clamp(3.5rem, 11vw, 5.5rem); }
+
+        @keyframes comboPopIn {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(-10deg); opacity: 0; }
+            30% { transform: translate(-50%, -50%) scale(1.4) rotate(5deg); opacity: 1; }
+            50% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
+            85% { opacity: 1; }
+            100% { transform: translate(-50%, -70%) scale(0.6); opacity: 0; }
+        }
+
         /* ===== 레이아웃 개선 ===== */
         @media (max-width: 480px) {
             .animal-cards {
@@ -1067,6 +1167,7 @@
 
     <!-- HTML -->
     <div id="menu-screen" class="screen active">
+        <div class="menu-floaters" id="menu-floaters"></div>
         <button class="settings-btn" onclick="openSettings()">⚙️</button>
         <div class="menu-title">
             <span class="emoji">🎮</span>
@@ -1236,28 +1337,68 @@
                 `;
                 grid.appendChild(card);
             });
+
+            // Build floating menu decorations
+            buildMenuFloaters();
+        }
+
+        function buildMenuFloaters() {
+            const container = document.getElementById('menu-floaters');
+            if (!container) return;
+            container.innerHTML = '';
+
+            const decorEmojis = ['⭐', '🌈', '🎈', '🎵', '💫', '🌸', '🦋', '☁️', '🍭', '🎀'];
+            for (let i = 0; i < 12; i++) {
+                const floater = document.createElement('div');
+                floater.className = 'menu-floater';
+                floater.textContent = decorEmojis[i % decorEmojis.length];
+                floater.style.fontSize = (20 + Math.random() * 30) + 'px';
+                floater.style.left = (Math.random() * 90 + 5) + '%';
+                floater.style.top = (Math.random() * 80 + 10) + '%';
+                floater.style.animationDelay = (Math.random() * 6) + 's';
+                floater.style.animationDuration = (6 + Math.random() * 6) + 's';
+                container.appendChild(floater);
+            }
         }
 
         function openGame(game) {
-            document.getElementById('menu-screen').classList.remove('active');
-            const screen = document.getElementById(game.screenId);
-            screen.classList.add('active', 'fade-in');
-            currentGame = game;
+            const menuScreen = document.getElementById('menu-screen');
+            menuScreen.classList.add('exit-anim');
 
-            if (game.onEnter && typeof game.onEnter === 'function') {
-                game.onEnter();
-            }
+            setTimeout(() => {
+                menuScreen.classList.remove('active', 'exit-anim');
+                const screen = document.getElementById(game.screenId);
+                screen.classList.add('active');
+                currentGame = game;
+
+                if (game.onEnter && typeof game.onEnter === 'function') {
+                    game.onEnter();
+                }
+            }, 250);
         }
 
         function goHome() {
             if (currentGame && currentGame.onExit && typeof currentGame.onExit === 'function') {
                 currentGame.onExit();
             }
-            document.querySelectorAll('.game-screen').forEach(screen => {
-                screen.classList.remove('active', 'fade-in');
-            });
-            document.getElementById('menu-screen').classList.add('active');
-            currentGame = null;
+
+            const activeScreen = document.querySelector('.game-screen.active');
+            if (activeScreen) {
+                activeScreen.classList.add('exit-anim');
+                setTimeout(() => {
+                    document.querySelectorAll('.game-screen').forEach(screen => {
+                        screen.classList.remove('active', 'exit-anim');
+                    });
+                    document.getElementById('menu-screen').classList.add('active');
+                    currentGame = null;
+                }, 250);
+            } else {
+                document.querySelectorAll('.game-screen').forEach(screen => {
+                    screen.classList.remove('active');
+                });
+                document.getElementById('menu-screen').classList.add('active');
+                currentGame = null;
+            }
         }
 
         /* ===== GAME 1: 비누방울 팡팡 ===== */
@@ -1269,6 +1410,9 @@
             animFrameId: null,
             spawnTimer: null,
             running: false,
+            comboCount: 0,
+            lastPopTime: 0,
+            comboTimeout: null,
 
             colors: [
                 '#FF1744', '#FF6D00', '#FFD600', '#00C853', '#2979FF',
@@ -1292,8 +1436,8 @@
                 const s = this.stage;
                 const speedMult = 1 + (s - 1) * 0.5; // x1, x1.5, x2, x2.5 ...
                 return {
-                    minSize: 100,
-                    maxSize: 170,
+                    minSize: 120,
+                    maxSize: 200,
                     minSpeed: Math.min(0.7 * speedMult, 4.0),
                     maxSpeed: Math.min(1.3 * speedMult, 6.0),
                     spawnInterval: Math.max(350, 1100 - s * 80),
@@ -1329,15 +1473,14 @@
             const overlay = document.getElementById('bubble-start-overlay');
             if (overlay) overlay.remove();
 
-            // Minimize home button during gameplay
-            const homeBtn = document.getElementById('home-btn');
-            if (homeBtn) homeBtn.classList.add('mini-pause');
 
             BubbleGame.score = 0;
             BubbleGame.stage = 1;
             BubbleGame.stageScore = 0;
             BubbleGame.bubbles = [];
             BubbleGame.running = true;
+            BubbleGame.comboCount = 0;
+            BubbleGame.lastPopTime = 0;
             updateBubbleScore();
             updateBubbleStage();
 
@@ -1453,6 +1596,24 @@
 
             BubbleGame.score++;
             BubbleGame.stageScore++;
+
+            // Combo tracking
+            const now = Date.now();
+            if (now - BubbleGame.lastPopTime < 800) {
+                BubbleGame.comboCount++;
+            } else {
+                BubbleGame.comboCount = 1;
+            }
+            BubbleGame.lastPopTime = now;
+
+            if (BubbleGame.comboTimeout) clearTimeout(BubbleGame.comboTimeout);
+            BubbleGame.comboTimeout = setTimeout(() => { BubbleGame.comboCount = 0; }, 1200);
+
+            // Show combo text at milestones
+            if (BubbleGame.comboCount === 3 || BubbleGame.comboCount === 5 || BubbleGame.comboCount === 8 || BubbleGame.comboCount === 12) {
+                showBubbleCombo(BubbleGame.comboCount);
+            }
+
             updateBubbleScore();
             playPopSound();
             createPopParticles(bubbleData.x + bubbleData.size / 2, bubbleData.y + bubbleData.size / 2, bubbleData.color);
@@ -1469,6 +1630,54 @@
             }, 350);
 
             checkStageUp();
+        }
+
+        function showBubbleCombo(count) {
+            const area = document.getElementById('bubble-area');
+            if (!area) return;
+
+            // Remove previous combo text
+            const old = area.querySelector('.bubble-combo');
+            if (old) old.remove();
+
+            const comboEl = document.createElement('div');
+            const comboTexts = {
+                3: '좋아요! 🔥',
+                5: '대단해! ⚡',
+                8: '최고! 🌟',
+                12: '천재! 👑'
+            };
+
+            comboEl.className = 'bubble-combo';
+            if (count >= 8) comboEl.classList.add('x8');
+            else if (count >= 5) comboEl.classList.add('x5');
+            else comboEl.classList.add('x3');
+
+            comboEl.textContent = comboTexts[count] || `${count}콤보!`;
+            area.appendChild(comboEl);
+            setTimeout(() => comboEl.remove(), 900);
+
+            // Play combo sound
+            if (Settings.soundEnabled) {
+                const ctx = getAudioContext();
+                if (ctx) {
+                    const t = ctx.currentTime;
+                    const baseFreq = 600 + count * 50;
+                    for (let i = 0; i < 3; i++) {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(baseFreq + i * 200, t + i * 0.06);
+                        gain.gain.setValueAtTime(0, t + i * 0.06);
+                        gain.gain.linearRampToValueAtTime(0.2, t + i * 0.06 + 0.02);
+                        gain.gain.exponentialRampToValueAtTime(0.001, t + i * 0.06 + 0.2);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(t + i * 0.06);
+                        osc.stop(t + i * 0.06 + 0.2);
+                    }
+                }
+            }
         }
 
         function checkStageUp() {
@@ -1658,11 +1867,15 @@
                 BubbleGame.animFrameId = null;
             }
 
+            if (BubbleGame.comboTimeout) {
+                clearTimeout(BubbleGame.comboTimeout);
+                BubbleGame.comboTimeout = null;
+            }
+
             BubbleGame.bubbles.forEach(b => b.el.remove());
             BubbleGame.bubbles = [];
 
             const homeBtn = document.getElementById('home-btn');
-            if (homeBtn) homeBtn.classList.remove('mini-pause');
 
             const area = document.getElementById('bubble-area');
             if (area) area.innerHTML = '';
@@ -1697,22 +1910,261 @@
             getChoiceCount() { return Math.min(this.stage + 1, this.animals.length); }
         };
 
-        const ANIMAL_PHOTOS = {
-            dog:      'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=300&h=300&fit=crop&crop=face',
-            cat:      'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300&h=300&fit=crop&crop=face',
-            lion:     'https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=300&h=300&fit=crop&crop=face',
-            cow:      'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=300&h=300&fit=crop&crop=face',
-            chicken:  'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=300&h=300&fit=crop&crop=face',
-            duck:     'https://images.unsplash.com/photo-1459682687441-7761439a709d?w=300&h=300&fit=crop&crop=face',
-            sheep:    'https://images.unsplash.com/photo-1484557985045-edf25e08da73?w=300&h=300&fit=crop&crop=face',
-            pig:      'https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=300&h=300&fit=crop&crop=face',
-            horse:    'https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=300&h=300&fit=crop&crop=face',
-            elephant: 'https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?w=300&h=300&fit=crop&crop=face'
-        };
-
-        function getAnimalImage(id) {
-            const url = ANIMAL_PHOTOS[id] || '';
-            return `<img src="${url}" alt="${id}" loading="eager" draggable="false" crossorigin="anonymous">`;
+        function getAnimalSVG(id) {
+            const svgs = {
+                dog: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Brown dog face -->
+                    <circle cx="50" cy="55" r="35" fill="#8B5E3C"/>
+                    <circle cx="50" cy="55" r="30" fill="#C68E5B"/>
+                    <!-- Floppy ears -->
+                    <ellipse cx="22" cy="40" rx="14" ry="22" fill="#8B5E3C" transform="rotate(-15 22 40)"/>
+                    <ellipse cx="78" cy="40" rx="14" ry="22" fill="#8B5E3C" transform="rotate(15 78 40)"/>
+                    <!-- Eyes -->
+                    <circle cx="38" cy="48" r="6" fill="white"/>
+                    <circle cx="62" cy="48" r="6" fill="white"/>
+                    <circle cx="40" cy="49" r="3.5" fill="#2C1810"/>
+                    <circle cx="64" cy="49" r="3.5" fill="#2C1810"/>
+                    <circle cx="41" cy="47.5" r="1.2" fill="white"/>
+                    <circle cx="65" cy="47.5" r="1.2" fill="white"/>
+                    <!-- Nose -->
+                    <ellipse cx="50" cy="60" rx="7" ry="5" fill="#2C1810"/>
+                    <ellipse cx="50" cy="58.5" rx="3" ry="1.5" fill="#5C3A20" opacity="0.5"/>
+                    <!-- Mouth -->
+                    <path d="M50 65 Q44 72 40 68" fill="none" stroke="#2C1810" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M50 65 Q56 72 60 68" fill="none" stroke="#2C1810" stroke-width="1.5" stroke-linecap="round"/>
+                    <!-- Tongue -->
+                    <ellipse cx="50" cy="70" rx="5" ry="4" fill="#FF6B8A"/>
+                </svg>`,
+                cat: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Orange cat face -->
+                    <circle cx="50" cy="58" r="32" fill="#FF9F43"/>
+                    <!-- Pointy ears -->
+                    <polygon points="22,35 18,8 40,28" fill="#FF9F43"/>
+                    <polygon points="78,35 82,8 60,28" fill="#FF9F43"/>
+                    <polygon points="24,32 22,14 37,28" fill="#FFBE7B"/>
+                    <polygon points="76,32 78,14 63,28" fill="#FFBE7B"/>
+                    <!-- Eyes -->
+                    <ellipse cx="37" cy="52" rx="6" ry="7" fill="#90EE90"/>
+                    <ellipse cx="63" cy="52" rx="6" ry="7" fill="#90EE90"/>
+                    <ellipse cx="37" cy="52" rx="2.5" ry="6" fill="#1A1A1A"/>
+                    <ellipse cx="63" cy="52" rx="2.5" ry="6" fill="#1A1A1A"/>
+                    <circle cx="36" cy="49" r="1.5" fill="white"/>
+                    <circle cx="62" cy="49" r="1.5" fill="white"/>
+                    <!-- Nose -->
+                    <polygon points="50,60 47,63 53,63" fill="#FF6B8A"/>
+                    <!-- Mouth -->
+                    <path d="M50 63 Q44 68 40 65" fill="none" stroke="#CC6B00" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M50 63 Q56 68 60 65" fill="none" stroke="#CC6B00" stroke-width="1.5" stroke-linecap="round"/>
+                    <!-- Whiskers -->
+                    <line x1="12" y1="55" x2="32" y2="58" stroke="#CC6B00" stroke-width="1.2"/>
+                    <line x1="12" y1="62" x2="32" y2="62" stroke="#CC6B00" stroke-width="1.2"/>
+                    <line x1="68" y1="58" x2="88" y2="55" stroke="#CC6B00" stroke-width="1.2"/>
+                    <line x1="68" y1="62" x2="88" y2="62" stroke="#CC6B00" stroke-width="1.2"/>
+                </svg>`,
+                lion: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Mane -->
+                    <circle cx="50" cy="52" r="42" fill="#D4800E"/>
+                    <circle cx="50" cy="52" r="38" fill="#E8A020"/>
+                    <!-- Mane tufts -->
+                    <circle cx="20" cy="35" r="10" fill="#D4800E"/>
+                    <circle cx="80" cy="35" r="10" fill="#D4800E"/>
+                    <circle cx="15" cy="52" r="9" fill="#D4800E"/>
+                    <circle cx="85" cy="52" r="9" fill="#D4800E"/>
+                    <circle cx="25" cy="72" r="8" fill="#D4800E"/>
+                    <circle cx="75" cy="72" r="8" fill="#D4800E"/>
+                    <circle cx="35" cy="18" r="9" fill="#D4800E"/>
+                    <circle cx="65" cy="18" r="9" fill="#D4800E"/>
+                    <circle cx="50" cy="14" r="8" fill="#D4800E"/>
+                    <!-- Face -->
+                    <circle cx="50" cy="55" r="28" fill="#F5C242"/>
+                    <!-- Eyes -->
+                    <circle cx="40" cy="48" r="5" fill="white"/>
+                    <circle cx="60" cy="48" r="5" fill="white"/>
+                    <circle cx="41" cy="49" r="3" fill="#2C1810"/>
+                    <circle cx="61" cy="49" r="3" fill="#2C1810"/>
+                    <circle cx="42" cy="47.5" r="1" fill="white"/>
+                    <circle cx="62" cy="47.5" r="1" fill="white"/>
+                    <!-- Nose -->
+                    <ellipse cx="50" cy="58" rx="5" ry="3.5" fill="#2C1810"/>
+                    <!-- Mouth -->
+                    <path d="M50 61.5 Q44 67 40 64" fill="none" stroke="#8B5E3C" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M50 61.5 Q56 67 60 64" fill="none" stroke="#8B5E3C" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>`,
+                cow: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="55" r="33" fill="white"/>
+                    <!-- Spots -->
+                    <circle cx="35" cy="40" r="10" fill="#333"/>
+                    <circle cx="65" cy="45" r="8" fill="#333"/>
+                    <circle cx="55" cy="35" r="6" fill="#333"/>
+                    <!-- Horns -->
+                    <path d="M30 28 Q25 12 20 18" fill="none" stroke="#F5C242" stroke-width="4" stroke-linecap="round"/>
+                    <path d="M70 28 Q75 12 80 18" fill="none" stroke="#F5C242" stroke-width="4" stroke-linecap="round"/>
+                    <!-- Ears -->
+                    <ellipse cx="22" cy="38" rx="10" ry="7" fill="#FFB6C1" transform="rotate(-20 22 38)"/>
+                    <ellipse cx="78" cy="38" rx="10" ry="7" fill="#FFB6C1" transform="rotate(20 78 38)"/>
+                    <!-- Eyes -->
+                    <circle cx="38" cy="50" r="5" fill="white"/>
+                    <circle cx="62" cy="50" r="5" fill="white"/>
+                    <circle cx="39" cy="51" r="3" fill="#1A1A1A"/>
+                    <circle cx="63" cy="51" r="3" fill="#1A1A1A"/>
+                    <!-- Muzzle -->
+                    <ellipse cx="50" cy="68" rx="16" ry="11" fill="#FFB6C1"/>
+                    <!-- Nostrils -->
+                    <ellipse cx="44" cy="67" rx="3" ry="2.5" fill="#FF6B8A"/>
+                    <ellipse cx="56" cy="67" rx="3" ry="2.5" fill="#FF6B8A"/>
+                    <!-- Mouth -->
+                    <path d="M44 73 Q50 77 56 73" fill="none" stroke="#CC5577" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>`,
+                chicken: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Body-like feather puff -->
+                    <circle cx="50" cy="58" r="30" fill="#FFF3D4"/>
+                    <circle cx="50" cy="58" r="26" fill="#FFE4A0"/>
+                    <!-- Comb -->
+                    <circle cx="45" cy="22" r="6" fill="#FF3D3D"/>
+                    <circle cx="55" cy="20" r="7" fill="#FF3D3D"/>
+                    <circle cx="50" cy="16" r="6" fill="#FF3D3D"/>
+                    <!-- Head -->
+                    <circle cx="50" cy="38" r="20" fill="#FFE4A0"/>
+                    <!-- Eyes -->
+                    <circle cx="42" cy="36" r="4.5" fill="white"/>
+                    <circle cx="58" cy="36" r="4.5" fill="white"/>
+                    <circle cx="43" cy="37" r="2.5" fill="#1A1A1A"/>
+                    <circle cx="59" cy="37" r="2.5" fill="#1A1A1A"/>
+                    <!-- Beak -->
+                    <polygon points="50,42 44,48 56,48" fill="#FF9F00"/>
+                    <polygon points="50,48 44,48 47,52" fill="#E88A00"/>
+                    <!-- Wattle -->
+                    <ellipse cx="50" cy="54" rx="4" ry="6" fill="#FF3D3D"/>
+                    <!-- Wing hints -->
+                    <ellipse cx="28" cy="62" rx="8" ry="12" fill="#F5D480" transform="rotate(-10 28 62)"/>
+                    <ellipse cx="72" cy="62" rx="8" ry="12" fill="#F5D480" transform="rotate(10 72 62)"/>
+                </svg>`,
+                duck: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="58" r="30" fill="#FFF9C4"/>
+                    <circle cx="50" cy="58" r="26" fill="#FFEE58"/>
+                    <!-- Head -->
+                    <circle cx="50" cy="35" r="22" fill="#FFEE58"/>
+                    <!-- Eyes -->
+                    <circle cx="40" cy="32" r="5" fill="white"/>
+                    <circle cx="60" cy="32" r="5" fill="white"/>
+                    <circle cx="41" cy="33" r="3" fill="#1A1A1A"/>
+                    <circle cx="61" cy="33" r="3" fill="#1A1A1A"/>
+                    <circle cx="42" cy="31.5" r="1" fill="white"/>
+                    <circle cx="62" cy="31.5" r="1" fill="white"/>
+                    <!-- Beak -->
+                    <ellipse cx="50" cy="44" rx="14" ry="6" fill="#FF9800"/>
+                    <ellipse cx="50" cy="43" rx="13" ry="5" fill="#FFB74D"/>
+                    <line x1="38" y1="44" x2="62" y2="44" stroke="#E68900" stroke-width="1"/>
+                    <!-- Cheeks -->
+                    <circle cx="33" cy="38" r="5" fill="#FFCC80" opacity="0.5"/>
+                    <circle cx="67" cy="38" r="5" fill="#FFCC80" opacity="0.5"/>
+                    <!-- Wing hint -->
+                    <ellipse cx="28" cy="62" rx="7" ry="10" fill="#FDD835" transform="rotate(-10 28 62)"/>
+                    <ellipse cx="72" cy="62" rx="7" ry="10" fill="#FDD835" transform="rotate(10 72 62)"/>
+                </svg>`,
+                sheep: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Wool body -->
+                    <circle cx="35" cy="50" r="14" fill="white"/>
+                    <circle cx="65" cy="50" r="14" fill="white"/>
+                    <circle cx="50" cy="42" r="16" fill="white"/>
+                    <circle cx="35" cy="60" r="12" fill="white"/>
+                    <circle cx="65" cy="60" r="12" fill="white"/>
+                    <circle cx="50" cy="65" r="14" fill="white"/>
+                    <circle cx="42" cy="55" r="13" fill="white"/>
+                    <circle cx="58" cy="55" r="13" fill="white"/>
+                    <!-- Wool on top -->
+                    <circle cx="42" cy="30" r="8" fill="white"/>
+                    <circle cx="58" cy="30" r="8" fill="white"/>
+                    <circle cx="50" cy="26" r="9" fill="white"/>
+                    <!-- Face -->
+                    <ellipse cx="50" cy="48" rx="16" ry="18" fill="#555"/>
+                    <!-- Ears -->
+                    <ellipse cx="28" cy="40" rx="8" ry="5" fill="#555" transform="rotate(-25 28 40)"/>
+                    <ellipse cx="72" cy="40" rx="8" ry="5" fill="#555" transform="rotate(25 72 40)"/>
+                    <!-- Eyes -->
+                    <circle cx="43" cy="44" r="4" fill="white"/>
+                    <circle cx="57" cy="44" r="4" fill="white"/>
+                    <circle cx="44" cy="45" r="2.2" fill="#1A1A1A"/>
+                    <circle cx="58" cy="45" r="2.2" fill="#1A1A1A"/>
+                    <!-- Nose -->
+                    <ellipse cx="50" cy="54" rx="4" ry="2.5" fill="#333"/>
+                    <!-- Mouth -->
+                    <path d="M50 56.5 Q46 60 43 58" fill="none" stroke="#888" stroke-width="1.2" stroke-linecap="round"/>
+                    <path d="M50 56.5 Q54 60 57 58" fill="none" stroke="#888" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>`,
+                pig: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="55" r="33" fill="#FFB6C1"/>
+                    <!-- Ears -->
+                    <ellipse cx="27" cy="30" rx="14" ry="11" fill="#FF8DA1" transform="rotate(-20 27 30)"/>
+                    <ellipse cx="73" cy="30" rx="14" ry="11" fill="#FF8DA1" transform="rotate(20 73 30)"/>
+                    <ellipse cx="28" cy="31" rx="9" ry="7" fill="#FFB6C1" transform="rotate(-20 28 31)"/>
+                    <ellipse cx="72" cy="31" rx="9" ry="7" fill="#FFB6C1" transform="rotate(20 72 31)"/>
+                    <!-- Eyes -->
+                    <circle cx="38" cy="48" r="5" fill="white"/>
+                    <circle cx="62" cy="48" r="5" fill="white"/>
+                    <circle cx="39" cy="49" r="3" fill="#1A1A1A"/>
+                    <circle cx="63" cy="49" r="3" fill="#1A1A1A"/>
+                    <circle cx="40" cy="47.5" r="1" fill="white"/>
+                    <circle cx="64" cy="47.5" r="1" fill="white"/>
+                    <!-- Snout -->
+                    <ellipse cx="50" cy="62" rx="14" ry="10" fill="#FF8DA1"/>
+                    <ellipse cx="44" cy="62" rx="3.5" ry="3" fill="#E07080"/>
+                    <ellipse cx="56" cy="62" rx="3.5" ry="3" fill="#E07080"/>
+                    <!-- Mouth -->
+                    <path d="M44 70 Q50 75 56 70" fill="none" stroke="#D46A7A" stroke-width="1.5" stroke-linecap="round"/>
+                    <!-- Cheeks -->
+                    <circle cx="30" cy="58" r="7" fill="#FF8DA1" opacity="0.4"/>
+                    <circle cx="70" cy="58" r="7" fill="#FF8DA1" opacity="0.4"/>
+                </svg>`,
+                horse: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Face (long) -->
+                    <ellipse cx="50" cy="52" rx="25" ry="35" fill="#C68E5B"/>
+                    <!-- Mane -->
+                    <ellipse cx="50" cy="18" rx="12" ry="10" fill="#5C3A20"/>
+                    <ellipse cx="44" cy="22" rx="8" ry="8" fill="#5C3A20"/>
+                    <ellipse cx="56" cy="22" rx="8" ry="8" fill="#5C3A20"/>
+                    <!-- Ears -->
+                    <ellipse cx="33" cy="22" rx="6" ry="12" fill="#C68E5B" transform="rotate(-15 33 22)"/>
+                    <ellipse cx="67" cy="22" rx="6" ry="12" fill="#C68E5B" transform="rotate(15 67 22)"/>
+                    <ellipse cx="34" cy="22" rx="3" ry="8" fill="#A0704A" transform="rotate(-15 34 22)"/>
+                    <ellipse cx="66" cy="22" rx="3" ry="8" fill="#A0704A" transform="rotate(15 66 22)"/>
+                    <!-- Eyes -->
+                    <circle cx="38" cy="44" r="5" fill="white"/>
+                    <circle cx="62" cy="44" r="5" fill="white"/>
+                    <circle cx="39" cy="45" r="3" fill="#2C1810"/>
+                    <circle cx="63" cy="45" r="3" fill="#2C1810"/>
+                    <!-- Muzzle -->
+                    <ellipse cx="50" cy="70" rx="16" ry="12" fill="#E8B87A"/>
+                    <!-- Nostrils -->
+                    <ellipse cx="43" cy="68" rx="3" ry="2" fill="#A0704A"/>
+                    <ellipse cx="57" cy="68" rx="3" ry="2" fill="#A0704A"/>
+                    <!-- Mouth -->
+                    <path d="M44 76 Q50 80 56 76" fill="none" stroke="#8B6B4A" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>`,
+                elephant: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="35" fill="#A0A0C0"/>
+                    <!-- Ears -->
+                    <ellipse cx="18" cy="45" rx="16" ry="22" fill="#8888B0"/>
+                    <ellipse cx="82" cy="45" rx="16" ry="22" fill="#8888B0"/>
+                    <ellipse cx="20" cy="45" rx="10" ry="16" fill="#C0B0C8"/>
+                    <ellipse cx="80" cy="45" rx="10" ry="16" fill="#C0B0C8"/>
+                    <!-- Eyes -->
+                    <circle cx="38" cy="42" r="5" fill="white"/>
+                    <circle cx="62" cy="42" r="5" fill="white"/>
+                    <circle cx="39" cy="43" r="3" fill="#1A1A1A"/>
+                    <circle cx="63" cy="43" r="3" fill="#1A1A1A"/>
+                    <circle cx="40" cy="41.5" r="1" fill="white"/>
+                    <circle cx="64" cy="41.5" r="1" fill="white"/>
+                    <!-- Trunk -->
+                    <path d="M50 55 Q50 65 46 72 Q42 80 48 85 Q52 88 54 82 Q56 76 54 68 Q52 60 50 55" fill="#9090B8" stroke="#8080A8" stroke-width="1"/>
+                    <!-- Mouth -->
+                    <path d="M42 58 Q50 62 58 58" fill="none" stroke="#7070A0" stroke-width="1.5" stroke-linecap="round"/>
+                    <!-- Cheeks -->
+                    <circle cx="32" cy="52" r="6" fill="#B8A8C8" opacity="0.4"/>
+                    <circle cx="68" cy="52" r="6" fill="#B8A8C8" opacity="0.4"/>
+                </svg>`
+            };
+            return svgs[id] || '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" fill="#ccc"/></svg>';
         }
 
         function initAnimalGame() {
@@ -1742,9 +2194,6 @@
             const overlay = document.getElementById('animal-start-overlay');
             if (overlay) overlay.remove();
 
-            // Minimize home button during gameplay
-            const homeBtn = document.getElementById('home-btn-2');
-            if (homeBtn) homeBtn.classList.add('mini-pause');
 
             AnimalGame.score = 0;
             AnimalGame.stage = 1;
@@ -1836,7 +2285,7 @@
                 card.className = 'animal-card';
                 card.dataset.animalId = animal.id;
                 card.innerHTML = `
-                    <div class="animal-photo-circle">${getAnimalImage(animal.id)}</div>
+                    <div class="animal-photo-circle">${getAnimalSVG(animal.id)}</div>
                     <div class="animal-name">${animal.name}</div>
                 `;
 
@@ -1932,42 +2381,82 @@
         }
 
         function showConfetti(parent) {
+            // Add firework keyframes if not already added
+            if (!document.getElementById('firework-styles')) {
+                const style = document.createElement('style');
+                style.id = 'firework-styles';
+                style.textContent = `
+                    @keyframes fireworkBurst {
+                        0% { transform: translate(0,0) scale(1); opacity: 1; }
+                        100% { transform: translate(var(--fx), var(--fy)) scale(0.2); opacity: 0; }
+                    }
+                    @keyframes sparkleGlow {
+                        0%, 100% { opacity: 0.3; transform: scale(0.5); }
+                        50% { opacity: 1; transform: scale(1.2); }
+                    }
+                    @keyframes confettiSpin {
+                        0% { transform: translateY(-80px) rotateZ(0deg) rotateX(0deg); opacity: 1; }
+                        100% { transform: translateY(100vh) rotateZ(720deg) rotateX(360deg); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
             const container = document.createElement('div');
             container.className = 'confetti-container';
-            const colors = ['#FFD700', '#FF6B6B', '#1E88E5', '#43A047', '#FF6D00', '#E040FB', '#00E5FF'];
-            const sparkleEmojis = ['✨', '⭐', '🌟', '💫', '🎉', '🎊'];
+            const colors = ['#FFD700', '#FF6B6B', '#1E88E5', '#43A047', '#FF6D00', '#E040FB', '#00E5FF', '#FF4081', '#00BFA5'];
 
-            // Colored rectangle confetti
-            for (let i = 0; i < 35; i++) {
+            // Firework bursts from 2 random center points
+            for (let burst = 0; burst < 2; burst++) {
+                const cx = 20 + Math.random() * 60;
+                const cy = 15 + Math.random() * 30;
+                for (let i = 0; i < 18; i++) {
+                    const spark = document.createElement('div');
+                    const angle = (i / 18) * Math.PI * 2;
+                    const dist = 80 + Math.random() * 100;
+                    const fx = Math.cos(angle) * dist;
+                    const fy = Math.sin(angle) * dist;
+                    const size = 4 + Math.random() * 6;
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    spark.style.cssText = `position:absolute;left:${cx}%;top:${cy}%;width:${size}px;height:${size}px;border-radius:50%;background:${color};box-shadow:0 0 8px ${color},0 0 16px ${color}40;--fx:${fx}px;--fy:${fy}px;animation:fireworkBurst ${0.6+Math.random()*0.4}s ease-out ${burst*0.3+0.1}s forwards;pointer-events:none;`;
+                    container.appendChild(spark);
+                }
+            }
+
+            // Glowing sparkle dots scattered across screen
+            for (let i = 0; i < 20; i++) {
+                const dot = document.createElement('div');
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                dot.style.cssText = `position:absolute;left:${Math.random()*100}%;top:${Math.random()*70}%;width:6px;height:6px;border-radius:50%;background:${color};box-shadow:0 0 12px ${color},0 0 24px ${color}60;animation:sparkleGlow ${0.4+Math.random()*0.6}s ease-in-out ${Math.random()*0.8}s infinite;pointer-events:none;`;
+                container.appendChild(dot);
+            }
+
+            // Confetti ribbons falling with spin
+            for (let i = 0; i < 40; i++) {
                 const confetti = document.createElement('div');
-                confetti.className = 'confetti';
-                confetti.style.left = (Math.random() * 100) + '%';
-                const w = 4 + Math.random() * 6;
-                const h = 8 + Math.random() * 12;
-                confetti.style.width = w + 'px';
-                confetti.style.height = h + 'px';
-                confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
-                confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
-                confetti.style.boxShadow = `0 0 4px ${confetti.style.background}`;
-                confetti.style.animationDelay = (Math.random() * 0.5) + 's';
-                confetti.style.animationDuration = (1.5 + Math.random() * 1.0) + 's';
+                const w = 4 + Math.random() * 7;
+                const h = 8 + Math.random() * 14;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.cssText = `position:absolute;left:${Math.random()*100}%;top:0;width:${w}px;height:${h}px;background:${color};border-radius:${Math.random()>0.5?'50%':'2px'};box-shadow:0 0 6px ${color}80;animation:confettiSpin ${1.5+Math.random()*1.2}s ease-out ${Math.random()*0.5}s forwards;pointer-events:none;`;
                 container.appendChild(confetti);
             }
 
-            // Sparkle emoji confetti
-            for (let i = 0; i < 12; i++) {
+            // Sparkle emojis with glow
+            const sparkleEmojis = ['✨', '⭐', '🌟', '💫', '🎉', '🎊', '💖', '🎆'];
+            for (let i = 0; i < 15; i++) {
                 const sparkle = document.createElement('div');
                 sparkle.className = 'confetti';
                 sparkle.textContent = sparkleEmojis[Math.floor(Math.random() * sparkleEmojis.length)];
                 sparkle.style.left = (Math.random() * 100) + '%';
-                sparkle.style.fontSize = (16 + Math.random() * 16) + 'px';
-                sparkle.style.animationDelay = (Math.random() * 0.5) + 's';
-                sparkle.style.animationDuration = (1.8 + Math.random() * 0.8) + 's';
+                sparkle.style.fontSize = (18 + Math.random() * 20) + 'px';
+                sparkle.style.filter = 'drop-shadow(0 0 4px rgba(255,215,0,0.6))';
+                sparkle.style.animationDelay = (Math.random() * 0.6) + 's';
+                sparkle.style.animationDuration = (1.6 + Math.random() * 0.8) + 's';
                 container.appendChild(sparkle);
             }
 
             parent.appendChild(container);
-            setTimeout(() => container.remove(), 3000);
+            setTimeout(() => container.remove(), 3500);
         }
 
         function updateAnimalScore() {
@@ -1986,7 +2475,37 @@
             }
         }
 
+        const ONOMATOPOEIA = {
+            dog: '멍멍!',
+            cat: '야옹~',
+            lion: '어흥!',
+            cow: '음메~',
+            chicken: '꼬끼오!',
+            duck: '꽥꽥!',
+            sheep: '메에~',
+            pig: '꿀꿀!',
+            horse: '히힝~',
+            elephant: '뿌우~'
+        };
+
+        function showOnomatopoeia(animalId) {
+            const text = ONOMATOPOEIA[animalId];
+            if (!text) return;
+
+            // Remove previous
+            const old = document.querySelector('.onomatopoeia-float');
+            if (old) old.remove();
+
+            const el = document.createElement('div');
+            el.className = 'onomatopoeia-float';
+            el.textContent = text;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1600);
+        }
+
         function playAnimalSound(animalId) {
+            showOnomatopoeia(animalId);
+
             if (!Settings.soundEnabled) return;
             const ctx = getAudioContext();
             if (!ctx) return;
@@ -1994,211 +2513,255 @@
 
             switch (animalId) {
                 case 'dog': {
+                    // 멍멍! - Two short punchy barks
                     for (let i = 0; i < 2; i++) {
-                        const t = now + i * 0.4;
+                        const t = now + i * 0.35;
                         const o = ctx.createOscillator();
                         const g = ctx.createGain();
                         const flt = ctx.createBiquadFilter();
                         o.type = 'square';
-                        o.frequency.setValueAtTime(200, t);
-                        o.frequency.linearRampToValueAtTime(400, t + 0.05);
-                        flt.type = 'lowpass';
-                        flt.frequency.setValueAtTime(1500, t);
-                        g.gain.setValueAtTime(0.01, t);
-                        g.gain.linearRampToValueAtTime(0.4, t + 0.02);
-                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
-                        o.connect(flt); flt.connect(g); g.connect(ctx.destination);
-                        o.start(t); o.stop(t + 0.25);
-                    }
-                    break;
-                }
-
-                case 'cat': {
-                    for (let i = 0; i < 2; i++) {
-                        const t = now + i * 0.85;
-                        const o = ctx.createOscillator();
-                        const g = ctx.createGain();
-                        o.type = 'sine';
-                        o.frequency.setValueAtTime(300, t);
-                        o.frequency.linearRampToValueAtTime(550, t + 0.2);
-                        o.frequency.setValueAtTime(550, t + 0.35);
-                        o.frequency.linearRampToValueAtTime(350, t + 0.65);
-                        g.gain.setValueAtTime(0, t);
-                        g.gain.linearRampToValueAtTime(0.35, t + 0.05);
-                        g.gain.setValueAtTime(0.32, t + 0.35);
-                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.70);
-                        o.connect(g); g.connect(ctx.destination);
-                        o.start(t); o.stop(t + 0.70);
-                        const v = ctx.createOscillator();
-                        const vg = ctx.createGain();
-                        v.frequency.setValueAtTime(6, t);
-                        vg.gain.setValueAtTime(15, t);
-                        v.connect(vg); vg.connect(o.frequency);
-                        v.start(t); v.stop(t + 0.70);
-                    }
-                    break;
-                }
-
-                case 'lion': {
-                    const dur = 1.5;
-                    const o = ctx.createOscillator();
-                    const g = ctx.createGain();
-                    const flt = ctx.createBiquadFilter();
-                    o.type = 'sawtooth';
-                    o.frequency.setValueAtTime(70, now);
-                    o.frequency.linearRampToValueAtTime(120, now + 0.4);
-                    o.frequency.linearRampToValueAtTime(90, now + 1.0);
-                    o.frequency.linearRampToValueAtTime(60, now + dur);
-                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(400, now);
-                    g.gain.setValueAtTime(0, now);
-                    g.gain.linearRampToValueAtTime(0.45, now + 0.2);
-                    g.gain.setValueAtTime(0.42, now + 0.6);
-                    g.gain.exponentialRampToValueAtTime(0.001, now + dur);
-                    o.connect(flt); flt.connect(g); g.connect(ctx.destination);
-                    o.start(now); o.stop(now + dur);
-                    const tr = ctx.createOscillator();
-                    const trg = ctx.createGain();
-                    tr.frequency.setValueAtTime(8, now); trg.gain.setValueAtTime(20, now);
-                    tr.connect(trg); trg.connect(o.frequency);
-                    tr.start(now); tr.stop(now + dur);
-                    break;
-                }
-
-                case 'cow': {
-                    const dur = 1.7;
-                    const o = ctx.createOscillator();
-                    const g = ctx.createGain();
-                    const flt = ctx.createBiquadFilter();
-                    o.type = 'sawtooth';
-                    o.frequency.setValueAtTime(110, now);
-                    o.frequency.linearRampToValueAtTime(160, now + 0.3);
-                    o.frequency.setValueAtTime(160, now + 0.8);
-                    o.frequency.linearRampToValueAtTime(120, now + 1.3);
-                    o.frequency.linearRampToValueAtTime(100, now + dur);
-                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(700, now); flt.Q.setValueAtTime(1.2, now);
-                    g.gain.setValueAtTime(0, now);
-                    g.gain.linearRampToValueAtTime(0.4, now + 0.1);
-                    g.gain.setValueAtTime(0.38, now + 0.8);
-                    g.gain.exponentialRampToValueAtTime(0.001, now + dur);
-                    o.connect(flt); flt.connect(g); g.connect(ctx.destination);
-                    o.start(now); o.stop(now + dur);
-                    const v = ctx.createOscillator(); const vg = ctx.createGain();
-                    v.frequency.setValueAtTime(5, now); vg.gain.setValueAtTime(8, now);
-                    v.connect(vg); vg.connect(o.frequency);
-                    v.start(now); v.stop(now + dur);
-                    break;
-                }
-
-                case 'chicken': {
-                    const o1 = ctx.createOscillator(); const g1 = ctx.createGain();
-                    o1.type = 'square';
-                    o1.frequency.setValueAtTime(350, now);
-                    o1.frequency.linearRampToValueAtTime(600, now + 0.12);
-                    g1.gain.setValueAtTime(0.01, now);
-                    g1.gain.linearRampToValueAtTime(0.35, now + 0.03);
-                    g1.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
-                    o1.connect(g1); g1.connect(ctx.destination);
-                    o1.start(now); o1.stop(now + 0.16);
-                    const o2 = ctx.createOscillator(); const g2 = ctx.createGain();
-                    o2.type = 'square';
-                    o2.frequency.setValueAtTime(700, now + 0.2);
-                    o2.frequency.linearRampToValueAtTime(950, now + 0.32);
-                    g2.gain.setValueAtTime(0.01, now + 0.2);
-                    g2.gain.linearRampToValueAtTime(0.35, now + 0.22);
-                    g2.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-                    o2.connect(g2); g2.connect(ctx.destination);
-                    o2.start(now + 0.2); o2.stop(now + 0.4);
-                    const o3 = ctx.createOscillator(); const g3 = ctx.createGain();
-                    const flt = ctx.createBiquadFilter();
-                    o3.type = 'square';
-                    o3.frequency.setValueAtTime(900, now + 0.45);
-                    o3.frequency.linearRampToValueAtTime(1050, now + 0.65);
-                    o3.frequency.linearRampToValueAtTime(600, now + 1.3);
-                    flt.type = 'bandpass'; flt.frequency.setValueAtTime(950, now + 0.45); flt.Q.setValueAtTime(1.2, now + 0.45);
-                    g3.gain.setValueAtTime(0.01, now + 0.45);
-                    g3.gain.linearRampToValueAtTime(0.35, now + 0.48);
-                    g3.gain.setValueAtTime(0.32, now + 0.8);
-                    g3.gain.exponentialRampToValueAtTime(0.001, now + 1.35);
-                    o3.connect(flt); flt.connect(g3); g3.connect(ctx.destination);
-                    o3.start(now + 0.45); o3.stop(now + 1.35);
-                    break;
-                }
-
-                case 'duck': {
-                    for (let i = 0; i < 2; i++) {
-                        const t = now + i * 0.35;
-                        const o = ctx.createOscillator(); const g = ctx.createGain();
-                        const flt = ctx.createBiquadFilter();
-                        o.type = 'sawtooth';
-                        o.frequency.setValueAtTime(200, t);
+                        o.frequency.setValueAtTime(180, t);
                         o.frequency.linearRampToValueAtTime(380, t + 0.04);
-                        o.frequency.linearRampToValueAtTime(240, t + 0.12);
-                        o.frequency.linearRampToValueAtTime(180, t + 0.20);
-                        flt.type = 'bandpass'; flt.frequency.setValueAtTime(900, t); flt.Q.setValueAtTime(5, t);
-                        g.gain.setValueAtTime(0.01, t);
-                        g.gain.linearRampToValueAtTime(0.35, t + 0.02);
-                        g.gain.setValueAtTime(0.32, t + 0.08);
+                        o.frequency.linearRampToValueAtTime(250, t + 0.12);
+                        o.frequency.linearRampToValueAtTime(180, t + 0.22);
+                        flt.type = 'lowpass';
+                        flt.frequency.setValueAtTime(1200, t);
+                        flt.Q.setValueAtTime(1, t);
+                        g.gain.setValueAtTime(0.001, t);
+                        g.gain.linearRampToValueAtTime(0.42, t + 0.02);
+                        g.gain.setValueAtTime(0.38, t + 0.1);
                         g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
                         o.connect(flt); flt.connect(g); g.connect(ctx.destination);
                         o.start(t); o.stop(t + 0.22);
                     }
                     break;
                 }
-
-                case 'sheep': {
-                    for (let i = 0; i < 2; i++) {
-                        const t = now + i * 0.7;
-                        const o = ctx.createOscillator(); const g = ctx.createGain();
-                        o.type = 'sawtooth';
-                        o.frequency.setValueAtTime(240, t);
-                        o.frequency.linearRampToValueAtTime(360, t + 0.1);
-                        o.frequency.setValueAtTime(360, t + 0.25);
-                        o.frequency.linearRampToValueAtTime(300, t + 0.5);
-                        const flt = ctx.createBiquadFilter();
-                        flt.type = 'lowpass'; flt.frequency.setValueAtTime(900, t);
-                        g.gain.setValueAtTime(0, t);
-                        g.gain.linearRampToValueAtTime(0.32, t + 0.04);
-                        g.gain.setValueAtTime(0.30, t + 0.25);
-                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.55);
-                        o.connect(flt); flt.connect(g); g.connect(ctx.destination);
-                        o.start(t); o.stop(t + 0.55);
-                        const v = ctx.createOscillator(); const vg = ctx.createGain();
-                        v.frequency.setValueAtTime(10, t); vg.gain.setValueAtTime(30, t);
-                        v.connect(vg); vg.connect(o.frequency);
-                        v.start(t); v.stop(t + 0.55);
-                    }
-                    break;
-                }
-
-                case 'pig': {
-                    for (let i = 0; i < 2; i++) {
-                        const t = now + i * 0.5;
-                        const o = ctx.createOscillator(); const g = ctx.createGain();
-                        const flt = ctx.createBiquadFilter();
-                        o.type = 'sawtooth';
-                        o.frequency.setValueAtTime(120, t);
-                        o.frequency.linearRampToValueAtTime(200, t + 0.06);
-                        o.frequency.linearRampToValueAtTime(140, t + 0.22);
-                        flt.type = 'lowpass'; flt.frequency.setValueAtTime(600, t);
-                        g.gain.setValueAtTime(0.01, t);
-                        g.gain.linearRampToValueAtTime(0.36, t + 0.02);
-                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
-                        o.connect(flt); flt.connect(g); g.connect(ctx.destination);
-                        o.start(t); o.stop(t + 0.25);
-                    }
-                    break;
-                }
-
-                case 'horse': {
-                    const dur = 1.2;
+                case 'cat': {
+                    // 야옹~ - Smooth rising-falling meow with vibrato
                     const o = ctx.createOscillator();
                     const g = ctx.createGain();
                     o.type = 'sine';
-                    o.frequency.setValueAtTime(320, now);
-                    o.frequency.linearRampToValueAtTime(750, now + 0.25);
+                    o.frequency.setValueAtTime(280, now);
+                    o.frequency.linearRampToValueAtTime(520, now + 0.15);
+                    o.frequency.setValueAtTime(520, now + 0.35);
+                    o.frequency.linearRampToValueAtTime(380, now + 0.55);
+                    o.frequency.linearRampToValueAtTime(300, now + 0.8);
+                    g.gain.setValueAtTime(0.001, now);
+                    g.gain.linearRampToValueAtTime(0.35, now + 0.05);
+                    g.gain.setValueAtTime(0.32, now + 0.35);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+                    o.connect(g); g.connect(ctx.destination);
+                    o.start(now); o.stop(now + 0.8);
+                    const v = ctx.createOscillator();
+                    const vg = ctx.createGain();
+                    v.frequency.setValueAtTime(5.5, now);
+                    vg.gain.setValueAtTime(12, now);
+                    v.connect(vg); vg.connect(o.frequency);
+                    v.start(now); v.stop(now + 0.8);
+                    break;
+                }
+                case 'lion': {
+                    // 어흥! - Deep powerful roar with sub-bass rumble
+                    const dur = 1.6;
+                    const o = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    const flt = ctx.createBiquadFilter();
+                    o.type = 'sawtooth';
+                    o.frequency.setValueAtTime(65, now);
+                    o.frequency.linearRampToValueAtTime(110, now + 0.3);
+                    o.frequency.setValueAtTime(100, now + 0.8);
+                    o.frequency.linearRampToValueAtTime(55, now + dur);
+                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(350, now); flt.Q.setValueAtTime(0.8, now);
+                    g.gain.setValueAtTime(0.001, now);
+                    g.gain.linearRampToValueAtTime(0.45, now + 0.15);
+                    g.gain.setValueAtTime(0.42, now + 0.6);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+                    o.connect(flt); flt.connect(g); g.connect(ctx.destination);
+                    o.start(now); o.stop(now + dur);
+                    // Sub bass layer
+                    const o2 = ctx.createOscillator();
+                    const g2 = ctx.createGain();
+                    o2.type = 'sine';
+                    o2.frequency.setValueAtTime(40, now);
+                    o2.frequency.linearRampToValueAtTime(65, now + 0.3);
+                    o2.frequency.linearRampToValueAtTime(35, now + 1.4);
+                    g2.gain.setValueAtTime(0.001, now);
+                    g2.gain.linearRampToValueAtTime(0.25, now + 0.15);
+                    g2.gain.exponentialRampToValueAtTime(0.001, now + 1.4);
+                    o2.connect(g2); g2.connect(ctx.destination);
+                    o2.start(now); o2.stop(now + 1.4);
+                    // Tremor vibrato
+                    const tr = ctx.createOscillator();
+                    const trg = ctx.createGain();
+                    tr.frequency.setValueAtTime(7, now); trg.gain.setValueAtTime(18, now);
+                    tr.connect(trg); trg.connect(o.frequency);
+                    tr.start(now); tr.stop(now + dur);
+                    break;
+                }
+                case 'cow': {
+                    // 음메~ - Long sustained moo with nasal quality
+                    const dur = 1.8;
+                    const o = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    const flt = ctx.createBiquadFilter();
+                    o.type = 'sawtooth';
+                    o.frequency.setValueAtTime(100, now);
+                    o.frequency.linearRampToValueAtTime(155, now + 0.25);
+                    o.frequency.setValueAtTime(155, now + 0.9);
+                    o.frequency.linearRampToValueAtTime(125, now + 1.4);
+                    o.frequency.linearRampToValueAtTime(95, now + dur);
+                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(650, now); flt.Q.setValueAtTime(1.5, now);
+                    g.gain.setValueAtTime(0.001, now);
+                    g.gain.linearRampToValueAtTime(0.4, now + 0.1);
+                    g.gain.setValueAtTime(0.38, now + 0.9);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+                    o.connect(flt); flt.connect(g); g.connect(ctx.destination);
+                    o.start(now); o.stop(now + dur);
+                    const v = ctx.createOscillator(); const vg = ctx.createGain();
+                    v.frequency.setValueAtTime(4.5, now); vg.gain.setValueAtTime(8, now);
+                    v.connect(vg); vg.connect(o.frequency);
+                    v.start(now); v.stop(now + dur);
+                    break;
+                }
+                case 'chicken': {
+                    // 꼬끼오! - Three ascending chirps: ko-ki-o!
+                    const o1 = ctx.createOscillator(); const g1 = ctx.createGain();
+                    o1.type = 'square';
+                    o1.frequency.setValueAtTime(350, now);
+                    o1.frequency.linearRampToValueAtTime(550, now + 0.08);
+                    o1.frequency.linearRampToValueAtTime(400, now + 0.14);
+                    g1.gain.setValueAtTime(0.001, now);
+                    g1.gain.linearRampToValueAtTime(0.32, now + 0.02);
+                    g1.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+                    const f1 = ctx.createBiquadFilter(); f1.type = 'lowpass'; f1.frequency.setValueAtTime(1800, now);
+                    o1.connect(f1); f1.connect(g1); g1.connect(ctx.destination);
+                    o1.start(now); o1.stop(now + 0.14);
+                    // ki
+                    const o2 = ctx.createOscillator(); const g2 = ctx.createGain();
+                    o2.type = 'square';
+                    o2.frequency.setValueAtTime(650, now + 0.18);
+                    o2.frequency.linearRampToValueAtTime(900, now + 0.26);
+                    o2.frequency.linearRampToValueAtTime(700, now + 0.32);
+                    g2.gain.setValueAtTime(0.001, now + 0.18);
+                    g2.gain.linearRampToValueAtTime(0.35, now + 0.2);
+                    g2.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+                    const f2 = ctx.createBiquadFilter(); f2.type = 'lowpass'; f2.frequency.setValueAtTime(2000, now + 0.18);
+                    o2.connect(f2); f2.connect(g2); g2.connect(ctx.destination);
+                    o2.start(now + 0.18); o2.stop(now + 0.32);
+                    // o~!
+                    const o3 = ctx.createOscillator(); const g3 = ctx.createGain();
+                    o3.type = 'square';
+                    o3.frequency.setValueAtTime(850, now + 0.38);
+                    o3.frequency.linearRampToValueAtTime(1000, now + 0.55);
+                    o3.frequency.linearRampToValueAtTime(650, now + 1.2);
+                    g3.gain.setValueAtTime(0.001, now + 0.38);
+                    g3.gain.linearRampToValueAtTime(0.35, now + 0.4);
+                    g3.gain.setValueAtTime(0.32, now + 0.7);
+                    g3.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+                    const f3 = ctx.createBiquadFilter(); f3.type = 'bandpass'; f3.frequency.setValueAtTime(950, now + 0.38); f3.Q.setValueAtTime(1.2, now + 0.38);
+                    o3.connect(f3); f3.connect(g3); g3.connect(ctx.destination);
+                    o3.start(now + 0.38); o3.stop(now + 1.2);
+                    break;
+                }
+                case 'duck': {
+                    // 꽥꽥! - Two flat nasal quacks
+                    for (let i = 0; i < 2; i++) {
+                        const t = now + i * 0.3;
+                        const o = ctx.createOscillator(); const g = ctx.createGain();
+                        const bp = ctx.createBiquadFilter();
+                        o.type = 'sawtooth';
+                        o.frequency.setValueAtTime(220, t);
+                        o.frequency.linearRampToValueAtTime(350, t + 0.03);
+                        o.frequency.linearRampToValueAtTime(260, t + 0.09);
+                        o.frequency.linearRampToValueAtTime(200, t + 0.18);
+                        bp.type = 'bandpass'; bp.frequency.setValueAtTime(800, t); bp.Q.setValueAtTime(5, t);
+                        g.gain.setValueAtTime(0.001, t);
+                        g.gain.linearRampToValueAtTime(0.35, t + 0.02);
+                        g.gain.setValueAtTime(0.32, t + 0.08);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+                        o.connect(bp); bp.connect(g); g.connect(ctx.destination);
+                        o.start(t); o.stop(t + 0.18);
+                        // Extra nasal layer
+                        const o2 = ctx.createOscillator(); const g2 = ctx.createGain();
+                        o2.type = 'sawtooth';
+                        o2.frequency.setValueAtTime(440, t);
+                        o2.frequency.linearRampToValueAtTime(700, t + 0.03);
+                        o2.frequency.linearRampToValueAtTime(500, t + 0.18);
+                        g2.gain.setValueAtTime(0.001, t);
+                        g2.gain.linearRampToValueAtTime(0.12, t + 0.02);
+                        g2.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+                        o2.connect(g2); g2.connect(ctx.destination);
+                        o2.start(t); o2.stop(t + 0.16);
+                    }
+                    break;
+                }
+                case 'sheep': {
+                    // 메에~ - Bleating with strong trembling vibrato
+                    const o = ctx.createOscillator(); const g = ctx.createGain();
+                    const flt = ctx.createBiquadFilter();
+                    o.type = 'sawtooth';
+                    o.frequency.setValueAtTime(220, now);
+                    o.frequency.linearRampToValueAtTime(340, now + 0.08);
+                    o.frequency.setValueAtTime(330, now + 0.3);
+                    o.frequency.linearRampToValueAtTime(280, now + 0.7);
+                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(800, now);
+                    g.gain.setValueAtTime(0.001, now);
+                    g.gain.linearRampToValueAtTime(0.32, now + 0.04);
+                    g.gain.setValueAtTime(0.30, now + 0.3);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+                    o.connect(flt); flt.connect(g); g.connect(ctx.destination);
+                    o.start(now); o.stop(now + 0.7);
+                    // Strong vibrato for bleating character
+                    const v = ctx.createOscillator(); const vg = ctx.createGain();
+                    v.frequency.setValueAtTime(9, now); vg.gain.setValueAtTime(28, now);
+                    v.connect(vg); vg.connect(o.frequency);
+                    v.start(now); v.stop(now + 0.7);
+                    break;
+                }
+                case 'pig': {
+                    // 꿀꿀! - Two low snorty grunts with noise
+                    for (let i = 0; i < 2; i++) {
+                        const t = now + i * 0.4;
+                        const o = ctx.createOscillator(); const g = ctx.createGain();
+                        const flt = ctx.createBiquadFilter();
+                        o.type = 'sawtooth';
+                        o.frequency.setValueAtTime(110, t);
+                        o.frequency.linearRampToValueAtTime(180, t + 0.04);
+                        o.frequency.linearRampToValueAtTime(130, t + 0.12);
+                        o.frequency.linearRampToValueAtTime(100, t + 0.22);
+                        flt.type = 'lowpass'; flt.frequency.setValueAtTime(500, t); flt.Q.setValueAtTime(1, t);
+                        g.gain.setValueAtTime(0.001, t);
+                        g.gain.linearRampToValueAtTime(0.36, t + 0.02);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+                        o.connect(flt); flt.connect(g); g.connect(ctx.destination);
+                        o.start(t); o.stop(t + 0.22);
+                        // Snort noise burst
+                        const bufSize = ctx.sampleRate * 0.06;
+                        const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+                        const d = buf.getChannelData(0);
+                        for (let j = 0; j < bufSize; j++) d[j] = (Math.random() * 2 - 1) * (1 - j / bufSize);
+                        const ns = ctx.createBufferSource(); ns.buffer = buf;
+                        const ng = ctx.createGain();
+                        const nf = ctx.createBiquadFilter(); nf.type = 'lowpass'; nf.frequency.setValueAtTime(400, t);
+                        ng.gain.setValueAtTime(0.08, t);
+                        ng.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+                        ns.connect(nf); nf.connect(ng); ng.connect(ctx.destination);
+                        ns.start(t); ns.stop(t + 0.06);
+                    }
+                    break;
+                }
+                case 'horse': {
+                    // 히힝~ - High whinny that rises then falls
+                    const dur = 1.3;
+                    const o = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(300, now);
+                    o.frequency.linearRampToValueAtTime(700, now + 0.2);
                     o.frequency.setValueAtTime(750, now + 0.4);
-                    o.frequency.linearRampToValueAtTime(450, now + dur);
-                    g.gain.setValueAtTime(0, now);
+                    o.frequency.linearRampToValueAtTime(500, now + 0.8);
+                    o.frequency.linearRampToValueAtTime(350, now + dur);
+                    g.gain.setValueAtTime(0.001, now);
                     g.gain.linearRampToValueAtTime(0.38, now + 0.06);
                     g.gain.setValueAtTime(0.36, now + 0.4);
                     g.gain.exponentialRampToValueAtTime(0.001, now + dur);
@@ -2206,29 +2769,44 @@
                     o.start(now); o.stop(now + dur);
                     const v = ctx.createOscillator();
                     const vg = ctx.createGain();
-                    v.frequency.setValueAtTime(7, now); vg.gain.setValueAtTime(14, now);
+                    v.frequency.setValueAtTime(6, now); vg.gain.setValueAtTime(14, now);
                     v.connect(vg); vg.connect(o.frequency);
                     v.start(now); v.stop(now + dur);
                     break;
                 }
-
                 case 'elephant': {
+                    // 뿌우~ - Loud trumpet blast through trunk
                     const dur = 1.5;
                     const o = ctx.createOscillator();
                     const g = ctx.createGain();
                     const flt = ctx.createBiquadFilter();
                     o.type = 'sawtooth';
-                    o.frequency.setValueAtTime(150, now);
-                    o.frequency.linearRampToValueAtTime(380, now + 0.35);
+                    o.frequency.setValueAtTime(140, now);
+                    o.frequency.linearRampToValueAtTime(350, now + 0.3);
                     o.frequency.setValueAtTime(380, now + 0.7);
-                    o.frequency.linearRampToValueAtTime(200, now + dur);
-                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(800, now); flt.Q.setValueAtTime(0.8, now);
-                    g.gain.setValueAtTime(0, now);
+                    o.frequency.linearRampToValueAtTime(220, now + 1.2);
+                    o.frequency.linearRampToValueAtTime(150, now + dur);
+                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(700, now); flt.Q.setValueAtTime(0.8, now);
+                    g.gain.setValueAtTime(0.001, now);
                     g.gain.linearRampToValueAtTime(0.42, now + 0.15);
                     g.gain.setValueAtTime(0.40, now + 0.7);
                     g.gain.exponentialRampToValueAtTime(0.001, now + dur);
                     o.connect(flt); flt.connect(g); g.connect(ctx.destination);
                     o.start(now); o.stop(now + dur);
+                    // Brass overtone for trumpet effect
+                    const o2 = ctx.createOscillator();
+                    const g2 = ctx.createGain();
+                    const f2 = ctx.createBiquadFilter();
+                    o2.type = 'square';
+                    o2.frequency.setValueAtTime(280, now + 0.1);
+                    o2.frequency.linearRampToValueAtTime(700, now + 0.3);
+                    o2.frequency.linearRampToValueAtTime(400, now + 1.1);
+                    f2.type = 'lowpass'; f2.frequency.setValueAtTime(1200, now); f2.Q.setValueAtTime(2, now);
+                    g2.gain.setValueAtTime(0.001, now + 0.1);
+                    g2.gain.linearRampToValueAtTime(0.15, now + 0.2);
+                    g2.gain.exponentialRampToValueAtTime(0.001, now + 1.1);
+                    o2.connect(f2); f2.connect(g2); g2.connect(ctx.destination);
+                    o2.start(now + 0.1); o2.stop(now + 1.1);
                     break;
                 }
             }
@@ -2285,9 +2863,6 @@
                 AnimalGame.advanceTimer = null;
             }
 
-            const homeBtn = document.getElementById('home-btn-2');
-            if (homeBtn) homeBtn.classList.remove('mini-pause');
-
             const area = document.getElementById('animal-area');
             if (area) area.innerHTML = '';
         }
@@ -2298,7 +2873,8 @@
             drawingMode: false,
             canvases: { outline: null, draw: null },
             canvasCtx: { outline: null, draw: null },
-            running: false
+            running: false,
+            brushSize: 8
         };
 
         function initCanvasGame() {
@@ -2341,9 +2917,6 @@
             const overlay = document.getElementById('sketch-start-overlay');
             if (overlay) overlay.remove();
 
-            // Minimize home button during gameplay
-            const homeBtn = document.getElementById('home-btn-3');
-            if (homeBtn) homeBtn.classList.add('mini-pause');
 
             CanvasGame.currentShape = shapeId;
             CanvasGame.running = true;
@@ -2381,12 +2954,21 @@
 
             toolbar.innerHTML += '<div class="sketch-divider"></div>';
 
-            const brushBtn = document.createElement('button');
-            brushBtn.className = 'sketch-brush-btn active';
-            brushBtn.innerHTML = '<div class="sketch-brush-dot" style="width: 12px; height: 12px;"></div>';
-            brushBtn.style.minHeight = '48px';
-            brushBtn.style.minWidth = '48px';
-            toolbar.appendChild(brushBtn);
+            // Brush sizes
+            const brushSizes = [{size: 4, dotSize: 6}, {size: 8, dotSize: 10}, {size: 14, dotSize: 16}];
+            brushSizes.forEach((bs, idx) => {
+                const brushBtn = document.createElement('button');
+                brushBtn.className = 'sketch-brush-btn' + (idx === 1 ? ' active' : '');
+                brushBtn.innerHTML = `<div class="sketch-brush-dot" style="width: ${bs.dotSize}px; height: ${bs.dotSize}px;"></div>`;
+                brushBtn.style.minHeight = '48px';
+                brushBtn.style.minWidth = '48px';
+                brushBtn.onclick = () => {
+                    CanvasGame.brushSize = bs.size;
+                    document.querySelectorAll('.sketch-brush-btn').forEach(b => b.classList.remove('active'));
+                    brushBtn.classList.add('active');
+                };
+                toolbar.appendChild(brushBtn);
+            });
 
             toolbar.innerHTML += '<div style="flex: 1;"></div>';
 
@@ -2475,203 +3057,559 @@
         }
 
         function drawFishOutline(ctx) {
-            // Body
+            // Body - smooth fish shape with bezier curves
             ctx.beginPath();
-            ctx.ellipse(0, 0, 80, 50, 0, 0, Math.PI * 2);
-            ctx.stroke();
-            // Tail
-            ctx.beginPath();
-            ctx.moveTo(-70, 0);
-            ctx.lineTo(-120, -40);
-            ctx.lineTo(-120, 40);
+            ctx.moveTo(75, 0);
+            ctx.bezierCurveTo(80, -30, 60, -55, 30, -52);
+            ctx.bezierCurveTo(0, -50, -40, -45, -65, -25);
+            ctx.bezierCurveTo(-80, -15, -80, 15, -65, 25);
+            ctx.bezierCurveTo(-40, 45, 0, 50, 30, 52);
+            ctx.bezierCurveTo(60, 55, 80, 30, 75, 0);
             ctx.closePath();
             ctx.stroke();
-            // Eye
+            // Tail fin - flowing forked tail
             ctx.beginPath();
-            ctx.arc(35, -12, 10, 0, Math.PI * 2);
+            ctx.moveTo(-65, -15);
+            ctx.bezierCurveTo(-85, -20, -110, -55, -125, -50);
+            ctx.bezierCurveTo(-115, -35, -100, -15, -80, -5);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(-65, 15);
+            ctx.bezierCurveTo(-85, 20, -110, 55, -125, 50);
+            ctx.bezierCurveTo(-115, 35, -100, 15, -80, 5);
+            ctx.stroke();
+            // Tail center connection
+            ctx.beginPath();
+            ctx.moveTo(-80, -5);
+            ctx.bezierCurveTo(-75, 0, -75, 0, -80, 5);
+            ctx.stroke();
+            // Dorsal fin - tall and elegant
+            ctx.beginPath();
+            ctx.moveTo(10, -50);
+            ctx.bezierCurveTo(5, -75, 20, -95, 35, -80);
+            ctx.bezierCurveTo(45, -70, 50, -58, 42, -50);
+            ctx.stroke();
+            // Dorsal fin inner lines
+            ctx.beginPath();
+            ctx.moveTo(20, -52);
+            ctx.bezierCurveTo(18, -68, 28, -78, 34, -72);
+            ctx.stroke();
+            // Belly fin (pelvic)
+            ctx.beginPath();
+            ctx.moveTo(5, 48);
+            ctx.bezierCurveTo(0, 65, 15, 75, 25, 65);
+            ctx.bezierCurveTo(30, 58, 28, 50, 22, 48);
+            ctx.stroke();
+            // Small anal fin
+            ctx.beginPath();
+            ctx.moveTo(-30, 42);
+            ctx.bezierCurveTo(-35, 55, -22, 60, -18, 50);
+            ctx.bezierCurveTo(-15, 45, -20, 42, -25, 42);
+            ctx.stroke();
+            // Eye - large and expressive
+            ctx.beginPath();
+            ctx.arc(42, -12, 14, 0, Math.PI * 2);
             ctx.stroke();
             // Pupil
             ctx.beginPath();
-            ctx.arc(38, -12, 4, 0, Math.PI * 2);
+            ctx.arc(45, -12, 7, 0, Math.PI * 2);
             ctx.fillStyle = 'rgba(100,100,100,0.25)';
             ctx.fill();
-            // Mouth
+            // Eye highlight
             ctx.beginPath();
-            ctx.arc(60, 8, 8, 0.2, 1.2);
+            ctx.arc(48, -16, 3, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(100,100,100,0.15)';
+            ctx.fill();
+            // Mouth - cute smile
+            ctx.beginPath();
+            ctx.moveTo(72, 2);
+            ctx.bezierCurveTo(68, 10, 60, 14, 55, 10);
             ctx.stroke();
-            // Dorsal fin
+            // Lip detail
             ctx.beginPath();
-            ctx.moveTo(-10, -48);
-            ctx.quadraticCurveTo(10, -85, 40, -48);
+            ctx.moveTo(74, -2);
+            ctx.bezierCurveTo(76, 0, 76, 4, 72, 2);
             ctx.stroke();
-            // Belly fin
+            // Scale pattern - 3 rows of arcs
+            for (let row = 0; row < 3; row++) {
+                for (let i = 0; i < 4; i++) {
+                    ctx.beginPath();
+                    const sx = -15 + i * 20 - row * 5;
+                    const sy = -20 + row * 18;
+                    ctx.arc(sx, sy, 10, -0.8, 0.8);
+                    ctx.stroke();
+                }
+            }
+            // Gill line
             ctx.beginPath();
-            ctx.moveTo(0, 48);
-            ctx.quadraticCurveTo(15, 72, 30, 48);
+            ctx.arc(30, 0, 22, -1.0, 1.0);
             ctx.stroke();
-            // Scale lines
+            // Side stripe
             ctx.beginPath();
-            ctx.arc(-10, 0, 30, -0.5, 0.5);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.arc(20, 0, 25, -0.5, 0.5);
+            ctx.moveTo(60, -5);
+            ctx.bezierCurveTo(30, -3, -10, 0, -50, 5);
             ctx.stroke();
         }
 
         function drawCarOutline(ctx) {
-            // Body
+            // Main body - rounded sedan shape
             ctx.beginPath();
-            ctx.moveTo(-90, 10);
-            ctx.lineTo(-90, -10);
-            ctx.quadraticCurveTo(-90, -30, -70, -30);
-            ctx.lineTo(-40, -30);
-            ctx.lineTo(-25, -65);
-            ctx.lineTo(40, -65);
-            ctx.lineTo(60, -30);
-            ctx.lineTo(80, -30);
-            ctx.quadraticCurveTo(95, -30, 95, -10);
-            ctx.lineTo(95, 10);
-            ctx.quadraticCurveTo(95, 25, 80, 25);
-            ctx.lineTo(-75, 25);
-            ctx.quadraticCurveTo(-90, 25, -90, 10);
+            ctx.moveTo(-95, 5);
+            ctx.quadraticCurveTo(-100, -5, -95, -15);
+            ctx.lineTo(-90, -28);
+            ctx.quadraticCurveTo(-88, -35, -78, -35);
+            ctx.lineTo(-42, -35);
+            // Roof curve
+            ctx.lineTo(-30, -72);
+            ctx.quadraticCurveTo(-28, -78, -22, -78);
+            ctx.lineTo(38, -78);
+            ctx.quadraticCurveTo(44, -78, 46, -72);
+            ctx.lineTo(62, -35);
+            ctx.lineTo(82, -35);
+            ctx.quadraticCurveTo(100, -35, 102, -15);
+            ctx.lineTo(102, 5);
+            ctx.quadraticCurveTo(102, 18, 92, 22);
+            ctx.lineTo(78, 22);
+            // Wheel arch front
+            ctx.quadraticCurveTo(75, 35, 60, 38);
+            ctx.quadraticCurveTo(45, 35, 42, 22);
+            ctx.lineTo(-28, 22);
+            // Wheel arch rear
+            ctx.quadraticCurveTo(-32, 35, -47, 38);
+            ctx.quadraticCurveTo(-62, 35, -65, 22);
+            ctx.lineTo(-82, 22);
+            ctx.quadraticCurveTo(-95, 18, -95, 5);
             ctx.closePath();
             ctx.stroke();
-            // Windows
+            // Windshield (front)
             ctx.beginPath();
-            ctx.moveTo(-20, -58);
-            ctx.lineTo(-35, -35);
-            ctx.lineTo(0, -35);
+            ctx.moveTo(46, -72);
+            ctx.lineTo(58, -40);
+            ctx.lineTo(8, -40);
+            ctx.lineTo(8, -72);
             ctx.closePath();
             ctx.stroke();
+            // Rear window
+            ctx.beginPath();
+            ctx.moveTo(-22, -72);
+            ctx.lineTo(-36, -40);
+            ctx.lineTo(2, -40);
+            ctx.lineTo(2, -72);
+            ctx.closePath();
+            ctx.stroke();
+            // Window divider pillar
+            ctx.beginPath();
+            ctx.moveTo(5, -72);
+            ctx.lineTo(5, -40);
+            ctx.stroke();
+            // Door line
             ctx.beginPath();
             ctx.moveTo(5, -35);
-            ctx.lineTo(5, -58);
-            ctx.lineTo(35, -58);
-            ctx.lineTo(50, -35);
-            ctx.closePath();
+            ctx.lineTo(5, 20);
             ctx.stroke();
-            // Wheels
+            // Door handle (front)
             ctx.beginPath();
-            ctx.arc(-50, 25, 18, 0, Math.PI * 2);
+            ctx.moveTo(18, -10);
+            ctx.lineTo(30, -10);
+            ctx.stroke();
+            // Door handle (rear)
+            ctx.beginPath();
+            ctx.moveTo(-8, -10);
+            ctx.lineTo(-20, -10);
+            ctx.stroke();
+            // Front wheel - detailed
+            ctx.beginPath();
+            ctx.arc(60, 25, 20, 0, Math.PI * 2);
             ctx.stroke();
             ctx.beginPath();
-            ctx.arc(-50, 25, 8, 0, Math.PI * 2);
+            ctx.arc(60, 25, 12, 0, Math.PI * 2);
             ctx.stroke();
             ctx.beginPath();
-            ctx.arc(55, 25, 18, 0, Math.PI * 2);
+            ctx.arc(60, 25, 4, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(100,100,100,0.2)';
+            ctx.fill();
+            // Wheel spokes
+            for (let a = 0; a < 5; a++) {
+                const angle = (a / 5) * Math.PI * 2;
+                ctx.beginPath();
+                ctx.moveTo(60 + Math.cos(angle) * 5, 25 + Math.sin(angle) * 5);
+                ctx.lineTo(60 + Math.cos(angle) * 11, 25 + Math.sin(angle) * 11);
+                ctx.stroke();
+            }
+            // Rear wheel - detailed
+            ctx.beginPath();
+            ctx.arc(-47, 25, 20, 0, Math.PI * 2);
             ctx.stroke();
             ctx.beginPath();
-            ctx.arc(55, 25, 8, 0, Math.PI * 2);
+            ctx.arc(-47, 25, 12, 0, Math.PI * 2);
             ctx.stroke();
-            // Headlight
             ctx.beginPath();
-            ctx.ellipse(90, -10, 8, 12, 0, 0, Math.PI * 2);
+            ctx.arc(-47, 25, 4, 0, Math.PI * 2);
+            ctx.fill();
+            for (let a = 0; a < 5; a++) {
+                const angle = (a / 5) * Math.PI * 2;
+                ctx.beginPath();
+                ctx.moveTo(-47 + Math.cos(angle) * 5, 25 + Math.sin(angle) * 5);
+                ctx.lineTo(-47 + Math.cos(angle) * 11, 25 + Math.sin(angle) * 11);
+                ctx.stroke();
+            }
+            // Headlights
+            ctx.beginPath();
+            ctx.ellipse(98, -18, 6, 10, 0, 0, Math.PI * 2);
             ctx.stroke();
-            // Taillight
             ctx.beginPath();
-            ctx.ellipse(-85, -10, 6, 10, 0, 0, Math.PI * 2);
+            ctx.ellipse(98, -18, 3, 5, 0, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(100,100,100,0.15)';
+            ctx.fill();
+            // Taillights
+            ctx.beginPath();
+            ctx.ellipse(-92, -15, 5, 8, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            // Bumper line front
+            ctx.beginPath();
+            ctx.moveTo(85, 5);
+            ctx.lineTo(100, 5);
+            ctx.stroke();
+            // Bumper line rear
+            ctx.beginPath();
+            ctx.moveTo(-82, 5);
+            ctx.lineTo(-95, 5);
+            ctx.stroke();
+            // Side mirror
+            ctx.beginPath();
+            ctx.ellipse(65, -42, 6, 4, 0.3, 0, Math.PI * 2);
+            ctx.stroke();
+            // Exhaust
+            ctx.beginPath();
+            ctx.ellipse(-95, 12, 5, 3, 0, 0, Math.PI * 2);
             ctx.stroke();
         }
 
         function drawHouseOutline(ctx) {
-            // Roof
+            // Main roof with overhang
             ctx.beginPath();
-            ctx.moveTo(0, -90);
-            ctx.lineTo(-90, -20);
-            ctx.lineTo(90, -20);
+            ctx.moveTo(0, -95);
+            ctx.lineTo(-100, -22);
+            ctx.lineTo(-95, -18);
+            ctx.lineTo(95, -18);
+            ctx.lineTo(100, -22);
             ctx.closePath();
             ctx.stroke();
-            // Walls
+            // Roof ridge detail
             ctx.beginPath();
-            ctx.rect(-70, -20, 140, 100);
+            ctx.moveTo(-8, -88);
+            ctx.lineTo(8, -88);
             ctx.stroke();
-            // Door
+            // Walls with slight 3D effect
             ctx.beginPath();
-            ctx.rect(-15, 25, 30, 55);
+            ctx.rect(-75, -18, 150, 105);
+            ctx.stroke();
+            // Foundation line
+            ctx.beginPath();
+            ctx.moveTo(-80, 87);
+            ctx.lineTo(80, 87);
+            ctx.stroke();
+            // Door with arch top
+            ctx.beginPath();
+            ctx.moveTo(-16, 87);
+            ctx.lineTo(-16, 28);
+            ctx.quadraticCurveTo(-16, 15, 0, 15);
+            ctx.quadraticCurveTo(16, 15, 16, 28);
+            ctx.lineTo(16, 87);
+            ctx.stroke();
+            // Door panels
+            ctx.beginPath();
+            ctx.rect(-12, 35, 10, 18);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.rect(2, 35, 10, 18);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.rect(-12, 58, 10, 22);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.rect(2, 58, 10, 22);
             ctx.stroke();
             // Door knob
             ctx.beginPath();
-            ctx.arc(10, 55, 3, 0, Math.PI * 2);
-            ctx.stroke();
-            // Left window
+            ctx.arc(11, 55, 3, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(100,100,100,0.25)';
+            ctx.fill();
+            // Door step
             ctx.beginPath();
-            ctx.rect(-58, 0, 30, 30);
+            ctx.rect(-20, 83, 40, 4);
             ctx.stroke();
-            ctx.moveTo(-43, 0);
-            ctx.lineTo(-43, 30);
-            ctx.stroke();
-            ctx.moveTo(-58, 15);
-            ctx.lineTo(-28, 15);
-            ctx.stroke();
-            // Right window
+            // Left window with shutters
             ctx.beginPath();
-            ctx.rect(28, 0, 30, 30);
+            ctx.rect(-62, 5, 32, 28);
             ctx.stroke();
-            ctx.moveTo(43, 0);
-            ctx.lineTo(43, 30);
-            ctx.stroke();
-            ctx.moveTo(28, 15);
-            ctx.lineTo(58, 15);
-            ctx.stroke();
-            // Chimney
+            // Window cross
             ctx.beginPath();
-            ctx.rect(40, -75, 20, 40);
+            ctx.moveTo(-46, 5);
+            ctx.lineTo(-46, 33);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(-62, 19);
+            ctx.lineTo(-30, 19);
+            ctx.stroke();
+            // Left shutter
+            ctx.beginPath();
+            ctx.rect(-68, 3, 5, 32);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.rect(-29, 3, 5, 32);
+            ctx.stroke();
+            // Window sill
+            ctx.beginPath();
+            ctx.moveTo(-64, 35);
+            ctx.lineTo(-28, 35);
+            ctx.stroke();
+            // Right window with shutters
+            ctx.beginPath();
+            ctx.rect(30, 5, 32, 28);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(46, 5);
+            ctx.lineTo(46, 33);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(30, 19);
+            ctx.lineTo(62, 19);
+            ctx.stroke();
+            // Right shutters
+            ctx.beginPath();
+            ctx.rect(24, 3, 5, 32);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.rect(63, 3, 5, 32);
+            ctx.stroke();
+            // Window sill
+            ctx.beginPath();
+            ctx.moveTo(28, 35);
+            ctx.lineTo(64, 35);
+            ctx.stroke();
+            // Chimney with cap
+            ctx.beginPath();
+            ctx.moveTo(42, -80);
+            ctx.lineTo(42, -45);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(62, -80);
+            ctx.lineTo(62, -35);
+            ctx.stroke();
+            // Chimney cap
+            ctx.beginPath();
+            ctx.moveTo(38, -80);
+            ctx.lineTo(66, -80);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(40, -84);
+            ctx.lineTo(64, -84);
+            ctx.stroke();
+            // Chimney bricks
+            ctx.beginPath();
+            ctx.moveTo(42, -70);
+            ctx.lineTo(62, -70);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(52, -80);
+            ctx.lineTo(52, -70);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(42, -60);
+            ctx.lineTo(62, -60);
+            ctx.stroke();
+            // Smoke curls
+            ctx.beginPath();
+            ctx.moveTo(52, -86);
+            ctx.bezierCurveTo(50, -92, 55, -96, 52, -102);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(48, -84);
+            ctx.bezierCurveTo(44, -90, 50, -95, 46, -100);
+            ctx.stroke();
+            // Flower box under left window
+            ctx.beginPath();
+            ctx.rect(-60, 36, 28, 6);
+            ctx.stroke();
+            // Small flowers
+            ctx.beginPath();
+            ctx.arc(-54, 34, 3, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(-46, 33, 3, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(-38, 34, 3, 0, Math.PI * 2);
+            ctx.stroke();
+            // Path to door
+            ctx.beginPath();
+            ctx.moveTo(-14, 87);
+            ctx.lineTo(-20, 95);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(14, 87);
+            ctx.lineTo(20, 95);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(-16, 91);
+            ctx.lineTo(16, 91);
             ctx.stroke();
         }
 
         function drawButterflyOutline(ctx) {
-            // Upper left wing
+            // Upper left wing - larger and more elaborate
             ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.bezierCurveTo(-40, -80, -120, -60, -70, -10);
-            ctx.bezierCurveTo(-110, -20, -100, 30, -50, 20);
-            ctx.bezierCurveTo(-30, 50, -20, 60, 0, 30);
+            ctx.moveTo(0, -5);
+            ctx.bezierCurveTo(-25, -55, -60, -85, -95, -70);
+            ctx.bezierCurveTo(-125, -55, -120, -20, -85, -10);
+            ctx.bezierCurveTo(-110, 0, -115, 35, -80, 40);
+            ctx.bezierCurveTo(-55, 44, -30, 50, -8, 30);
+            ctx.stroke();
+            // Lower left wing
+            ctx.beginPath();
+            ctx.moveTo(-8, 30);
+            ctx.bezierCurveTo(-25, 40, -55, 55, -65, 65);
+            ctx.bezierCurveTo(-75, 75, -60, 82, -45, 72);
+            ctx.bezierCurveTo(-25, 60, -10, 45, -5, 35);
             ctx.stroke();
             // Upper right wing
             ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.bezierCurveTo(40, -80, 120, -60, 70, -10);
-            ctx.bezierCurveTo(110, -20, 100, 30, 50, 20);
-            ctx.bezierCurveTo(30, 50, 20, 60, 0, 30);
+            ctx.moveTo(0, -5);
+            ctx.bezierCurveTo(25, -55, 60, -85, 95, -70);
+            ctx.bezierCurveTo(125, -55, 120, -20, 85, -10);
+            ctx.bezierCurveTo(110, 0, 115, 35, 80, 40);
+            ctx.bezierCurveTo(55, 44, 30, 50, 8, 30);
             ctx.stroke();
-            // Wing patterns (circles)
+            // Lower right wing
             ctx.beginPath();
-            ctx.arc(-55, -25, 15, 0, Math.PI * 2);
+            ctx.moveTo(8, 30);
+            ctx.bezierCurveTo(25, 40, 55, 55, 65, 65);
+            ctx.bezierCurveTo(75, 75, 60, 82, 45, 72);
+            ctx.bezierCurveTo(25, 60, 10, 45, 5, 35);
+            ctx.stroke();
+            // Wing vein patterns - left upper
+            ctx.beginPath();
+            ctx.moveTo(-5, -5);
+            ctx.bezierCurveTo(-35, -30, -65, -50, -90, -40);
             ctx.stroke();
             ctx.beginPath();
-            ctx.arc(55, -25, 15, 0, Math.PI * 2);
+            ctx.moveTo(-5, 5);
+            ctx.bezierCurveTo(-40, -10, -70, -15, -85, -10);
             ctx.stroke();
             ctx.beginPath();
-            ctx.arc(-45, 15, 10, 0, Math.PI * 2);
+            ctx.moveTo(-5, 15);
+            ctx.bezierCurveTo(-35, 15, -65, 20, -80, 30);
+            ctx.stroke();
+            // Wing vein patterns - right upper
+            ctx.beginPath();
+            ctx.moveTo(5, -5);
+            ctx.bezierCurveTo(35, -30, 65, -50, 90, -40);
             ctx.stroke();
             ctx.beginPath();
-            ctx.arc(45, 15, 10, 0, Math.PI * 2);
+            ctx.moveTo(5, 5);
+            ctx.bezierCurveTo(40, -10, 70, -15, 85, -10);
             ctx.stroke();
-            // Body
             ctx.beginPath();
-            ctx.ellipse(0, 10, 6, 30, 0, 0, Math.PI * 2);
+            ctx.moveTo(5, 15);
+            ctx.bezierCurveTo(35, 15, 65, 20, 80, 30);
+            ctx.stroke();
+            // Wing eye spots - left
+            ctx.beginPath();
+            ctx.ellipse(-70, -40, 18, 14, -0.3, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.ellipse(-70, -40, 10, 7, -0.3, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(100,100,100,0.15)';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(-65, 18, 12, 10, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.ellipse(-65, 18, 6, 5, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Wing eye spots - right
+            ctx.beginPath();
+            ctx.ellipse(70, -40, 18, 14, 0.3, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.ellipse(70, -40, 10, 7, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(65, 18, 12, 10, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.ellipse(65, 18, 6, 5, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Small decorative spots on lower wings
+            ctx.beginPath();
+            ctx.arc(-50, 58, 5, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(50, 58, 5, 0, Math.PI * 2);
+            ctx.stroke();
+            // Body - segmented
+            ctx.beginPath();
+            ctx.ellipse(0, 5, 5, 8, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.ellipse(0, 18, 5, 8, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.ellipse(0, 30, 4, 7, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            // Thorax
+            ctx.beginPath();
+            ctx.ellipse(0, -5, 6, 8, 0, 0, Math.PI * 2);
             ctx.stroke();
             // Head
             ctx.beginPath();
-            ctx.arc(0, -22, 8, 0, Math.PI * 2);
+            ctx.arc(0, -18, 9, 0, Math.PI * 2);
             ctx.stroke();
-            // Antennae
+            // Eyes
             ctx.beginPath();
-            ctx.moveTo(-3, -28);
-            ctx.quadraticCurveTo(-20, -55, -25, -50);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(3, -28);
-            ctx.quadraticCurveTo(20, -55, 25, -50);
-            ctx.stroke();
-            // Antenna dots
-            ctx.beginPath();
-            ctx.arc(-25, -50, 4, 0, Math.PI * 2);
+            ctx.arc(-5, -20, 3, 0, Math.PI * 2);
             ctx.fillStyle = 'rgba(100,100,100,0.25)';
             ctx.fill();
             ctx.beginPath();
-            ctx.arc(25, -50, 4, 0, Math.PI * 2);
+            ctx.arc(5, -20, 3, 0, Math.PI * 2);
             ctx.fill();
+            // Antennae - curling elegantly
+            ctx.beginPath();
+            ctx.moveTo(-4, -26);
+            ctx.bezierCurveTo(-12, -45, -25, -60, -35, -65);
+            ctx.bezierCurveTo(-40, -67, -42, -62, -38, -58);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(4, -26);
+            ctx.bezierCurveTo(12, -45, 25, -60, 35, -65);
+            ctx.bezierCurveTo(40, -67, 42, -62, 38, -58);
+            ctx.stroke();
+            // Antenna tip dots
+            ctx.beginPath();
+            ctx.arc(-38, -58, 4, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(100,100,100,0.2)';
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(38, -58, 4, 0, Math.PI * 2);
+            ctx.fill();
+            // Tiny legs
+            ctx.beginPath();
+            ctx.moveTo(-4, 8);
+            ctx.lineTo(-12, 14);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(4, 8);
+            ctx.lineTo(12, 14);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(-4, 18);
+            ctx.lineTo(-12, 24);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(4, 18);
+            ctx.lineTo(12, 24);
+            ctx.stroke();
         }
 
         function setupDrawing(canvas) {
@@ -2699,7 +3637,7 @@
                 const y = touch.clientY - rect.top;
                 const ctx = CanvasGame.canvasCtx.draw;
                 ctx.strokeStyle = currentColor;
-                ctx.lineWidth = 6;
+                ctx.lineWidth = CanvasGame.brushSize || 8;
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
                 ctx.lineTo(x, y);
@@ -2727,7 +3665,7 @@
                 const y = e.clientY - rect.top;
                 const ctx = CanvasGame.canvasCtx.draw;
                 ctx.strokeStyle = currentColor;
-                ctx.lineWidth = 6;
+                ctx.lineWidth = CanvasGame.brushSize || 8;
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
                 ctx.lineTo(x, y);
@@ -2765,17 +3703,42 @@
             bg.className = 'aquarium-bg';
             aquarium.appendChild(bg);
 
+            // Light rays from surface
+            const raysDiv = document.createElement('div');
+            raysDiv.style.cssText = 'position:absolute;inset:0;z-index:2;overflow:hidden;pointer-events:none;';
+            for (let i = 0; i < 5; i++) {
+                const ray = document.createElement('div');
+                const left = 10 + i * 20;
+                const width = 30 + Math.random() * 40;
+                ray.style.cssText = `position:absolute;top:-5%;left:${left}%;width:${width}px;height:120%;background:linear-gradient(180deg,rgba(255,255,200,0.18),rgba(255,255,200,0.02) 70%,transparent);transform:rotate(${-5+Math.random()*10}deg);animation:rayShimmer ${4+Math.random()*3}s ease-in-out infinite alternate;`;
+                raysDiv.appendChild(ray);
+            }
+            aquarium.appendChild(raysDiv);
+
+            // Add style for ray animation if not exists
+            if (!document.getElementById('aquarium-extra-styles')) {
+                const style = document.createElement('style');
+                style.id = 'aquarium-extra-styles';
+                style.textContent = `
+                    @keyframes rayShimmer { 0%{opacity:0.3;} 100%{opacity:0.8;} }
+                    @keyframes seaweedSway { 0%,100%{transform:rotate(-5deg);} 50%{transform:rotate(5deg);} }
+                    @keyframes starPulse { 0%,100%{transform:scale(1);opacity:0.7;} 50%{transform:scale(1.15);opacity:1;} }
+                    @keyframes sandSparkle { 0%,100%{opacity:0.3;} 50%{opacity:0.8;} }
+                `;
+                document.head.appendChild(style);
+            }
+
             const bubblesContainer = document.createElement('div');
             bubblesContainer.className = 'aquarium-bubbles';
-            for (let i = 0; i < 8; i++) {
+            for (let i = 0; i < 12; i++) {
                 const bubble = document.createElement('div');
                 bubble.className = 'aquarium-bubble';
-                const size = 8 + Math.random() * 20;
+                const size = 6 + Math.random() * 22;
                 bubble.style.width = size + 'px';
                 bubble.style.height = size + 'px';
                 bubble.style.left = Math.random() * 100 + '%';
-                bubble.style.animationDelay = Math.random() * 2 + 's';
-                bubble.style.animationDuration = (3 + Math.random() * 3) + 's';
+                bubble.style.animationDelay = Math.random() * 4 + 's';
+                bubble.style.animationDuration = (3 + Math.random() * 4) + 's';
                 bubblesContainer.appendChild(bubble);
             }
             aquarium.appendChild(bubblesContainer);
@@ -2784,53 +3747,136 @@
             wave.className = 'aquarium-wave';
             aquarium.appendChild(wave);
 
-            const decorations = document.createElement('div');
-            decorations.className = 'aquarium-decorations';
-            const coralColors = ['#FF7043', '#FF5722', '#FF6D00', '#FFA726', '#FFB74D'];
-            for (let i = 0; i < 5; i++) {
-                const coral = document.createElement('div');
-                coral.className = 'aquarium-coral';
-                coral.style.background = coralColors[i];
-                decorations.appendChild(coral);
+            // Sandy bottom
+            const sandDiv = document.createElement('div');
+            sandDiv.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:18%;z-index:3;background:linear-gradient(180deg,#C8A96E,#D4B87A 30%,#E8CFA0 60%,#D4B87A);border-radius:60% 60% 0 0 / 30px 30px 0 0;';
+            // Sand sparkles
+            for (let i = 0; i < 8; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.style.cssText = `position:absolute;width:3px;height:3px;background:rgba(255,255,200,0.6);border-radius:50%;left:${5+Math.random()*90}%;top:${30+Math.random()*50}%;animation:sandSparkle ${1.5+Math.random()*2}s ease-in-out ${Math.random()*2}s infinite;`;
+                sandDiv.appendChild(sparkle);
             }
+            aquarium.appendChild(sandDiv);
+
+            // Seaweed clusters
+            const seaweedContainer = document.createElement('div');
+            seaweedContainer.style.cssText = 'position:absolute;bottom:12%;left:0;right:0;z-index:4;pointer-events:none;';
+            const seaweedPositions = [8, 22, 45, 65, 82, 92];
+            const seaweedColors = ['#2E7D32', '#388E3C', '#1B5E20', '#43A047', '#2E7D32', '#33691E'];
+            seaweedPositions.forEach((pos, i) => {
+                const height = 60 + Math.random() * 80;
+                const sw = document.createElement('div');
+                sw.style.cssText = `position:absolute;left:${pos}%;bottom:0;width:12px;height:${height}px;transform-origin:bottom center;animation:seaweedSway ${2.5+Math.random()*2}s ease-in-out ${Math.random()*2}s infinite;`;
+                // SVG seaweed blade
+                sw.innerHTML = `<svg width="24" height="${height}" viewBox="0 0 24 ${height}" style="overflow:visible;">
+                    <path d="M12,${height} Q6,${height*0.7} 14,${height*0.5} Q4,${height*0.3} 12,${height*0.1} Q10,${height*0.05} 12,0" fill="none" stroke="${seaweedColors[i]}" stroke-width="5" stroke-linecap="round"/>
+                    ${Math.random()>0.4 ? `<path d="M12,${height*0.6} Q${Math.random()>0.5?20:4},${height*0.45} ${Math.random()>0.5?18:6},${height*0.35}" fill="none" stroke="${seaweedColors[i]}" stroke-width="3" stroke-linecap="round"/>` : ''}
+                </svg>`;
+                seaweedContainer.appendChild(sw);
+            });
+            aquarium.appendChild(seaweedContainer);
+
+            // Decorative elements on sand
+            const decorations = document.createElement('div');
+            decorations.style.cssText = 'position:absolute;bottom:4%;left:0;right:0;z-index:5;pointer-events:none;display:flex;align-items:flex-end;justify-content:space-around;padding:0 5%;';
+            // Corals as SVG
+            const coralData = [
+                {color:'#FF7043', h:45}, {color:'#E91E63', h:35}, {color:'#FF5722', h:50},
+                {color:'#FFA726', h:30}, {color:'#AB47BC', h:40}
+            ];
+            coralData.forEach(cd => {
+                const c = document.createElement('div');
+                c.innerHTML = `<svg width="40" height="${cd.h}" viewBox="0 0 40 ${cd.h}">
+                    <path d="M20,${cd.h} L20,${cd.h*0.4} Q15,${cd.h*0.2} 10,${cd.h*0.1} M20,${cd.h*0.4} Q25,${cd.h*0.15} 30,${cd.h*0.05} M20,${cd.h*0.5} Q12,${cd.h*0.35} 5,${cd.h*0.25}" fill="none" stroke="${cd.color}" stroke-width="4" stroke-linecap="round"/>
+                    <circle cx="10" cy="${cd.h*0.1}" r="5" fill="${cd.color}" opacity="0.8"/>
+                    <circle cx="30" cy="${cd.h*0.05}" r="5" fill="${cd.color}" opacity="0.8"/>
+                    <circle cx="5" cy="${cd.h*0.25}" r="4" fill="${cd.color}" opacity="0.8"/>
+                </svg>`;
+                decorations.appendChild(c);
+            });
             aquarium.appendChild(decorations);
 
-            const canvas = CanvasGame.canvases.draw;
-            if (canvas) {
+            // Starfish on sand
+            const starfish = document.createElement('div');
+            starfish.style.cssText = 'position:absolute;bottom:8%;left:15%;z-index:5;font-size:28px;animation:starPulse 3s ease-in-out infinite;pointer-events:none;';
+            starfish.textContent = '⭐';
+            aquarium.appendChild(starfish);
+            const shell = document.createElement('div');
+            shell.style.cssText = 'position:absolute;bottom:6%;right:20%;z-index:5;font-size:22px;pointer-events:none;';
+            shell.textContent = '🐚';
+            aquarium.appendChild(shell);
+
+            // Small background fish
+            for (let i = 0; i < 3; i++) {
+                const bgFish = document.createElement('div');
+                const fishY = 20 + Math.random() * 40;
+                const fishSize = 18 + Math.random() * 12;
+                const fishSpeed = 8 + Math.random() * 6;
+                const fishDelay = Math.random() * 5;
+                bgFish.style.cssText = `position:absolute;top:${fishY}%;z-index:4;font-size:${fishSize}px;opacity:0.4;animation:swimRight ${fishSpeed}s linear ${fishDelay}s infinite;pointer-events:none;`;
+                bgFish.textContent = ['🐠','🐡','🦐'][i];
+                aquarium.appendChild(bgFish);
+            }
+
+            // Capture the actual drawn image from canvases
+            const outlineCanvas = CanvasGame.canvases.outline;
+            const drawCanvas = CanvasGame.canvases.draw;
+            let capturedImageURL = null;
+
+            if (drawCanvas && outlineCanvas) {
+                // Merge outline + drawing into one canvas, then export as image
+                const mergeCanvas = document.createElement('canvas');
+                mergeCanvas.width = drawCanvas.width;
+                mergeCanvas.height = drawCanvas.height;
+                const mergeCtx = mergeCanvas.getContext('2d');
+                mergeCtx.drawImage(outlineCanvas, 0, 0);
+                mergeCtx.drawImage(drawCanvas, 0, 0);
+                capturedImageURL = mergeCanvas.toDataURL('image/png');
+            }
+
+            if (capturedImageURL) {
                 const drawing = document.createElement('div');
                 drawing.className = 'aquarium-drawing';
-                const shapeEmojis = { fish: '🐟', car: '🚗', house: '🏠', butterfly: '🦋' };
-                drawing.textContent = shapeEmojis[CanvasGame.currentShape] || '🎨';
-                drawing.style.top = Math.random() * 50 + 15 + '%';
-                drawing.style.left = '-120px';
+                // Use the actual captured drawing as an <img>
+                const img = document.createElement('img');
+                img.src = capturedImageURL;
+                img.style.cssText = 'width:clamp(120px,35vw,220px);height:auto;pointer-events:none;';
+                drawing.textContent = '';
+                drawing.style.fontSize = '0';
+                drawing.appendChild(img);
+                drawing.style.top = Math.random() * 40 + 20 + '%';
+                drawing.style.left = '-220px';
                 aquarium.appendChild(drawing);
 
-                // Bidirectional swimming animation
-                let posX = -120;
-                let speed = 1.2 + Math.random() * 0.8;
+                // Bidirectional swimming with head direction matching movement
+                let posX = -220;
+                let speed = 1.0 + Math.random() * 0.6;
                 let goingRight = true;
+                // Start facing right (default orientation)
+                drawing.style.transition = 'transform 0.4s ease';
                 drawing.style.transform = 'scaleX(1)';
 
                 function animateSwim() {
                     if (!CanvasGame.aquariumAnimId) return;
-                    const maxX = window.innerWidth + 60;
-                    const minX = -120;
+                    const maxX = window.innerWidth + 100;
+                    const minX = -250;
 
                     if (goingRight) {
                         posX += speed;
                         if (posX > maxX) {
                             goingRight = false;
+                            // Flip horizontally so head faces left (movement direction)
                             drawing.style.transform = 'scaleX(-1)';
-                            // Vary vertical position slightly
-                            const newTop = Math.random() * 50 + 15;
+                            const newTop = Math.random() * 40 + 20;
                             drawing.style.top = newTop + '%';
                         }
                     } else {
                         posX -= speed;
                         if (posX < minX) {
                             goingRight = true;
+                            // Flip back so head faces right (movement direction)
                             drawing.style.transform = 'scaleX(1)';
-                            const newTop = Math.random() * 50 + 15;
+                            const newTop = Math.random() * 40 + 20;
                             drawing.style.top = newTop + '%';
                         }
                     }
@@ -2867,7 +3913,6 @@
             window.removeEventListener('resize', () => resizeCanvases);
 
             const homeBtn = document.getElementById('home-btn-3');
-            if (homeBtn) homeBtn.classList.remove('mini-pause');
 
             const area = document.getElementById('canvas-area');
             if (area) area.innerHTML = '';
