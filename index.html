@@ -160,7 +160,7 @@
             transform: scale(0.9);
         }
 
-        /* ===== 게임 영역 (각 게임 콘텐츠가 들어갈 곳) ===== */
+        /* ===== 게임 영역 ===== */
         .game-area {
             width: 100%;
             height: 100%;
@@ -194,18 +194,83 @@
         }
 
         /* ===== 비누방울 팡팡 게임 스타일 ===== */
-        .bubble-score {
+        .bubble-hud {
             position: absolute;
-            top: clamp(10px, 2vh, 20px);
-            right: clamp(10px, 2vw, 20px);
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 20px;
-            padding: 8px 16px;
-            font-size: clamp(1rem, 3vw, 1.4rem);
-            font-weight: 800;
-            color: #FF6B6B;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            top: clamp(8px, 1.5vh, 16px);
+            right: clamp(8px, 2vw, 16px);
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 6px;
             z-index: 100;
+        }
+
+        .bubble-score {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            padding: clamp(8px, 1.5vh, 14px) clamp(16px, 3vw, 28px);
+            font-size: clamp(1.4rem, 4.5vw, 2.2rem);
+            font-weight: 900;
+            color: #FF3D00;
+            box-shadow: 0 4px 16px rgba(255,61,0,0.2);
+            border: 3px solid #FF6E40;
+            transition: transform 0.15s;
+        }
+
+        .bubble-stage {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: clamp(4px, 1vh, 8px) clamp(12px, 2.5vw, 20px);
+            font-size: clamp(0.85rem, 2.5vw, 1.1rem);
+            font-weight: 800;
+            color: #5C6BC0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 2px solid #7986CB;
+        }
+
+        .bubble-stage-up {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.88);
+            z-index: 300;
+            animation: stageUpFade 1.8s ease forwards;
+            pointer-events: none;
+        }
+
+        .bubble-stage-up .stage-up-text {
+            font-size: clamp(2rem, 7vw, 4rem);
+            font-weight: 900;
+            color: #FF6D00;
+            animation: stageUpPop 0.6s ease;
+        }
+
+        .bubble-stage-up .stage-up-emoji {
+            font-size: clamp(3rem, 10vw, 6rem);
+            margin-bottom: 12px;
+            animation: stageUpSpin 0.8s ease;
+        }
+
+        @keyframes stageUpFade {
+            0% { opacity: 0; }
+            15% { opacity: 1; }
+            75% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        @keyframes stageUpPop {
+            0% { transform: scale(0); }
+            60% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes stageUpSpin {
+            0% { transform: rotate(-20deg) scale(0); }
+            60% { transform: rotate(10deg) scale(1.2); }
+            100% { transform: rotate(0deg) scale(1); }
         }
 
         .bubble {
@@ -216,6 +281,18 @@
             cursor: pointer;
             transition: none;
             will-change: transform;
+        }
+
+        .bubble.circle-shape {
+            border-radius: 50%;
+        }
+
+        .bubble.square-shape {
+            border-radius: 18%;
+        }
+
+        .bubble.heart-shape {
+            border-radius: 50%;
         }
 
         .bubble.popping {
@@ -237,8 +314,8 @@
 
         .pop-particle {
             position: absolute;
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             animation: particleFly 0.5s ease-out forwards;
         }
@@ -291,6 +368,23 @@
             transform: scale(0.93);
         }
 
+        /* 점수 획득 플로팅 텍스트 */
+        .score-float {
+            position: absolute;
+            font-size: clamp(1.2rem, 4vw, 2rem);
+            font-weight: 900;
+            color: #FF3D00;
+            pointer-events: none;
+            z-index: 60;
+            animation: scoreFloat 0.8s ease-out forwards;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        @keyframes scoreFloat {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-50px) scale(1.3); opacity: 0; }
+        }
+
         /* ===== 동물 친구 찾기 게임 스타일 ===== */
         .animal-score {
             position: absolute;
@@ -299,10 +393,11 @@
             background: rgba(255, 255, 255, 0.9);
             border-radius: 20px;
             padding: 8px 16px;
-            font-size: clamp(1rem, 3vw, 1.4rem);
+            font-size: clamp(1.2rem, 3.5vw, 1.6rem);
             font-weight: 800;
-            color: #4CAF50;
+            color: #2E7D32;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border: 2px solid #66BB6A;
             z-index: 100;
         }
 
@@ -327,7 +422,7 @@
         .animal-listen-btn {
             font-size: clamp(1.1rem, 3.5vw, 1.6rem);
             font-weight: 800;
-            padding: clamp(12px, 2vh, 20px) clamp(24px, 5vw, 48px);
+            padding: clamp(14px, 2.5vh, 22px) clamp(28px, 6vw, 52px);
             border: none;
             border-radius: 50px;
             background: linear-gradient(135deg, #66BB6A, #43A047);
@@ -350,20 +445,18 @@
 
         .animal-cards {
             display: flex;
-            gap: clamp(12px, 3vw, 24px);
+            gap: clamp(10px, 2.5vw, 20px);
             justify-content: center;
             flex-wrap: wrap;
-            width: 90%;
-            max-width: 600px;
+            width: 95%;
+            max-width: 700px;
         }
 
         .animal-card {
-            flex: 1 1 0;
-            min-width: clamp(80px, 22vw, 150px);
-            max-width: 180px;
-            aspect-ratio: 1;
+            width: clamp(90px, 25vw, 140px);
+            height: clamp(100px, 28vw, 155px);
             background: white;
-            border-radius: clamp(16px, 3vw, 28px);
+            border-radius: clamp(16px, 3vw, 24px);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -379,12 +472,21 @@
             transform: scale(0.92);
         }
 
-        .animal-card .animal-emoji {
-            font-size: clamp(2.5rem, 10vw, 5rem);
+        .animal-card .animal-svg-wrap {
+            width: clamp(50px, 14vw, 80px);
+            height: clamp(50px, 14vw, 80px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .animal-card .animal-svg-wrap svg {
+            width: 100%;
+            height: 100%;
         }
 
         .animal-card .animal-name {
-            font-size: clamp(0.8rem, 2.5vw, 1.2rem);
+            font-size: clamp(0.8rem, 2.5vw, 1.1rem);
             font-weight: 800;
             color: #555;
         }
@@ -486,6 +588,27 @@
             transform: scale(0.93);
         }
 
+        /* 축하 별 이펙트 */
+        .celebration-stars {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 250;
+            overflow: hidden;
+        }
+
+        .celebration-star {
+            position: absolute;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            animation: starFall 1.5s ease-out forwards;
+        }
+
+        @keyframes starFall {
+            0% { transform: translateY(-20px) rotate(0deg) scale(0); opacity: 1; }
+            50% { opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg) scale(1); opacity: 0; }
+        }
+
         /* ===== 반응형 세부 조정 ===== */
         @media (max-width: 480px) {
             .game-grid {
@@ -503,6 +626,13 @@
             }
             .game-card .card-text {
                 text-align: left;
+            }
+            .animal-cards {
+                gap: 8px;
+            }
+            .animal-card {
+                width: clamp(75px, 28vw, 110px);
+                height: clamp(85px, 30vw, 120px);
             }
         }
 
@@ -535,13 +665,13 @@
                 min-height: 80px;
                 padding: 12px;
             }
-            /* 동물 게임 가로모드 조정 */
             .animal-game-content {
                 padding-top: 50px;
                 gap: 8px;
             }
             .animal-card {
-                min-width: 80px;
+                width: 80px;
+                height: 90px;
             }
         }
 
@@ -572,7 +702,10 @@
     <!-- ========== 게임 1: 비누방울 팡팡 ========== -->
     <div id="game-bubble" class="screen game-screen">
         <div class="home-btn" onclick="goHome()">🏠</div>
-        <div class="bubble-score" id="bubble-score">⭐ 0</div>
+        <div class="bubble-hud" id="bubble-hud">
+            <div class="bubble-score" id="bubble-score">⭐ 0</div>
+            <div class="bubble-stage" id="bubble-stage">1단계</div>
+        </div>
         <div class="game-area" id="bubble-area">
             <!-- 방울들이 여기에 동적 생성됨 -->
         </div>
@@ -603,17 +736,26 @@
     <script>
         /* ==============================================
          *  KidsArcade 3in1
-         *  마지막 구현: Phase 2 - 동물 친구 찾기 (Animal Sound) 완성
-         *  날짜: 2026-05-22
-         *  구현 내용:
-         *    Phase 1 - 비누방울 팡팡 ✅
-         *    Phase 2 - 동물 친구 찾기 ✅
-         *      - 3장의 동물 카드 (🐶 강아지, 🐱 고양이, 🦁 사자)
-         *      - "정답 소리 듣기" 버튼 → Web Audio API로 동물 소리 합성
-         *      - 정답 시 ⭕ 오버레이 + 축하 효과음 + 2초 후 자동 진행
-         *      - 오답 시 ❌ 오버레이 + 다시 시도 효과음 (진행 안함)
-         *      - 라운드별 랜덤 정답, 점수 카운터
-         *    Phase 3 - 마법의 스케치북 (미구현)
+         *  마지막 업데이트: 2026-05-22
+         *  변경사항:
+         *    [비누방울 팡팡]
+         *    - 단계 시스템 추가 (1~10단계, 단계별 속도 증가 x1.5)
+         *    - 단계 진행: 1단계=20점, 2단계=30점, 3단계=40점... 점진적
+         *    - 네모/하트 모양 방울 추가 + 선명한 원색 사용
+         *    - 방울 크기 전체적으로 증가
+         *    - 점수 표시 크게 변경, 단계 표시 추가
+         *    - 단계 업 연출 (화면 오버레이 + 효과음)
+         *    - 점수 획득 시 플로팅 텍스트 연출
+         *    - 메인화면 카드 아이콘 💖 하트로 변경
+         *    [동물 친구 찾기]
+         *    - 동물 6종으로 확장 (강아지, 고양이, 사자, 소, 닭, 오리)
+         *    - SVG 동물 일러스트로 변경 (이모지 대신)
+         *    - 각 동물별 고유 소리 합성 추가
+         *    - 라운드당 4장 카드 표시 (6종 중 랜덤 선택)
+         *    - 정답 시 축하 별 이펙트 추가
+         *    [UI/UX]
+         *    - 터치 반응 개선, 버튼 크기 증가
+         *    - 점수 표시 테두리 및 강조 추가
          * ============================================== */
 
         const GAMES = [
@@ -621,7 +763,7 @@
                 id: 'bubble',
                 screenId: 'game-bubble',
                 title: '비누방울 팡팡',
-                emoji: '🫧',
+                emoji: '💖',
                 description: '방울을 톡톡 터뜨려요!',
                 borderColor: '#FFCDD2',
                 bgGradient: 'linear-gradient(145deg, #FFF, #FFEBEE)',
@@ -717,26 +859,49 @@
 
         /* ==============================================
          *  게임 1: 비누방울 팡팡 (Bubble Pop)
+         *  - 단계 시스템, 속도 증가, 다양한 모양/색상
          * ============================================== */
         const BubbleGame = {
             score: 0,
+            stage: 1,
+            stageScore: 0,    // 현재 단계에서 얻은 점수
             bubbles: [],
             animFrameId: null,
             spawnTimer: null,
             running: false,
-            startTime: 0,
-            emojis: ['🫧', '🔵', '🟣', '🟢', '⚪', '💜', '💙', '🩵'],
 
-            getDifficulty() {
-                const elapsed = (Date.now() - this.startTime) / 1000;
-                const level = Math.min(elapsed / 30, 5);
+            // 선명한 원색 팔레트
+            colors: [
+                '#FF1744', // 빨강
+                '#FF6D00', // 주황
+                '#FFD600', // 노랑
+                '#00C853', // 초록
+                '#2979FF', // 파랑
+                '#304FFE', // 남색
+                '#AA00FF', // 보라
+                '#FF4081', // 핫핑크
+                '#00BFA5', // 청록
+                '#F50057', // 딥핑크
+            ],
+
+            shapes: ['circle', 'square', 'heart'],
+
+            // 단계별 목표 점수: 1단계=20, 2단계=30, 3단계=40 ...
+            getStageGoal(stage) {
+                return 10 + stage * 10;
+            },
+
+            // 단계별 난이도 (속도 x1.5씩 증가)
+            getStageDifficulty() {
+                const s = this.stage;
+                const speedMult = Math.pow(1.4, s - 1); // 1, 1.4, 1.96, 2.74...
                 return {
-                    minSize: Math.max(40, 70 - level * 6),
-                    maxSize: Math.max(60, 110 - level * 8),
-                    minSpeed: 0.5 + level * 0.2,
-                    maxSpeed: 1.5 + level * 0.3,
-                    spawnInterval: Math.max(400, 1200 - level * 150),
-                    maxBubbles: Math.min(15, 6 + Math.floor(level * 2))
+                    minSize: 65,
+                    maxSize: 110,
+                    minSpeed: Math.min(0.6 * speedMult, 4.0),
+                    maxSpeed: Math.min(1.2 * speedMult, 6.0),
+                    spawnInterval: Math.max(300, 1100 - s * 80),
+                    maxBubbles: Math.min(18, 6 + s * 2)
                 };
             }
         };
@@ -749,7 +914,7 @@
             overlay.className = 'bubble-start-overlay';
             overlay.id = 'bubble-start-overlay';
             overlay.innerHTML = `
-                <div class="start-emoji">🫧</div>
+                <div class="start-emoji">💖</div>
                 <div class="start-text">방울을 톡톡 터뜨려요!</div>
                 <button class="bubble-start-btn" id="bubble-start-btn">시작! 🎉</button>
             `;
@@ -769,10 +934,12 @@
             if (overlay) overlay.remove();
 
             BubbleGame.score = 0;
+            BubbleGame.stage = 1;
+            BubbleGame.stageScore = 0;
             BubbleGame.bubbles = [];
             BubbleGame.running = true;
-            BubbleGame.startTime = Date.now();
             updateBubbleScore();
+            updateBubbleStage();
 
             scheduleBubbleSpawn();
             BubbleGame.animFrameId = requestAnimationFrame(updateBubbles);
@@ -780,7 +947,7 @@
 
         function scheduleBubbleSpawn() {
             if (!BubbleGame.running) return;
-            const diff = BubbleGame.getDifficulty();
+            const diff = BubbleGame.getStageDifficulty();
 
             if (BubbleGame.bubbles.length < diff.maxBubbles) {
                 spawnBubble();
@@ -793,18 +960,45 @@
             const area = document.getElementById('bubble-area');
             if (!area) return;
 
-            const diff = BubbleGame.getDifficulty();
+            const diff = BubbleGame.getStageDifficulty();
             const size = diff.minSize + Math.random() * (diff.maxSize - diff.minSize);
             const areaRect = area.getBoundingClientRect();
 
             const bubble = document.createElement('div');
-            bubble.className = 'bubble';
+            const shape = BubbleGame.shapes[Math.floor(Math.random() * BubbleGame.shapes.length)];
+            const color = BubbleGame.colors[Math.floor(Math.random() * BubbleGame.colors.length)];
 
-            const emoji = BubbleGame.emojis[Math.floor(Math.random() * BubbleGame.emojis.length)];
-            bubble.textContent = emoji;
-            bubble.style.fontSize = size + 'px';
+            bubble.className = 'bubble ' + shape + '-shape';
             bubble.style.width = size + 'px';
             bubble.style.height = size + 'px';
+
+            if (shape === 'circle') {
+                // 원형 방울 - 그라데이션 + 반투명
+                bubble.style.background = `radial-gradient(circle at 35% 35%, rgba(255,255,255,0.6), ${color}88, ${color})`;
+                bubble.style.border = `3px solid ${color}`;
+                bubble.style.boxShadow = `0 0 12px ${color}55, inset 0 -4px 8px rgba(0,0,0,0.1)`;
+            } else if (shape === 'square') {
+                // 네모 방울 - 꽉 찬 색상
+                bubble.style.background = `linear-gradient(135deg, ${color}, ${color}CC)`;
+                bubble.style.border = `3px solid ${color}`;
+                bubble.style.boxShadow = `0 4px 12px ${color}44`;
+            } else if (shape === 'heart') {
+                // 하트 모양 (CSS로 구현하기 어려워 이모지 사용)
+                bubble.style.background = 'transparent';
+                bubble.style.border = 'none';
+                bubble.style.fontSize = (size * 0.85) + 'px';
+                bubble.style.lineHeight = size + 'px';
+                bubble.textContent = '💖';
+            }
+
+            // 원/네모에 이모지 장식 (선택적)
+            if (shape !== 'heart' && Math.random() > 0.6) {
+                const decorEmojis = ['⭐', '✨', '🌟', '💫'];
+                bubble.textContent = decorEmojis[Math.floor(Math.random() * decorEmojis.length)];
+                bubble.style.fontSize = (size * 0.45) + 'px';
+                bubble.style.lineHeight = size + 'px';
+                bubble.style.textAlign = 'center';
+            }
 
             const x = Math.random() * (areaRect.width - size);
             const y = areaRect.height + size;
@@ -817,6 +1011,7 @@
                 x: x,
                 y: y,
                 size: size,
+                color: color,
                 speedY: -(diff.minSpeed + Math.random() * (diff.maxSpeed - diff.minSpeed)),
                 speedX: (Math.random() - 0.5) * 1.2,
                 wobblePhase: Math.random() * Math.PI * 2,
@@ -869,9 +1064,13 @@
             if (!BubbleGame.running) return;
 
             BubbleGame.score++;
+            BubbleGame.stageScore++;
             updateBubbleScore();
             playPopSound();
-            createPopParticles(bubbleData.x + bubbleData.size / 2, bubbleData.y + bubbleData.size / 2);
+            createPopParticles(bubbleData.x + bubbleData.size / 2, bubbleData.y + bubbleData.size / 2, bubbleData.color);
+
+            // 플로팅 점수 텍스트
+            showScoreFloat(bubbleData.x + bubbleData.size / 2, bubbleData.y);
 
             bubbleData.el.classList.add('popping');
 
@@ -881,32 +1080,83 @@
             setTimeout(() => {
                 bubbleData.el.remove();
             }, 350);
+
+            // 단계 업 체크
+            checkStageUp();
+        }
+
+        function checkStageUp() {
+            const goal = BubbleGame.getStageGoal(BubbleGame.stage);
+            if (BubbleGame.stageScore >= goal && BubbleGame.stage < 10) {
+                BubbleGame.stage++;
+                BubbleGame.stageScore = 0;
+                updateBubbleStage();
+                showStageUpOverlay();
+                playStageUpSound();
+            }
+        }
+
+        function showStageUpOverlay() {
+            const area = document.getElementById('bubble-area');
+            if (!area) return;
+
+            const overlay = document.createElement('div');
+            overlay.className = 'bubble-stage-up';
+            overlay.innerHTML = `
+                <div class="stage-up-emoji">🎉</div>
+                <div class="stage-up-text">${BubbleGame.stage}단계!</div>
+            `;
+            area.appendChild(overlay);
+
+            setTimeout(() => overlay.remove(), 1800);
+        }
+
+        function showScoreFloat(x, y) {
+            const area = document.getElementById('bubble-area');
+            if (!area) return;
+
+            const el = document.createElement('div');
+            el.className = 'score-float';
+            el.textContent = '+1';
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            area.appendChild(el);
+
+            setTimeout(() => el.remove(), 800);
         }
 
         function updateBubbleScore() {
             const scoreEl = document.getElementById('bubble-score');
             if (scoreEl) {
                 scoreEl.textContent = `⭐ ${BubbleGame.score}`;
-                scoreEl.style.transform = 'scale(1.2)';
+                scoreEl.style.transform = 'scale(1.25)';
                 setTimeout(() => { scoreEl.style.transform = 'scale(1)'; }, 150);
             }
         }
 
-        function createPopParticles(cx, cy) {
+        function updateBubbleStage() {
+            const stageEl = document.getElementById('bubble-stage');
+            if (stageEl) {
+                stageEl.textContent = `${BubbleGame.stage}단계`;
+            }
+        }
+
+        function createPopParticles(cx, cy, color) {
             const area = document.getElementById('bubble-area');
             if (!area) return;
 
-            const colors = ['#FF6B6B', '#FFCA28', '#66BB6A', '#42A5F5', '#AB47BC', '#FF7043'];
+            const colors = color ? [color, '#FFCA28', '#FF6B6B', '#66BB6A', '#42A5F5'] :
+                ['#FF6B6B', '#FFCA28', '#66BB6A', '#42A5F5', '#AB47BC', '#FF7043'];
             const container = document.createElement('div');
             container.className = 'pop-particles';
             container.style.left = cx + 'px';
             container.style.top = cy + 'px';
 
-            for (let i = 0; i < 8; i++) {
+            for (let i = 0; i < 10; i++) {
                 const p = document.createElement('div');
                 p.className = 'pop-particle';
-                const angle = (i / 8) * Math.PI * 2;
-                const dist = 25 + Math.random() * 25;
+                const angle = (i / 10) * Math.PI * 2;
+                const dist = 30 + Math.random() * 30;
                 const dx = Math.cos(angle) * dist;
                 const dy = Math.sin(angle) * dist;
                 p.style.setProperty('--dx', dx + 'px');
@@ -954,6 +1204,30 @@
             noise.stop(now + 0.06);
         }
 
+        function playStageUpSound() {
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+
+            // 상승 아르페지오
+            const notes = [523, 659, 784, 1047, 1319];
+            notes.forEach((freq, i) => {
+                const t = now + i * 0.08;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, t);
+                gain.gain.setValueAtTime(0, t);
+                gain.gain.linearRampToValueAtTime(0.25, t + 0.02);
+                gain.gain.setValueAtTime(0.25, t + 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(t);
+                osc.stop(t + 0.3);
+            });
+        }
+
         function cleanupBubbleGame() {
             BubbleGame.running = false;
 
@@ -976,26 +1250,217 @@
 
         /* ==============================================
          *  게임 2: 동물 친구 찾기 (Animal Sound)
+         *  - 6종 동물, SVG 일러스트, 4장 카드 표시
          * ============================================== */
         const AnimalGame = {
             score: 0,
-            currentAnswer: null, // 현재 라운드 정답 동물 ID
-            locked: false,       // 답 선택 후 잠금 (중복 터치 방지)
-            advanceTimer: null,  // 자동 진행 타이머
+            currentAnswer: null,
+            currentChoices: [],
+            locked: false,
+            advanceTimer: null,
             running: false,
 
             animals: [
-                { id: 'dog', emoji: '🐶', name: '강아지' },
-                { id: 'cat', emoji: '🐱', name: '고양이' },
-                { id: 'lion', emoji: '🦁', name: '사자' }
+                { id: 'dog',     name: '강아지' },
+                { id: 'cat',     name: '고양이' },
+                { id: 'lion',    name: '사자' },
+                { id: 'cow',     name: '소' },
+                { id: 'chicken', name: '닭' },
+                { id: 'duck',    name: '오리' }
             ]
         };
+
+        /* ===== SVG 동물 일러스트 ===== */
+        function getAnimalSVG(id) {
+            switch (id) {
+                case 'dog':
+                    return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <!-- 강아지 얼굴 -->
+                        <ellipse cx="50" cy="55" rx="35" ry="32" fill="#C88B53"/>
+                        <!-- 귀 -->
+                        <ellipse cx="20" cy="30" rx="14" ry="22" fill="#8B5E3C" transform="rotate(-15 20 30)"/>
+                        <ellipse cx="80" cy="30" rx="14" ry="22" fill="#8B5E3C" transform="rotate(15 80 30)"/>
+                        <!-- 귀 안쪽 -->
+                        <ellipse cx="20" cy="32" rx="8" ry="14" fill="#D4956B" transform="rotate(-15 20 32)"/>
+                        <ellipse cx="80" cy="32" rx="8" ry="14" fill="#D4956B" transform="rotate(15 80 32)"/>
+                        <!-- 얼굴 안쪽 (밝은 부분) -->
+                        <ellipse cx="50" cy="62" rx="22" ry="18" fill="#E8C89E"/>
+                        <!-- 눈 -->
+                        <circle cx="37" cy="50" r="5" fill="#333"/>
+                        <circle cx="63" cy="50" r="5" fill="#333"/>
+                        <circle cx="39" cy="48" r="2" fill="white"/>
+                        <circle cx="65" cy="48" r="2" fill="white"/>
+                        <!-- 코 -->
+                        <ellipse cx="50" cy="62" rx="7" ry="5" fill="#333"/>
+                        <ellipse cx="50" cy="61" rx="3" ry="2" fill="#666"/>
+                        <!-- 입 -->
+                        <path d="M 50 67 Q 43 74 38 70" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M 50 67 Q 57 74 62 70" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round"/>
+                        <!-- 혀 -->
+                        <ellipse cx="50" cy="74" rx="5" ry="6" fill="#FF6B6B"/>
+                        <!-- 볼 터치 -->
+                        <circle cx="28" cy="60" r="5" fill="#FFB4B4" opacity="0.5"/>
+                        <circle cx="72" cy="60" r="5" fill="#FFB4B4" opacity="0.5"/>
+                    </svg>`;
+
+                case 'cat':
+                    return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <!-- 고양이 얼굴 -->
+                        <ellipse cx="50" cy="58" rx="33" ry="30" fill="#FFB74D"/>
+                        <!-- 귀 (삼각형) -->
+                        <polygon points="22,38 10,10 38,30" fill="#FFB74D"/>
+                        <polygon points="78,38 90,10 62,30" fill="#FFB74D"/>
+                        <!-- 귀 안쪽 -->
+                        <polygon points="24,36 15,16 35,32" fill="#FF8A65"/>
+                        <polygon points="76,36 85,16 65,32" fill="#FF8A65"/>
+                        <!-- 눈 -->
+                        <ellipse cx="37" cy="52" rx="6" ry="7" fill="#66BB6A"/>
+                        <ellipse cx="63" cy="52" rx="6" ry="7" fill="#66BB6A"/>
+                        <ellipse cx="37" cy="52" rx="3" ry="7" fill="#333"/>
+                        <ellipse cx="63" cy="52" rx="3" ry="7" fill="#333"/>
+                        <circle cx="39" cy="49" r="2" fill="white"/>
+                        <circle cx="65" cy="49" r="2" fill="white"/>
+                        <!-- 코 -->
+                        <polygon points="50,62 46,66 54,66" fill="#FF7043"/>
+                        <!-- 입 -->
+                        <path d="M 50 66 Q 44 72 40 68" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
+                        <path d="M 50 66 Q 56 72 60 68" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
+                        <!-- 수염 -->
+                        <line x1="12" y1="58" x2="32" y2="62" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
+                        <line x1="12" y1="64" x2="32" y2="65" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
+                        <line x1="12" y1="70" x2="32" y2="68" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
+                        <line x1="88" y1="58" x2="68" y2="62" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
+                        <line x1="88" y1="64" x2="68" y2="65" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
+                        <line x1="88" y1="70" x2="68" y2="68" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
+                        <!-- 볼 터치 -->
+                        <circle cx="30" cy="64" r="5" fill="#FFCDD2" opacity="0.5"/>
+                        <circle cx="70" cy="64" r="5" fill="#FFCDD2" opacity="0.5"/>
+                    </svg>`;
+
+                case 'lion':
+                    return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <!-- 갈기 -->
+                        <circle cx="50" cy="52" r="42" fill="#FF8F00"/>
+                        <!-- 갈기 장식 -->
+                        <circle cx="50" cy="10" r="10" fill="#E65100"/>
+                        <circle cx="25" cy="18" r="10" fill="#EF6C00"/>
+                        <circle cx="75" cy="18" r="10" fill="#EF6C00"/>
+                        <circle cx="12" cy="38" r="10" fill="#E65100"/>
+                        <circle cx="88" cy="38" r="10" fill="#E65100"/>
+                        <circle cx="12" cy="60" r="10" fill="#EF6C00"/>
+                        <circle cx="88" cy="60" r="10" fill="#EF6C00"/>
+                        <circle cx="25" cy="80" r="9" fill="#E65100"/>
+                        <circle cx="75" cy="80" r="9" fill="#E65100"/>
+                        <!-- 얼굴 -->
+                        <circle cx="50" cy="52" r="28" fill="#FFB74D"/>
+                        <!-- 눈 -->
+                        <circle cx="39" cy="46" r="5" fill="#333"/>
+                        <circle cx="61" cy="46" r="5" fill="#333"/>
+                        <circle cx="41" cy="44" r="2" fill="white"/>
+                        <circle cx="63" cy="44" r="2" fill="white"/>
+                        <!-- 코 -->
+                        <ellipse cx="50" cy="56" rx="6" ry="5" fill="#8D6E63"/>
+                        <ellipse cx="50" cy="55" rx="3" ry="2" fill="#A1887F"/>
+                        <!-- 입 -->
+                        <path d="M 50 61 Q 43 68 38 64" fill="none" stroke="#5D4037" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M 50 61 Q 57 68 62 64" fill="none" stroke="#5D4037" stroke-width="2" stroke-linecap="round"/>
+                        <!-- 볼 터치 -->
+                        <circle cx="32" cy="56" r="5" fill="#FFCDD2" opacity="0.4"/>
+                        <circle cx="68" cy="56" r="5" fill="#FFCDD2" opacity="0.4"/>
+                    </svg>`;
+
+                case 'cow':
+                    return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <!-- 소 얼굴 -->
+                        <ellipse cx="50" cy="55" rx="34" ry="30" fill="white"/>
+                        <!-- 반점 -->
+                        <ellipse cx="35" cy="38" rx="12" ry="10" fill="#333" transform="rotate(-10 35 38)"/>
+                        <ellipse cx="68" cy="42" rx="10" ry="8" fill="#333" transform="rotate(15 68 42)"/>
+                        <ellipse cx="55" cy="30" rx="8" ry="6" fill="#333"/>
+                        <!-- 귀 -->
+                        <ellipse cx="16" cy="40" rx="12" ry="8" fill="#FFCC80" transform="rotate(-30 16 40)"/>
+                        <ellipse cx="84" cy="40" rx="12" ry="8" fill="#FFCC80" transform="rotate(30 84 40)"/>
+                        <!-- 뿔 -->
+                        <path d="M 30 25 Q 25 10 20 15" fill="none" stroke="#FFE082" stroke-width="5" stroke-linecap="round"/>
+                        <path d="M 70 25 Q 75 10 80 15" fill="none" stroke="#FFE082" stroke-width="5" stroke-linecap="round"/>
+                        <!-- 눈 -->
+                        <circle cx="37" cy="50" r="5" fill="#333"/>
+                        <circle cx="63" cy="50" r="5" fill="#333"/>
+                        <circle cx="39" cy="48" r="2" fill="white"/>
+                        <circle cx="65" cy="48" r="2" fill="white"/>
+                        <!-- 주둥이 -->
+                        <ellipse cx="50" cy="68" rx="18" ry="12" fill="#FFCC80"/>
+                        <!-- 콧구멍 -->
+                        <ellipse cx="43" cy="66" rx="4" ry="3" fill="#A1887F"/>
+                        <ellipse cx="57" cy="66" rx="4" ry="3" fill="#A1887F"/>
+                        <!-- 입 -->
+                        <path d="M 42 74 Q 50 80 58 74" fill="none" stroke="#8D6E63" stroke-width="2" stroke-linecap="round"/>
+                    </svg>`;
+
+                case 'chicken':
+                    return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <!-- 닭 몸통 -->
+                        <ellipse cx="50" cy="58" rx="30" ry="28" fill="white"/>
+                        <!-- 볏 (벼슬) -->
+                        <circle cx="44" cy="20" r="7" fill="#F44336"/>
+                        <circle cx="50" cy="15" r="8" fill="#EF5350"/>
+                        <circle cx="56" cy="20" r="7" fill="#F44336"/>
+                        <!-- 머리 -->
+                        <circle cx="50" cy="35" r="18" fill="white"/>
+                        <!-- 눈 -->
+                        <circle cx="42" cy="33" r="4" fill="#333"/>
+                        <circle cx="58" cy="33" r="4" fill="#333"/>
+                        <circle cx="43" cy="31" r="1.5" fill="white"/>
+                        <circle cx="59" cy="31" r="1.5" fill="white"/>
+                        <!-- 부리 -->
+                        <polygon points="50,40 42,46 50,48 58,46" fill="#FF9800"/>
+                        <line x1="42" y1="46" x2="58" y2="46" stroke="#E65100" stroke-width="1"/>
+                        <!-- 턱 (수염) -->
+                        <ellipse cx="46" cy="50" rx="4" ry="6" fill="#F44336"/>
+                        <ellipse cx="54" cy="50" rx="4" ry="6" fill="#F44336"/>
+                        <!-- 날개 느낌 -->
+                        <ellipse cx="25" cy="62" rx="10" ry="15" fill="#F5F5F5" transform="rotate(-15 25 62)"/>
+                        <ellipse cx="75" cy="62" rx="10" ry="15" fill="#F5F5F5" transform="rotate(15 75 62)"/>
+                        <!-- 볼 터치 -->
+                        <circle cx="34" cy="38" r="4" fill="#FFCDD2" opacity="0.5"/>
+                        <circle cx="66" cy="38" r="4" fill="#FFCDD2" opacity="0.5"/>
+                    </svg>`;
+
+                case 'duck':
+                    return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <!-- 오리 몸통 -->
+                        <ellipse cx="50" cy="62" rx="32" ry="25" fill="#FFD54F"/>
+                        <!-- 머리 -->
+                        <circle cx="50" cy="35" r="22" fill="#FFD54F"/>
+                        <!-- 눈 -->
+                        <circle cx="40" cy="32" r="5" fill="#333"/>
+                        <circle cx="60" cy="32" r="5" fill="#333"/>
+                        <circle cx="42" cy="30" r="2" fill="white"/>
+                        <circle cx="62" cy="30" r="2" fill="white"/>
+                        <!-- 부리 (넓적한 오리 부리) -->
+                        <ellipse cx="50" cy="46" rx="16" ry="7" fill="#FF9800"/>
+                        <ellipse cx="50" cy="44" rx="14" ry="5" fill="#FFB74D"/>
+                        <ellipse cx="44" cy="45" rx="2" ry="1.5" fill="#E65100"/>
+                        <ellipse cx="56" cy="45" rx="2" ry="1.5" fill="#E65100"/>
+                        <!-- 날개 -->
+                        <ellipse cx="22" cy="62" rx="10" ry="16" fill="#FFC107" transform="rotate(-10 22 62)"/>
+                        <ellipse cx="78" cy="62" rx="10" ry="16" fill="#FFC107" transform="rotate(10 78 62)"/>
+                        <!-- 볼 터치 -->
+                        <circle cx="32" cy="38" r="5" fill="#FFAB91" opacity="0.4"/>
+                        <circle cx="68" cy="38" r="5" fill="#FFAB91" opacity="0.4"/>
+                        <!-- 머리 위 깃털 -->
+                        <path d="M 48 14 Q 45 5 50 8 Q 55 5 52 14" fill="#FFB300" stroke="none"/>
+                    </svg>`;
+
+                default:
+                    return `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="#ccc"/></svg>`;
+            }
+        }
 
         function initAnimalGame() {
             const area = document.getElementById('animal-area');
             area.innerHTML = '';
 
-            // 시작 오버레이 (오디오 정책 대응)
             const overlay = document.createElement('div');
             overlay.className = 'animal-start-overlay';
             overlay.id = 'animal-start-overlay';
@@ -1024,8 +1489,38 @@
             AnimalGame.locked = false;
             updateAnimalScore();
 
-            buildAnimalGameUI();
             startAnimalRound();
+        }
+
+        function startAnimalRound() {
+            if (!AnimalGame.running) return;
+
+            AnimalGame.locked = false;
+
+            // 이전 결과 오버레이 및 축하 효과 제거
+            const oldOverlay = document.querySelector('.animal-result-overlay');
+            if (oldOverlay) oldOverlay.remove();
+            const oldCelebration = document.querySelector('.celebration-stars');
+            if (oldCelebration) oldCelebration.remove();
+
+            // 6마리 중 4마리를 랜덤 선택 (정답 포함)
+            const allAnimals = [...AnimalGame.animals];
+            const shuffled = allAnimals.sort(() => Math.random() - 0.5);
+            const choices = shuffled.slice(0, 4);
+
+            // 정답은 4장 중 랜덤
+            const answerAnimal = choices[Math.floor(Math.random() * choices.length)];
+            AnimalGame.currentAnswer = answerAnimal.id;
+            AnimalGame.currentChoices = choices;
+
+            buildAnimalGameUI();
+
+            // 자동으로 소리 재생
+            setTimeout(() => {
+                if (AnimalGame.running && AnimalGame.currentAnswer) {
+                    playAnimalSound(AnimalGame.currentAnswer);
+                }
+            }, 500);
         }
 
         function buildAnimalGameUI() {
@@ -1040,13 +1535,13 @@
             const question = document.createElement('div');
             question.className = 'animal-question';
             question.id = 'animal-question';
-            question.textContent = '소리를 듣고 맞춰보세요!';
+            question.textContent = '이 소리는 어떤 동물일까요?';
 
             // 소리 듣기 버튼
             const listenBtn = document.createElement('button');
             listenBtn.className = 'animal-listen-btn';
             listenBtn.id = 'animal-listen-btn';
-            listenBtn.textContent = '🔊 정답 소리 듣기';
+            listenBtn.textContent = '🔊 소리 다시 듣기';
             listenBtn.addEventListener('click', () => {
                 if (AnimalGame.currentAnswer) {
                     playAnimalSound(AnimalGame.currentAnswer);
@@ -1064,12 +1559,12 @@
             cardsContainer.className = 'animal-cards';
             cardsContainer.id = 'animal-cards';
 
-            AnimalGame.animals.forEach(animal => {
+            AnimalGame.currentChoices.forEach(animal => {
                 const card = document.createElement('div');
                 card.className = 'animal-card';
                 card.dataset.animalId = animal.id;
                 card.innerHTML = `
-                    <div class="animal-emoji">${animal.emoji}</div>
+                    <div class="animal-svg-wrap">${getAnimalSVG(animal.id)}</div>
                     <div class="animal-name">${animal.name}</div>
                 `;
 
@@ -1091,40 +1586,6 @@
             area.appendChild(content);
         }
 
-        function startAnimalRound() {
-            if (!AnimalGame.running) return;
-
-            AnimalGame.locked = false;
-
-            // 이전 결과 오버레이 제거
-            const oldOverlay = document.querySelector('.animal-result-overlay');
-            if (oldOverlay) oldOverlay.remove();
-
-            // 카드 스타일 초기화
-            document.querySelectorAll('.animal-card').forEach(card => {
-                card.classList.remove('correct-flash', 'wrong-flash');
-                card.style.borderColor = '#E0E0E0';
-                card.style.background = 'white';
-            });
-
-            // 랜덤으로 정답 동물 선택
-            const randomIndex = Math.floor(Math.random() * AnimalGame.animals.length);
-            AnimalGame.currentAnswer = AnimalGame.animals[randomIndex].id;
-
-            // 질문 텍스트 업데이트
-            const question = document.getElementById('animal-question');
-            if (question) {
-                question.textContent = '이 소리는 어떤 동물일까요?';
-            }
-
-            // 자동으로 소리 재생
-            setTimeout(() => {
-                if (AnimalGame.running && AnimalGame.currentAnswer) {
-                    playAnimalSound(AnimalGame.currentAnswer);
-                }
-            }, 500);
-        }
-
         function onAnimalCardTap(selectedId) {
             if (!AnimalGame.running || AnimalGame.locked) return;
 
@@ -1133,21 +1594,15 @@
             const area = document.getElementById('animal-area');
 
             if (isCorrect) {
-                // 정답!
                 AnimalGame.locked = true;
                 AnimalGame.score++;
                 updateAnimalScore();
 
-                // 카드 반짝
                 if (selectedCard) selectedCard.classList.add('correct-flash');
-
-                // ⭕ 오버레이
                 showAnimalResultOverlay('⭕', area);
-
-                // 축하 소리
+                showCelebrationStars(area);
                 playCorrectSound();
 
-                // 2초 후 다음 라운드
                 AnimalGame.advanceTimer = setTimeout(() => {
                     if (AnimalGame.running) {
                         startAnimalRound();
@@ -1155,26 +1610,17 @@
                 }, 2000);
 
             } else {
-                // 오답
-                AnimalGame.locked = true; // 잠시 잠금
+                AnimalGame.locked = true;
 
-                // 카드 흔들기
                 if (selectedCard) selectedCard.classList.add('wrong-flash');
-
-                // ❌ 오버레이
                 showAnimalResultOverlay('❌', area);
-
-                // 다시 시도 소리
                 playWrongSound();
 
-                // 1초 후 잠금 해제 (진행하지 않음)
                 setTimeout(() => {
                     if (AnimalGame.running) {
                         AnimalGame.locked = false;
-                        // ❌ 오버레이 제거
                         const overlay = document.querySelector('.animal-result-overlay');
                         if (overlay) overlay.remove();
-                        // 카드 스타일 복구
                         if (selectedCard) {
                             selectedCard.classList.remove('wrong-flash');
                             selectedCard.style.borderColor = '#E0E0E0';
@@ -1186,7 +1632,6 @@
         }
 
         function showAnimalResultOverlay(symbol, parent) {
-            // 기존 오버레이 제거
             const old = parent.querySelector('.animal-result-overlay');
             if (old) old.remove();
 
@@ -1194,6 +1639,25 @@
             overlay.className = 'animal-result-overlay';
             overlay.innerHTML = `<div class="animal-result-symbol">${symbol}</div>`;
             parent.appendChild(overlay);
+        }
+
+        function showCelebrationStars(parent) {
+            const container = document.createElement('div');
+            container.className = 'celebration-stars';
+            const emojis = ['⭐', '🌟', '✨', '💫', '🎉', '🎊'];
+
+            for (let i = 0; i < 12; i++) {
+                const star = document.createElement('div');
+                star.className = 'celebration-star';
+                star.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                star.style.left = (Math.random() * 100) + '%';
+                star.style.animationDelay = (Math.random() * 0.5) + 's';
+                star.style.animationDuration = (1 + Math.random() * 1) + 's';
+                container.appendChild(star);
+            }
+
+            parent.appendChild(container);
+            setTimeout(() => container.remove(), 2000);
         }
 
         function updateAnimalScore() {
@@ -1212,19 +1676,16 @@
             if (!ctx) return;
 
             switch (animalId) {
-                case 'dog':
-                    playDogSound(ctx);
-                    break;
-                case 'cat':
-                    playCatSound(ctx);
-                    break;
-                case 'lion':
-                    playLionSound(ctx);
-                    break;
+                case 'dog': playDogSound(ctx); break;
+                case 'cat': playCatSound(ctx); break;
+                case 'lion': playLionSound(ctx); break;
+                case 'cow': playCowSound(ctx); break;
+                case 'chicken': playChickenSound(ctx); break;
+                case 'duck': playDuckSound(ctx); break;
             }
         }
 
-        // 강아지: 짧은 반복 짖는 소리 (멍멍! - 2~3회 짧은 톤 반복)
+        // 강아지: 짧은 반복 짖는 소리
         function playDogSound(ctx) {
             const now = ctx.currentTime;
             const barkCount = 3;
@@ -1232,8 +1693,6 @@
 
             for (let i = 0; i < barkCount; i++) {
                 const t = now + i * barkGap;
-
-                // 메인 톤 (사각파 → 짖는 느낌)
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
                 osc.type = 'sawtooth';
@@ -1249,7 +1708,6 @@
                 osc.start(t);
                 osc.stop(t + 0.15);
 
-                // 노이즈 레이어 (거친 느낌 추가)
                 const bufSize = Math.floor(ctx.sampleRate * 0.1);
                 const nBuf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
                 const nData = nBuf.getChannelData(0);
@@ -1268,33 +1726,28 @@
             }
         }
 
-        // 고양이: 올라가는 야옹 소리 (부드럽게 주파수 상승)
+        // 고양이: 야옹 소리
         function playCatSound(ctx) {
             const now = ctx.currentTime;
 
-            // 메인 톤 (사인파 → 부드러운 야옹)
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
             osc.type = 'sine';
-            // 야옹: 낮은 음에서 올라갔다 내려오기
             osc.frequency.setValueAtTime(300, now);
             osc.frequency.linearRampToValueAtTime(600, now + 0.2);
             osc.frequency.linearRampToValueAtTime(700, now + 0.35);
             osc.frequency.linearRampToValueAtTime(500, now + 0.5);
             osc.frequency.linearRampToValueAtTime(350, now + 0.65);
-
             gain.gain.setValueAtTime(0, now);
             gain.gain.linearRampToValueAtTime(0.3, now + 0.05);
             gain.gain.setValueAtTime(0.3, now + 0.3);
             gain.gain.linearRampToValueAtTime(0.25, now + 0.5);
             gain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
-
             osc.connect(gain);
             gain.connect(ctx.destination);
             osc.start(now);
             osc.stop(now + 0.7);
 
-            // 비브라토 효과 (떨림)
             const vibrato = ctx.createOscillator();
             const vibratoGain = ctx.createGain();
             vibrato.type = 'sine';
@@ -1305,7 +1758,6 @@
             vibrato.start(now);
             vibrato.stop(now + 0.7);
 
-            // 두 번째 야옹 (약간 높게)
             const osc2 = ctx.createOscillator();
             const gain2 = ctx.createGain();
             osc2.type = 'sine';
@@ -1313,24 +1765,21 @@
             osc2.frequency.linearRampToValueAtTime(750, now + 1.0);
             osc2.frequency.linearRampToValueAtTime(600, now + 1.15);
             osc2.frequency.linearRampToValueAtTime(400, now + 1.3);
-
             gain2.gain.setValueAtTime(0, now + 0.8);
             gain2.gain.linearRampToValueAtTime(0.28, now + 0.85);
             gain2.gain.setValueAtTime(0.28, now + 1.05);
             gain2.gain.exponentialRampToValueAtTime(0.001, now + 1.35);
-
             osc2.connect(gain2);
             gain2.connect(ctx.destination);
             osc2.start(now + 0.8);
             osc2.stop(now + 1.35);
         }
 
-        // 사자: 낮은 으르렁 소리 (저음 + 노이즈)
+        // 사자: 낮은 으르렁 소리
         function playLionSound(ctx) {
             const now = ctx.currentTime;
             const duration = 1.2;
 
-            // 메인 저음 으르렁
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
             osc.type = 'sawtooth';
@@ -1338,20 +1787,17 @@
             osc.frequency.linearRampToValueAtTime(120, now + 0.3);
             osc.frequency.linearRampToValueAtTime(100, now + 0.6);
             osc.frequency.linearRampToValueAtTime(70, now + duration);
-
             gain.gain.setValueAtTime(0, now);
             gain.gain.linearRampToValueAtTime(0.35, now + 0.15);
             gain.gain.setValueAtTime(0.35, now + 0.3);
             gain.gain.linearRampToValueAtTime(0.4, now + 0.5);
             gain.gain.linearRampToValueAtTime(0.3, now + 0.8);
             gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-
             osc.connect(gain);
             gain.connect(ctx.destination);
             osc.start(now);
             osc.stop(now + duration);
 
-            // 서브베이스 보강
             const sub = ctx.createOscillator();
             const subGain = ctx.createGain();
             sub.type = 'sine';
@@ -1365,7 +1811,6 @@
             sub.start(now);
             sub.stop(now + duration);
 
-            // 노이즈 레이어 (거친 숨소리)
             const bufSize = Math.floor(ctx.sampleRate * duration);
             const nBuf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
             const nData = nBuf.getChannelData(0);
@@ -1380,7 +1825,6 @@
             nGain.gain.setValueAtTime(0.2, now);
             nSrc.connect(nGain);
 
-            // 저역 통과 필터 (노이즈를 낮고 둔탁하게)
             const lpf = ctx.createBiquadFilter();
             lpf.type = 'lowpass';
             lpf.frequency.setValueAtTime(400, now);
@@ -1389,7 +1833,6 @@
             nSrc.start(now);
             nSrc.stop(now + duration);
 
-            // 트레몰로 (떨리는 으르렁)
             const tremolo = ctx.createOscillator();
             const tremoloGain = ctx.createGain();
             tremolo.type = 'sine';
@@ -1401,13 +1844,178 @@
             tremolo.stop(now + duration);
         }
 
+        // 소: 음메~ 소리 (낮은 긴 톤)
+        function playCowSound(ctx) {
+            const now = ctx.currentTime;
+            const duration = 1.5;
+
+            // 메인 톤 (낮은 음메~)
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(130, now);
+            osc.frequency.linearRampToValueAtTime(180, now + 0.3);
+            osc.frequency.setValueAtTime(180, now + 0.6);
+            osc.frequency.linearRampToValueAtTime(160, now + 1.0);
+            osc.frequency.linearRampToValueAtTime(120, now + duration);
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(0.3, now + 0.1);
+            gain.gain.setValueAtTime(0.3, now + 0.8);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now);
+            osc.stop(now + duration);
+
+            // 서브톤 보강
+            const sub = ctx.createOscillator();
+            const subGain = ctx.createGain();
+            sub.type = 'sine';
+            sub.frequency.setValueAtTime(65, now);
+            sub.frequency.linearRampToValueAtTime(90, now + 0.3);
+            sub.frequency.linearRampToValueAtTime(60, now + duration);
+            subGain.gain.setValueAtTime(0, now);
+            subGain.gain.linearRampToValueAtTime(0.2, now + 0.1);
+            subGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+            sub.connect(subGain);
+            subGain.connect(ctx.destination);
+            sub.start(now);
+            sub.stop(now + duration);
+
+            // 비브라토
+            const vib = ctx.createOscillator();
+            const vibGain = ctx.createGain();
+            vib.type = 'sine';
+            vib.frequency.setValueAtTime(4, now);
+            vibGain.gain.setValueAtTime(8, now);
+            vib.connect(vibGain);
+            vibGain.connect(osc.frequency);
+            vib.start(now);
+            vib.stop(now + duration);
+        }
+
+        // 닭: 꼬끼오~ 소리 (높은 짧은 반복)
+        function playChickenSound(ctx) {
+            const now = ctx.currentTime;
+
+            // 꼬 (짧은 상승)
+            const osc1 = ctx.createOscillator();
+            const gain1 = ctx.createGain();
+            osc1.type = 'sawtooth';
+            osc1.frequency.setValueAtTime(400, now);
+            osc1.frequency.linearRampToValueAtTime(600, now + 0.08);
+            gain1.gain.setValueAtTime(0, now);
+            gain1.gain.linearRampToValueAtTime(0.25, now + 0.02);
+            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+            osc1.connect(gain1);
+            gain1.connect(ctx.destination);
+            osc1.start(now);
+            osc1.stop(now + 0.12);
+
+            // 끼 (높은 음)
+            const osc2 = ctx.createOscillator();
+            const gain2 = ctx.createGain();
+            osc2.type = 'sawtooth';
+            osc2.frequency.setValueAtTime(700, now + 0.15);
+            osc2.frequency.linearRampToValueAtTime(900, now + 0.22);
+            gain2.gain.setValueAtTime(0, now + 0.15);
+            gain2.gain.linearRampToValueAtTime(0.28, now + 0.17);
+            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+            osc2.connect(gain2);
+            gain2.connect(ctx.destination);
+            osc2.start(now + 0.15);
+            osc2.stop(now + 0.3);
+
+            // 오~ (길게 내려오는 음)
+            const osc3 = ctx.createOscillator();
+            const gain3 = ctx.createGain();
+            osc3.type = 'sawtooth';
+            osc3.frequency.setValueAtTime(800, now + 0.35);
+            osc3.frequency.linearRampToValueAtTime(1000, now + 0.5);
+            osc3.frequency.linearRampToValueAtTime(600, now + 0.9);
+            osc3.frequency.linearRampToValueAtTime(400, now + 1.1);
+            gain3.gain.setValueAtTime(0, now + 0.35);
+            gain3.gain.linearRampToValueAtTime(0.3, now + 0.38);
+            gain3.gain.setValueAtTime(0.3, now + 0.6);
+            gain3.gain.exponentialRampToValueAtTime(0.001, now + 1.15);
+            osc3.connect(gain3);
+            gain3.connect(ctx.destination);
+            osc3.start(now + 0.35);
+            osc3.stop(now + 1.15);
+
+            // 노이즈 보강
+            const bufSize = Math.floor(ctx.sampleRate * 0.15);
+            const nBuf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+            const nData = nBuf.getChannelData(0);
+            for (let j = 0; j < bufSize; j++) {
+                nData[j] = (Math.random() * 2 - 1) * 0.15 * (1 - j / bufSize);
+            }
+            const nSrc = ctx.createBufferSource();
+            nSrc.buffer = nBuf;
+            const nGain = ctx.createGain();
+            nGain.gain.setValueAtTime(0.1, now + 0.35);
+            nGain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+            nSrc.connect(nGain);
+            nGain.connect(ctx.destination);
+            nSrc.start(now + 0.35);
+            nSrc.stop(now + 0.5);
+        }
+
+        // 오리: 꽥꽥 소리 (중간 음, 콧소리 느낌)
+        function playDuckSound(ctx) {
+            const now = ctx.currentTime;
+            const quackCount = 3;
+            const quackGap = 0.3;
+
+            for (let i = 0; i < quackCount; i++) {
+                const t = now + i * quackGap;
+
+                // 메인 톤 (콧소리 느낌 - 사각파)
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(250, t);
+                osc.frequency.linearRampToValueAtTime(400, t + 0.05);
+                osc.frequency.linearRampToValueAtTime(300, t + 0.12);
+                osc.frequency.linearRampToValueAtTime(200, t + 0.18);
+                gain.gain.setValueAtTime(0, t);
+                gain.gain.linearRampToValueAtTime(0.2, t + 0.02);
+                gain.gain.setValueAtTime(0.2, t + 0.08);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start(t);
+                osc.stop(t + 0.2);
+
+                // 밴드패스 필터로 콧소리 느낌 강화
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                const bpf = ctx.createBiquadFilter();
+                osc2.type = 'sawtooth';
+                osc2.frequency.setValueAtTime(250, t);
+                osc2.frequency.linearRampToValueAtTime(380, t + 0.05);
+                osc2.frequency.linearRampToValueAtTime(220, t + 0.18);
+                bpf.type = 'bandpass';
+                bpf.frequency.setValueAtTime(600, t);
+                bpf.Q.setValueAtTime(3, t);
+                gain2.gain.setValueAtTime(0, t);
+                gain2.gain.linearRampToValueAtTime(0.15, t + 0.02);
+                gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+                osc2.connect(bpf);
+                bpf.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.start(t);
+                osc2.stop(t + 0.18);
+            }
+        }
+
         // 정답 효과음 (밝은 상승 멜로디)
         function playCorrectSound() {
             const ctx = getAudioContext();
             if (!ctx) return;
             const now = ctx.currentTime;
 
-            const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
+            const notes = [523, 659, 784, 1047];
             notes.forEach((freq, i) => {
                 const t = now + i * 0.1;
                 const osc = ctx.createOscillator();
@@ -1443,7 +2051,6 @@
             osc.start(now);
             osc.stop(now + 0.3);
 
-            // 두 번째 하강 톤
             const osc2 = ctx.createOscillator();
             const gain2 = ctx.createGain();
             osc2.type = 'triangle';
@@ -1475,12 +2082,12 @@
          *  게임 3: 마법의 스케치북 (미구현 - Phase 3)
          * ============================================== */
         function initCanvasGame() {
-            console.log('🎨 마법의 스케치북 시작!');
+            console.log('마법의 스케치북 시작!');
             // TODO: Phase 3에서 구현
         }
 
         function cleanupCanvasGame() {
-            console.log('🎨 마법의 스케치북 종료');
+            console.log('마법의 스케치북 종료');
         }
 
         /* ===== 초기화 ===== */
