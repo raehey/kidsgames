@@ -72,6 +72,123 @@
             margin-bottom: 10px;
         }
 
+        /* ===== 설정 버튼 ===== */
+        .settings-btn {
+            position: absolute;
+            top: clamp(10px, 2vh, 20px);
+            right: clamp(10px, 2vw, 20px);
+            width: clamp(44px, 10vw, 64px);
+            height: clamp(44px, 10vw, 64px);
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #FFA726;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1.5rem, 4.5vw, 2.2rem);
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            transition: transform 0.2s;
+        }
+
+        .settings-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* ===== 설정 오버레이 ===== */
+        .settings-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .settings-popup {
+            background: white;
+            border-radius: 28px;
+            padding: clamp(24px, 5vw, 40px);
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .settings-title {
+            font-size: clamp(1.5rem, 4vw, 2rem);
+            font-weight: 900;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .settings-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background: #F5F5F5;
+            border-radius: 16px;
+            margin-bottom: 16px;
+        }
+
+        .settings-label {
+            font-size: clamp(1rem, 2.5vw, 1.3rem);
+            font-weight: 700;
+            color: #555;
+        }
+
+        .settings-toggle {
+            width: 60px;
+            height: 32px;
+            background: #CCC;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            position: relative;
+            transition: background 0.3s;
+        }
+
+        .settings-toggle.on {
+            background: #4CAF50;
+        }
+
+        .settings-toggle::after {
+            content: '';
+            position: absolute;
+            width: 28px;
+            height: 28px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s;
+        }
+
+        .settings-toggle.on::after {
+            left: 30px;
+        }
+
+        .settings-close-btn {
+            background: #FF6B6B;
+            color: white;
+            border: none;
+            border-radius: 16px;
+            padding: clamp(12px, 2vh, 16px) clamp(24px, 4vw, 32px);
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .settings-close-btn:active {
+            transform: scale(0.95);
+            background: #FF5252;
+        }
+
         /* ===== 게임 선택 버튼 그리드 ===== */
         .game-grid {
             display: grid;
@@ -96,6 +213,7 @@
             align-items: center;
             justify-content: center;
             min-height: clamp(120px, 20vh, 200px);
+            will-change: transform;
         }
 
         .game-card:active {
@@ -215,6 +333,7 @@
             box-shadow: 0 4px 16px rgba(255,61,0,0.2);
             border: 3px solid #FF6E40;
             transition: transform 0.15s;
+            will-change: transform;
         }
 
         .bubble-stage {
@@ -235,41 +354,42 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: rgba(255, 255, 255, 0.88);
+            background: rgba(255, 255, 255, 0.92);
             z-index: 300;
-            animation: stageUpFade 1.8s ease forwards;
+            animation: stageUpFade 2.2s ease forwards;
             pointer-events: none;
         }
 
         .bubble-stage-up .stage-up-text {
-            font-size: clamp(2rem, 7vw, 4rem);
+            font-size: clamp(2.5rem, 10vw, 5rem);
             font-weight: 900;
             color: #FF6D00;
-            animation: stageUpPop 0.6s ease;
+            animation: stageUpPop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+            text-shadow: 2px 2px 4px rgba(255,109,0,0.3);
         }
 
         .bubble-stage-up .stage-up-emoji {
-            font-size: clamp(3rem, 10vw, 6rem);
-            margin-bottom: 12px;
-            animation: stageUpSpin 0.8s ease;
+            font-size: clamp(3.5rem, 12vw, 7rem);
+            margin-bottom: 16px;
+            animation: stageUpSpin 0.9s ease;
         }
 
         @keyframes stageUpFade {
             0% { opacity: 0; }
-            15% { opacity: 1; }
-            75% { opacity: 1; }
+            12% { opacity: 1; }
+            78% { opacity: 1; }
             100% { opacity: 0; }
         }
 
         @keyframes stageUpPop {
-            0% { transform: scale(0); }
-            60% { transform: scale(1.3); }
-            100% { transform: scale(1); }
+            0% { transform: scale(0) rotateZ(-15deg); }
+            60% { transform: scale(1.4) rotateZ(5deg); }
+            100% { transform: scale(1) rotateZ(0deg); }
         }
 
         @keyframes stageUpSpin {
-            0% { transform: rotate(-20deg) scale(0); }
-            60% { transform: rotate(10deg) scale(1.2); }
+            0% { transform: rotate(-25deg) scale(0.3); }
+            70% { transform: rotate(15deg) scale(1.25); }
             100% { transform: rotate(0deg) scale(1); }
         }
 
@@ -291,8 +411,12 @@
             border-radius: 18%;
         }
 
+        .bubble.triangle-shape {
+            clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+        }
+
         .bubble.heart-shape {
-            border-radius: 50%;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
         }
 
         .bubble.popping {
@@ -302,90 +426,101 @@
 
         @keyframes popBubble {
             0% { transform: scale(1); opacity: 1; }
-            40% { transform: scale(1.4); opacity: 0.8; }
-            100% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1.3); opacity: 0; }
+        }
+
+        .score-float {
+            position: absolute;
+            font-size: clamp(1.5rem, 5vw, 2.5rem);
+            font-weight: 900;
+            color: #FF3D00;
+            pointer-events: none;
+            animation: scoreFloatUp 0.8s ease-out forwards;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        @keyframes scoreFloatUp {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-60px) scale(1.3); opacity: 0; }
         }
 
         .pop-particles {
             position: absolute;
-            pointer-events: none;
-            z-index: 50;
+            width: 0;
+            height: 0;
         }
 
         .pop-particle {
             position: absolute;
-            width: 10px;
-            height: 10px;
+            width: 14px;
+            height: 14px;
             border-radius: 50%;
-            animation: particleFly 0.5s ease-out forwards;
+            animation: particleFloat 0.6s ease-out forwards;
         }
 
-        @keyframes particleFly {
+        @keyframes particleFloat {
             0% { transform: translate(0, 0) scale(1); opacity: 1; }
-            100% { transform: translate(var(--dx), var(--dy)) scale(0); opacity: 0; }
+            100% { transform: translate(var(--dx), var(--dy)) scale(0.3); opacity: 0; }
         }
 
+        .screen-flash {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.7);
+            animation: flashEffect 0.2s ease-out forwards;
+            pointer-events: none;
+            z-index: 250;
+        }
+
+        @keyframes flashEffect {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* ===== 비누방울 시작 화면 ===== */
         .bubble-start-overlay {
             position: absolute;
             inset: 0;
+            background: rgba(255, 255, 255, 0.92);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: rgba(255, 255, 255, 0.85);
+            gap: 20px;
             z-index: 200;
-            text-align: center;
-            padding: 20px;
         }
 
-        .bubble-start-overlay .start-emoji {
-            font-size: clamp(4rem, 15vw, 8rem);
-            margin-bottom: 20px;
+        .start-emoji {
+            font-size: clamp(4rem, 15vw, 7rem);
             animation: bounce 2s ease-in-out infinite;
         }
 
-        .bubble-start-overlay .start-text {
-            font-size: clamp(1.2rem, 4vw, 2rem);
+        .start-text {
+            font-size: clamp(1.5rem, 4.5vw, 2.5rem);
             font-weight: 800;
-            color: #5C6BC0;
-            margin-bottom: 30px;
+            color: #333;
+            text-align: center;
         }
 
-        .bubble-start-btn {
-            font-size: clamp(1.2rem, 4vw, 1.8rem);
-            font-weight: 800;
-            padding: 16px 48px;
-            border: none;
-            border-radius: 50px;
-            background: linear-gradient(135deg, #7C4DFF, #536DFE);
+        .bubble-start-btn, .animal-start-btn, .sketch-start-btn {
+            background: linear-gradient(135deg, #FF6B6B, #FF5252);
             color: white;
-            cursor: pointer;
-            box-shadow: 0 6px 20px rgba(124, 77, 255, 0.4);
-            transition: transform 0.2s;
-        }
-
-        .bubble-start-btn:active {
-            transform: scale(0.93);
-        }
-
-        /* 점수 획득 플로팅 텍스트 */
-        .score-float {
-            position: absolute;
-            font-size: clamp(1.2rem, 4vw, 2rem);
+            border: none;
+            border-radius: 24px;
+            padding: clamp(14px, 3vh, 20px) clamp(32px, 6vw, 48px);
+            font-size: clamp(1.2rem, 3.5vw, 1.8rem);
             font-weight: 900;
-            color: #FF3D00;
-            pointer-events: none;
-            z-index: 60;
-            animation: scoreFloat 0.8s ease-out forwards;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        @keyframes scoreFloat {
-            0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-50px) scale(1.3); opacity: 0; }
+        .bubble-start-btn:active, .animal-start-btn:active, .sketch-start-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
         }
 
-        /* ===== 동물 친구 찾기 게임 스타일 ===== */
+        /* ===== 동물 게임 ===== */
         .animal-hud {
             position: absolute;
             top: clamp(8px, 1.5vh, 16px);
@@ -403,10 +538,11 @@
             padding: clamp(8px, 1.5vh, 14px) clamp(16px, 3vw, 28px);
             font-size: clamp(1.4rem, 4.5vw, 2.2rem);
             font-weight: 900;
-            color: #2E7D32;
-            box-shadow: 0 4px 16px rgba(46,125,50,0.2);
+            color: #00C853;
+            box-shadow: 0 4px 16px rgba(0,200,83,0.2);
             border: 3px solid #66BB6A;
             transition: transform 0.15s;
+            will-change: transform;
         }
 
         .animal-stage {
@@ -415,576 +551,416 @@
             padding: clamp(4px, 1vh, 8px) clamp(12px, 2.5vw, 20px);
             font-size: clamp(0.85rem, 2.5vw, 1.1rem);
             font-weight: 800;
-            color: #E65100;
+            color: #5C6BC0;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            border: 2px solid #FF9800;
+            border: 2px solid #7986CB;
+        }
+
+        .animal-start-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.92);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            z-index: 200;
         }
 
         .animal-game-content {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            gap: clamp(16px, 3vh, 30px);
             width: 100%;
             height: 100%;
-            padding: clamp(60px, 10vh, 80px) 20px 20px 20px;
+            padding: clamp(20px, 3vh, 40px);
+            gap: clamp(16px, 2vh, 24px);
+            justify-content: center;
         }
 
         .animal-question {
-            font-size: clamp(1.2rem, 4vw, 2rem);
+            font-size: clamp(1.3rem, 3.8vw, 1.8rem);
             font-weight: 800;
-            color: #2E7D32;
+            color: #333;
             text-align: center;
         }
 
         .animal-listen-btn {
-            font-size: clamp(1.1rem, 3.5vw, 1.6rem);
-            font-weight: 800;
-            padding: clamp(14px, 2.5vh, 22px) clamp(28px, 6vw, 52px);
-            border: none;
-            border-radius: 50px;
-            background: linear-gradient(135deg, #66BB6A, #43A047);
+            background: linear-gradient(135deg, #42A5F5, #1E88E5);
             color: white;
+            border: none;
+            border-radius: 20px;
+            padding: clamp(10px, 2vh, 14px) clamp(20px, 4vw, 28px);
+            font-size: clamp(1rem, 2.8vw, 1.3rem);
+            font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+            box-shadow: 0 6px 16px rgba(66, 165, 245, 0.3);
             transition: transform 0.2s;
-            animation: pulse 2s ease-in-out infinite;
         }
 
         .animal-listen-btn:active {
-            transform: scale(0.93);
-            animation: none;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+            transform: scale(0.95);
         }
 
         .animal-cards {
-            display: flex;
-            gap: clamp(10px, 2.5vw, 20px);
-            justify-content: center;
-            flex-wrap: wrap;
-            width: 95%;
-            max-width: 700px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: clamp(12px, 2.5vw, 20px);
+            width: 100%;
+            max-width: 500px;
         }
 
         .animal-card {
-            width: clamp(110px, 30vw, 170px);
-            height: clamp(130px, 34vw, 190px);
             background: white;
+            border: 3px solid #E0E0E0;
             border-radius: clamp(16px, 3vw, 24px);
+            padding: clamp(12px, 2.5vw, 20px);
+            cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-            border: 4px solid #E0E0E0;
-            transition: transform 0.15s, border-color 0.15s;
-            gap: 6px;
+            gap: clamp(8px, 1.5vw, 12px);
+            transition: all 0.2s;
+            will-change: transform, border-color;
         }
 
         .animal-card:active {
-            transform: scale(0.92);
+            transform: scale(0.95);
         }
 
-        .animal-card .animal-img-wrap {
-            width: clamp(70px, 20vw, 110px);
-            height: clamp(70px, 20vw, 110px);
-            border-radius: 50%;
+        .animal-card.correct-flash {
+            background: #C8E6C9;
+            border-color: #66BB6A;
+            animation: correctFlash 0.4s ease;
+        }
+
+        .animal-card.wrong-flash {
+            background: #FFCDD2;
+            border-color: #EF5350;
+            animation: wrongFlash 0.4s ease;
+        }
+
+        @keyframes correctFlash {
+            0%, 100% { background: white; }
+            50% { background: #C8E6C9; }
+        }
+
+        @keyframes wrongFlash {
+            0%, 100% { background: white; }
+            50% { background: #FFCDD2; }
+        }
+
+        .animal-img-wrap {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
             overflow: hidden;
+            background: #F5F5F5;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #f0f0f0;
         }
 
-        .animal-card .animal-img-wrap img {
+        .animal-img-wrap img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
-        .animal-card .animal-name {
-            font-size: clamp(0.8rem, 2.5vw, 1.1rem);
-            font-weight: 800;
-            color: #555;
+        .animal-name {
+            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+            font-weight: 700;
+            color: #333;
+            text-align: center;
         }
 
-        .animal-card.correct-flash {
-            border-color: #4CAF50;
-            background: #E8F5E9;
-            animation: correctPulse 0.5s ease;
-        }
-
-        .animal-card.wrong-flash {
-            border-color: #EF5350;
-            background: #FFEBEE;
-            animation: wrongShake 0.4s ease;
-        }
-
-        @keyframes correctPulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.08); }
-            100% { transform: scale(1); }
-        }
-
-        @keyframes wrongShake {
-            0%, 100% { transform: translateX(0); }
-            20% { transform: translateX(-8px); }
-            40% { transform: translateX(8px); }
-            60% { transform: translateX(-6px); }
-            80% { transform: translateX(6px); }
-        }
-
-        /* 정답/오답 오버레이 */
         .animal-result-overlay {
-            position: absolute;
+            position: fixed;
             inset: 0;
+            background: rgba(255, 255, 255, 0.7);
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 300;
-            pointer-events: none;
-            animation: resultFadeIn 0.3s ease;
+            z-index: 250;
         }
 
         .animal-result-symbol {
-            font-size: clamp(8rem, 30vw, 16rem);
-            animation: resultPop 0.5s ease;
-        }
-
-        @keyframes resultFadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            font-size: clamp(4rem, 20vw, 8rem);
+            animation: resultPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         @keyframes resultPop {
-            0% { transform: scale(0); opacity: 0; }
-            50% { transform: scale(1.2); opacity: 1; }
-            100% { transform: scale(1); opacity: 1; }
+            0% { transform: scale(0); }
+            70% { transform: scale(1.2); }
+            100% { transform: scale(1); }
         }
 
-        .animal-start-overlay {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.85);
-            z-index: 200;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .animal-start-overlay .start-emoji {
-            font-size: clamp(4rem, 15vw, 8rem);
-            margin-bottom: 20px;
-            animation: bounce 2s ease-in-out infinite;
-        }
-
-        .animal-start-overlay .start-text {
-            font-size: clamp(1.2rem, 4vw, 2rem);
-            font-weight: 800;
-            color: #2E7D32;
-            margin-bottom: 30px;
-        }
-
-        .animal-start-btn {
-            font-size: clamp(1.2rem, 4vw, 1.8rem);
-            font-weight: 800;
-            padding: 16px 48px;
-            border: none;
-            border-radius: 50px;
-            background: linear-gradient(135deg, #66BB6A, #43A047);
-            color: white;
-            cursor: pointer;
-            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
-            transition: transform 0.2s;
-        }
-
-        .animal-start-btn:active {
-            transform: scale(0.93);
-        }
-
-        /* 축하 별 이펙트 */
         .celebration-stars {
-            position: absolute;
+            position: fixed;
             inset: 0;
+            z-index: 220;
             pointer-events: none;
-            z-index: 250;
-            overflow: hidden;
         }
 
         .celebration-star {
             position: absolute;
-            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-size: clamp(2rem, 8vw, 4rem);
             animation: starFall 1.5s ease-out forwards;
         }
 
         @keyframes starFall {
-            0% { transform: translateY(-20px) rotate(0deg) scale(0); opacity: 1; }
-            50% { opacity: 1; }
-            100% { transform: translateY(100vh) rotate(360deg) scale(1); opacity: 0; }
+            0% { transform: translateY(-100px) scale(1) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) scale(0) rotate(360deg); opacity: 0; }
         }
 
-        /* ===== 반응형 세부 조정 ===== */
-        @media (max-width: 480px) {
-            .game-grid {
-                grid-template-columns: 1fr;
-                gap: 12px;
-            }
-            .game-card {
-                min-height: 100px;
-                padding: 16px;
-                flex-direction: row;
-                gap: 12px;
-            }
-            .game-card .card-emoji {
-                margin-bottom: 0;
-            }
-            .game-card .card-text {
-                text-align: left;
-            }
-            .animal-cards {
-                gap: 8px;
-            }
-            .animal-card {
-                width: clamp(75px, 28vw, 110px);
-                height: clamp(85px, 30vw, 120px);
-            }
-        }
-
-        @media (min-width: 481px) and (max-width: 768px) {
-            .game-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (min-width: 769px) {
-            .game-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-
-        /* 가로 모드에서 메뉴 최적화 */
-        @media (orientation: landscape) and (max-height: 500px) {
-            .menu-title {
-                font-size: 1.3rem;
-                margin-bottom: 2vh;
-            }
-            .menu-title .emoji {
-                font-size: 2rem;
-                display: inline;
-            }
-            .game-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-            .game-card {
-                min-height: 80px;
-                padding: 12px;
-            }
-            .animal-game-content {
-                padding-top: 50px;
-                gap: 8px;
-            }
-            .animal-card {
-                width: 80px;
-                height: 90px;
-            }
-        }
-
-        /* ===== 마법의 스케치북 게임 스타일 ===== */
-        .sketch-draw-screen {
-            width: 100%;
-            height: 100%;
+        /* ===== Canvas 게임 ===== */
+        .sketch-start-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.92);
             display: flex;
             flex-direction: column;
-            position: relative;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            z-index: 200;
+        }
+
+        .sketch-draw-screen {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
         }
 
         .sketch-canvas-wrap {
             flex: 1;
             position: relative;
             overflow: hidden;
-            background: white;
-            touch-action: none;
         }
 
-        .sketch-canvas-wrap canvas {
+        #sketch-outline-canvas, #sketch-draw-canvas {
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            touch-action: none;
-        }
-
-        #sketch-outline-canvas {
-            z-index: 1;
-            pointer-events: none;
+            display: block;
+            will-change: transform;
         }
 
         #sketch-draw-canvas {
-            z-index: 2;
-        }
-
-        .sketch-toolbar {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: clamp(6px, 1.5vw, 12px);
-            padding: clamp(8px, 1.5vh, 14px) clamp(8px, 2vw, 14px);
-            background: rgba(255, 255, 255, 0.95);
-            border-top: 2px solid #E0E0E0;
-            flex-wrap: wrap;
+            cursor: crosshair;
             z-index: 10;
         }
 
-        .sketch-color-btn {
-            width: clamp(36px, 9vw, 50px);
-            height: clamp(36px, 9vw, 50px);
-            border-radius: 50%;
-            border: 3px solid #DDD;
-            cursor: pointer;
-            transition: transform 0.15s, border-color 0.15s;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        .sketch-toolbar {
+            background: rgba(255, 255, 255, 0.98);
+            border-top: 2px solid #E0E0E0;
+            padding: clamp(8px, 1.5vh, 12px);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: clamp(6px, 1vw, 10px);
+            justify-content: center;
+            min-height: clamp(60px, 10vh, 100px);
         }
 
-        .sketch-color-btn.active {
-            border-color: #333;
-            transform: scale(1.15);
-            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+        .sketch-color-btn {
+            width: clamp(36px, 8vw, 48px);
+            height: clamp(36px, 8vw, 48px);
+            border-radius: 50%;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
         }
 
         .sketch-color-btn:active {
             transform: scale(0.9);
         }
 
+        .sketch-color-btn.active {
+            border-color: #333;
+            box-shadow: 0 0 12px rgba(0,0,0,0.3);
+        }
+
         .sketch-divider {
-            width: 2px;
-            height: clamp(28px, 6vw, 40px);
-            background: #DDD;
-            border-radius: 1px;
+            width: 1px;
+            height: clamp(24px, 4vh, 36px);
+            background: #CCC;
+            margin: 0 4px;
         }
 
         .sketch-brush-btn {
-            width: clamp(36px, 9vw, 50px);
-            height: clamp(36px, 9vw, 50px);
+            width: clamp(40px, 8vw, 52px);
+            height: clamp(40px, 8vw, 52px);
+            border: 3px solid transparent;
             border-radius: 50%;
-            border: 3px solid #DDD;
-            background: white;
-            cursor: pointer;
+            background: #F5F5F5;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: transform 0.15s, border-color 0.15s;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-        }
-
-        .sketch-brush-btn.active {
-            border-color: #333;
-            transform: scale(1.15);
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
         }
 
         .sketch-brush-btn:active {
             transform: scale(0.9);
         }
 
+        .sketch-brush-btn.active {
+            border-color: #FF6D00;
+            box-shadow: 0 0 12px rgba(255, 109, 0, 0.3);
+        }
+
         .sketch-brush-dot {
+            background: #FF6D00;
             border-radius: 50%;
-            background: #333;
+            will-change: transform;
         }
 
         .sketch-action-btns {
             display: flex;
-            gap: clamp(8px, 2vw, 14px);
+            gap: clamp(8px, 1.5vw, 12px);
             margin-left: auto;
+            margin-right: clamp(8px, 1.5vw, 12px);
         }
 
         .sketch-action-btn {
-            padding: clamp(8px, 1.5vh, 14px) clamp(14px, 3vw, 24px);
+            background: linear-gradient(135deg, #66BB6A, #43A047);
+            color: white;
             border: none;
-            border-radius: 50px;
-            font-size: clamp(0.85rem, 2.5vw, 1.1rem);
-            font-weight: 800;
+            border-radius: 16px;
+            padding: clamp(8px, 1.5vh, 12px) clamp(14px, 2.5vw, 20px);
+            font-size: clamp(0.9rem, 2.2vw, 1.1rem);
+            font-weight: 700;
             cursor: pointer;
-            transition: transform 0.15s;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+            transition: transform 0.2s;
         }
 
         .sketch-action-btn:active {
-            transform: scale(0.92);
+            transform: scale(0.9);
         }
 
         .sketch-clear-btn {
-            background: #EF5350;
-            color: white;
+            background: linear-gradient(135deg, #FFCA28, #FFA726);
         }
 
         .sketch-magic-btn {
-            background: linear-gradient(135deg, #7C4DFF, #536DFE);
-            color: white;
-            animation: pulse 2s ease-in-out infinite;
+            background: linear-gradient(135deg, #AB47BC, #9C27B0);
         }
 
-        /* 수족관 화면 */
+        /* ===== Aquarium ===== */
         .aquarium-screen {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .aquarium-bg {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(180deg, #0288D1, #01579B, #002F6C);
-        }
-
-        /* 수족관 거품 */
-        .aquarium-bubble {
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: radial-gradient(circle at 40% 40%, rgba(255,255,255,0.6), rgba(255,255,255,0.1));
-            border: 1px solid rgba(255,255,255,0.3);
-            animation: aquaBubbleRise linear infinite;
-        }
-
-        @keyframes aquaBubbleRise {
-            0% { transform: translateY(0) translateX(0); opacity: 0.7; }
-            50% { transform: translateY(-40vh) translateX(10px); opacity: 0.5; }
-            100% { transform: translateY(-100vh) translateX(-5px); opacity: 0; }
-        }
-
-        /* 수족관 바닥 */
-        .aquarium-floor {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 15%;
-            background: linear-gradient(180deg, #5D4037, #795548);
-            border-radius: 0;
-        }
-
-        .aquarium-seaweed {
-            position: absolute;
-            bottom: 10%;
-            width: 20px;
-            background: #388E3C;
-            border-radius: 10px 10px 2px 2px;
-            animation: seaweedSway 3s ease-in-out infinite;
-            transform-origin: bottom center;
-        }
-
-        @keyframes seaweedSway {
-            0%, 100% { transform: rotate(-8deg); }
-            50% { transform: rotate(8deg); }
-        }
-
-        .aquarium-drawing {
-            position: absolute;
-            animation: swimAcross linear infinite;
-        }
-
-        @keyframes swimAcross {
-            0% { transform: translateX(-120%); }
-            100% { transform: translateX(calc(100vw + 120%)); }
-        }
-
-        .aquarium-redraw-btn {
-            position: absolute;
-            bottom: clamp(20px, 4vh, 40px);
-            right: clamp(16px, 3vw, 30px);
-            padding: clamp(12px, 2vh, 18px) clamp(20px, 4vw, 36px);
-            border: none;
-            border-radius: 50px;
-            background: linear-gradient(135deg, #FF7043, #F4511E);
-            color: white;
-            font-size: clamp(1rem, 3vw, 1.3rem);
-            font-weight: 800;
-            cursor: pointer;
-            box-shadow: 0 4px 14px rgba(244, 81, 30, 0.4);
-            z-index: 100;
-            transition: transform 0.15s;
-        }
-
-        .aquarium-redraw-btn:active {
-            transform: scale(0.92);
-        }
-
-        .sketch-start-overlay {
             position: absolute;
             inset: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: rgba(255, 255, 255, 0.85);
-            z-index: 200;
-            text-align: center;
-            padding: 20px;
+            overflow: hidden;
         }
 
-        .sketch-start-overlay .start-emoji {
-            font-size: clamp(4rem, 15vw, 8rem);
-            margin-bottom: 20px;
-            animation: bounce 2s ease-in-out infinite;
+        .aquarium-bg {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(180deg, #1565C0, #0277BD, #00838F);
+            z-index: 1;
         }
 
-        .sketch-start-overlay .start-text {
-            font-size: clamp(1.2rem, 4vw, 2rem);
-            font-weight: 800;
-            color: #E65100;
-            margin-bottom: 30px;
+        .aquarium-floor {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 20%;
+            background: linear-gradient(180deg, #D7CCC8, #A1887F, #8D6E63);
+            z-index: 5;
         }
 
-        .sketch-start-btn {
-            font-size: clamp(1.2rem, 4vw, 1.8rem);
-            font-weight: 800;
-            padding: 16px 48px;
-            border: none;
-            border-radius: 50px;
-            background: linear-gradient(135deg, #FF9800, #F57C00);
+        .aquarium-seaweed {
+            position: absolute;
+            bottom: 20%;
+            width: clamp(12px, 2vw, 20px);
+            border-radius: 50% 50% 0 0;
+            opacity: 0.8;
+            animation: seaweedWave 3s ease-in-out infinite;
+            z-index: 3;
+        }
+
+        @keyframes seaweedWave {
+            0%, 100% { transform: translateX(0) scaleX(1); }
+            50% { transform: translateX(8px) scaleX(1.1); }
+        }
+
+        .aquarium-bubble {
+            position: absolute;
+            background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.8), rgba(255,255,255,0.2));
+            border: 2px solid rgba(255,255,255,0.4);
+            border-radius: 50%;
+            animation: bubbleRise 5s ease-in forwards infinite;
+            z-index: 2;
+        }
+
+        @keyframes bubbleRise {
+            0% { bottom: -20px; opacity: 0; }
+            5% { opacity: 1; }
+            95% { opacity: 1; }
+            100% { bottom: 120%; opacity: 0; }
+        }
+
+        .aquarium-drawing {
+            position: absolute;
+            z-index: 4;
+            animation: fishSwim 8s linear infinite;
+            will-change: transform;
+        }
+
+        @keyframes fishSwim {
+            0% { left: -100px; transform: scaleX(1); }
+            45% { transform: scaleX(1); }
+            50% { transform: scaleX(-1); }
+            95% { transform: scaleX(-1); }
+            100% { left: 120vw; }
+        }
+
+        .aquarium-redraw-btn {
+            position: absolute;
+            bottom: clamp(20px, 4vh, 40px);
+            background: linear-gradient(135deg, #FFA726, #F57C00);
             color: white;
+            border: none;
+            border-radius: 20px;
+            padding: clamp(12px, 2vh, 16px) clamp(24px, 4vw, 32px);
+            font-size: clamp(1rem, 2.8vw, 1.3rem);
+            font-weight: 700;
             cursor: pointer;
-            box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+            box-shadow: 0 6px 16px rgba(255, 167, 38, 0.3);
+            z-index: 100;
             transition: transform 0.2s;
         }
 
-        .sketch-start-btn:active {
-            transform: scale(0.93);
+        .aquarium-redraw-btn:active {
+            transform: scale(0.95);
         }
 
-        /* ===== 화면 전환 애니메이션 ===== */
-        .fade-in {
-            animation: fadeIn 0.3s ease forwards;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
+        /* ===== 레이아웃 개선 ===== */
+        @media (max-width: 480px) {
+            .animal-cards {
+                grid-template-columns: 1fr;
+                max-width: 100%;
+                padding: 0 16px;
+            }
         }
     </style>
-</head>
-<body>
 
-    <!-- ========== 메인 메뉴 화면 ========== -->
+    <!-- HTML -->
     <div id="menu-screen" class="screen active">
-        <h1 class="menu-title">
+        <button class="settings-btn" onclick="openSettings()">⚙️</button>
+        <div class="menu-title">
             <span class="emoji">🎮</span>
-            KidsArcade 3in1
-        </h1>
-        <div class="game-grid" id="game-grid">
-            <!-- 게임 카드들은 JavaScript에서 동적 생성 -->
+            <span>KidsArcade 3in1</span>
         </div>
+        <div class="game-grid" id="game-grid"></div>
     </div>
 
     <!-- ========== 게임 1: 비누방울 팡팡 ========== -->
@@ -995,7 +971,10 @@
             <div class="bubble-stage" id="bubble-stage">1단계</div>
         </div>
         <div class="game-area" id="bubble-area">
-            <!-- 방울들이 여기에 동적 생성됨 -->
+            <div class="game-placeholder">
+                <div class="placeholder-emoji">💖</div>
+                <div class="placeholder-text">비누방울 팡팡!</div>
+            </div>
         </div>
     </div>
 
@@ -1007,7 +986,10 @@
             <div class="animal-stage" id="animal-stage">1단계</div>
         </div>
         <div class="game-area" id="animal-area">
-            <!-- 동물 게임 콘텐츠가 여기에 동적 생성됨 -->
+            <div class="game-placeholder">
+                <div class="placeholder-emoji">🦁</div>
+                <div class="placeholder-text">동물 친구 찾기!</div>
+            </div>
         </div>
     </div>
 
@@ -1017,37 +999,72 @@
         <div class="game-area" id="canvas-area">
             <div class="game-placeholder">
                 <div class="placeholder-emoji">🎨</div>
-                <div class="placeholder-text">마법의 스케치북!<br>곧 만나요!</div>
+                <div class="placeholder-text">마법의 스케치북!</div>
             </div>
         </div>
     </div>
 
-
-    <!-- ========== JavaScript ========== -->
+    <!-- ===== JavaScript ===== -->
     <script>
-        /* ==============================================
-         *  KidsArcade 3in1
-         *  마지막 업데이트: 2026-05-22
-         *  변경사항:
-         *    [비누방울 팡팡]
-         *    - 단계 시스템 추가 (1~10단계, 단계별 속도 증가 x1.5)
-         *    - 단계 진행: 1단계=20점, 2단계=30점, 3단계=40점... 점진적
-         *    - 네모/하트 모양 방울 추가 + 선명한 원색 사용
-         *    - 방울 크기 전체적으로 증가
-         *    - 점수 표시 크게 변경, 단계 표시 추가
-         *    - 단계 업 연출 (화면 오버레이 + 효과음)
-         *    - 점수 획득 시 플로팅 텍스트 연출
-         *    - 메인화면 카드 아이콘 💖 하트로 변경
-         *    [동물 친구 찾기]
-         *    - 동물 6종으로 확장 (강아지, 고양이, 사자, 소, 닭, 오리)
-         *    - SVG 동물 일러스트로 변경 (이모지 대신)
-         *    - 각 동물별 고유 소리 합성 추가
-         *    - 라운드당 4장 카드 표시 (6종 중 랜덤 선택)
-         *    - 정답 시 축하 별 이펙트 추가
-         *    [UI/UX]
-         *    - 터치 반응 개선, 버튼 크기 증가
-         *    - 점수 표시 테두리 및 강조 추가
-         * ============================================== */
+        /* ===== 글로벌 설정 ===== */
+        const Settings = {
+            soundEnabled: true
+        };
+
+        let globalAudioContext = null;
+
+        function getAudioContext() {
+            if (!globalAudioContext) {
+                globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (globalAudioContext.state === 'suspended') {
+                globalAudioContext.resume();
+            }
+            return globalAudioContext;
+        }
+
+        // 첫 터치/클릭 시 오디오 언락
+        document.addEventListener('touchstart', () => {
+            getAudioContext();
+        }, { once: true });
+
+        document.addEventListener('click', () => {
+            getAudioContext();
+        }, { once: true });
+
+        /* ===== 설정 UI ===== */
+        function openSettings() {
+            const overlay = document.createElement('div');
+            overlay.className = 'settings-overlay';
+            overlay.onclick = (e) => {
+                if (e.target === overlay) closeSettings();
+            };
+
+            const popup = document.createElement('div');
+            popup.className = 'settings-popup';
+            popup.innerHTML = `
+                <div class="settings-title">설정</div>
+                <div class="settings-item">
+                    <div class="settings-label">효과음</div>
+                    <button class="settings-toggle ${Settings.soundEnabled ? 'on' : ''}" id="sound-toggle"></button>
+                </div>
+                <button class="settings-close-btn" onclick="closeSettings()">닫기</button>
+            `;
+
+            overlay.appendChild(popup);
+            document.body.appendChild(overlay);
+
+            const toggle = document.getElementById('sound-toggle');
+            toggle.onclick = () => {
+                Settings.soundEnabled = !Settings.soundEnabled;
+                toggle.classList.toggle('on');
+            };
+        }
+
+        function closeSettings() {
+            const overlay = document.querySelector('.settings-overlay');
+            if (overlay) overlay.remove();
+        }
 
         const GAMES = [
             {
@@ -1087,7 +1104,6 @@
 
         let currentGame = null;
 
-        /* ===== 메인 메뉴 카드 동적 생성 ===== */
         function buildMenu() {
             const grid = document.getElementById('game-grid');
             grid.innerHTML = '';
@@ -1110,7 +1126,6 @@
             });
         }
 
-        /* ===== 화면 전환 ===== */
         function openGame(game) {
             document.getElementById('menu-screen').classList.remove('active');
             const screen = document.getElementById(game.screenId);
@@ -1133,59 +1148,30 @@
             currentGame = null;
         }
 
-        /* ==============================================
-         *  Web Audio API 컨텍스트 (공유)
-         * ============================================== */
-        let audioCtx = null;
-
-        function getAudioContext() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-            return audioCtx;
-        }
-
-        /* ==============================================
-         *  게임 1: 비누방울 팡팡 (Bubble Pop)
-         *  - 단계 시스템, 속도 증가, 다양한 모양/색상
-         * ============================================== */
+        /* ===== GAME 1: 비누방울 팡팡 ===== */
         const BubbleGame = {
             score: 0,
             stage: 1,
-            stageScore: 0,    // 현재 단계에서 얻은 점수
+            stageScore: 0,
             bubbles: [],
             animFrameId: null,
             spawnTimer: null,
             running: false,
 
-            // 선명한 원색 팔레트
             colors: [
-                '#FF1744', // 빨강
-                '#FF6D00', // 주황
-                '#FFD600', // 노랑
-                '#00C853', // 초록
-                '#2979FF', // 파랑
-                '#304FFE', // 남색
-                '#AA00FF', // 보라
-                '#FF4081', // 핫핑크
-                '#00BFA5', // 청록
-                '#F50057', // 딥핑크
+                '#FF1744', '#FF6D00', '#FFD600', '#00C853', '#2979FF',
+                '#304FFE', '#AA00FF', '#FF4081', '#00BFA5', '#F50057'
             ],
 
-            shapes: ['circle', 'square', 'heart'],
+            shapes: ['circle', 'square', 'triangle', 'heart'],
 
-            // 단계별 목표 점수: 1단계=20, 2단계=30, 3단계=40 ...
             getStageGoal(stage) {
                 return 10 + stage * 10;
             },
 
-            // 단계별 난이도 (속도 x1.5씩 증가)
             getStageDifficulty() {
                 const s = this.stage;
-                const speedMult = Math.pow(1.4, s - 1); // 1, 1.4, 1.96, 2.74...
+                const speedMult = Math.pow(1.4, s - 1);
                 return {
                     minSize: 65,
                     maxSize: 110,
@@ -1219,7 +1205,7 @@
         }
 
         function startBubbleGameplay() {
-            getAudioContext();
+            getAudioContext().resume();
 
             const overlay = document.getElementById('bubble-start-overlay');
             if (overlay) overlay.remove();
@@ -1264,25 +1250,18 @@
             bubble.style.height = size + 'px';
 
             if (shape === 'circle') {
-                // 원형 방울 - 그라데이션 + 반투명
                 bubble.style.background = `radial-gradient(circle at 35% 35%, rgba(255,255,255,0.6), ${color}88, ${color})`;
                 bubble.style.border = `3px solid ${color}`;
                 bubble.style.boxShadow = `0 0 12px ${color}55, inset 0 -4px 8px rgba(0,0,0,0.1)`;
             } else if (shape === 'square') {
-                // 네모 방울 - 꽉 찬 색상
                 bubble.style.background = `linear-gradient(135deg, ${color}, ${color}CC)`;
                 bubble.style.border = `3px solid ${color}`;
                 bubble.style.boxShadow = `0 4px 12px ${color}44`;
-            } else if (shape === 'heart') {
-                // 하트 모양 (CSS로 구현하기 어려워 이모지 사용)
-                bubble.style.background = 'transparent';
-                bubble.style.border = 'none';
-                bubble.style.fontSize = (size * 0.85) + 'px';
-                bubble.style.lineHeight = size + 'px';
-                bubble.textContent = '💖';
+            } else if (shape === 'triangle' || shape === 'heart') {
+                bubble.style.background = color;
+                bubble.style.border = `none`;
+                bubble.style.boxShadow = `0 4px 12px ${color}44`;
             }
-
-            // 원/네모는 색상만, 이모지 장식 없음
 
             const x = Math.random() * (areaRect.width - size);
             const y = areaRect.height + size;
@@ -1332,8 +1311,7 @@
                 if (b.x < 0) { b.x = 0; b.speedX *= -1; }
                 if (b.x > areaRect.width - b.size) { b.x = areaRect.width - b.size; b.speedX *= -1; }
 
-                b.el.style.left = b.x + 'px';
-                b.el.style.top = b.y + 'px';
+                b.el.style.transform = `translate3d(${b.x}px, ${b.y}px, 0)`;
 
                 if (b.y < -b.size - 20) {
                     b.el.remove();
@@ -1352,8 +1330,7 @@
             updateBubbleScore();
             playPopSound();
             createPopParticles(bubbleData.x + bubbleData.size / 2, bubbleData.y + bubbleData.size / 2, bubbleData.color);
-
-            // 플로팅 점수 텍스트
+            showScreenFlash();
             showScoreFloat(bubbleData.x + bubbleData.size / 2, bubbleData.y);
 
             bubbleData.el.classList.add('popping');
@@ -1365,7 +1342,6 @@
                 bubbleData.el.remove();
             }, 350);
 
-            // 단계 업 체크
             checkStageUp();
         }
 
@@ -1380,6 +1356,13 @@
             }
         }
 
+        function showScreenFlash() {
+            const flash = document.createElement('div');
+            flash.className = 'screen-flash';
+            document.getElementById('bubble-area').appendChild(flash);
+            setTimeout(() => flash.remove(), 200);
+        }
+
         function showStageUpOverlay() {
             const area = document.getElementById('bubble-area');
             if (!area) return;
@@ -1392,7 +1375,7 @@
             `;
             area.appendChild(overlay);
 
-            setTimeout(() => overlay.remove(), 1800);
+            setTimeout(() => overlay.remove(), 2200);
         }
 
         function showScoreFloat(x, y) {
@@ -1436,11 +1419,11 @@
             container.style.left = cx + 'px';
             container.style.top = cy + 'px';
 
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 15; i++) {
                 const p = document.createElement('div');
                 p.className = 'pop-particle';
-                const angle = (i / 10) * Math.PI * 2;
-                const dist = 30 + Math.random() * 30;
+                const angle = (i / 15) * Math.PI * 2;
+                const dist = 50 + Math.random() * 70;
                 const dx = Math.cos(angle) * dist;
                 const dy = Math.sin(angle) * dist;
                 p.style.setProperty('--dx', dx + 'px');
@@ -1454,6 +1437,7 @@
         }
 
         function playPopSound() {
+            if (!Settings.soundEnabled) return;
             const ctx = getAudioContext();
             if (!ctx) return;
 
@@ -1489,11 +1473,11 @@
         }
 
         function playStageUpSound() {
+            if (!Settings.soundEnabled) return;
             const ctx = getAudioContext();
             if (!ctx) return;
             const now = ctx.currentTime;
 
-            // 상승 아르페지오
             const notes = [523, 659, 784, 1047, 1319];
             notes.forEach((freq, i) => {
                 const t = now + i * 0.08;
@@ -1532,12 +1516,7 @@
             if (area) area.innerHTML = '';
         }
 
-        /* ==============================================
-         *  게임 2: 동물 친구 찾기 (Animal Sound)
-         *  - 10종 동물, 실제 사진, 단계 시스템
-         *  - 1단계=5점, 선택지 2마리부터, 단계별 +1마리
-         *  - 동일 단계 내 중복 문제 없음
-         * ============================================== */
+        /* ===== GAME 2: 동물 친구 찾기 ===== */
         const AnimalGame = {
             score: 0,
             stage: 1,
@@ -1547,7 +1526,7 @@
             locked: false,
             advanceTimer: null,
             running: false,
-            usedAnswers: [],  // 이번 단계에서 이미 나온 정답
+            usedAnswers: [],
 
             animals: [
                 { id: 'dog',      name: '강아지' },
@@ -1566,7 +1545,6 @@
             getChoiceCount() { return Math.min(this.stage + 1, this.animals.length); }
         };
 
-        /* 동물 실제 사진 URL (Unsplash 무료 이미지) */
         const ANIMAL_PHOTOS = {
             dog:      'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=300&h=300&fit=crop&crop=face',
             cat:      'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300&h=300&fit=crop&crop=face',
@@ -1607,7 +1585,7 @@
         }
 
         function startAnimalGameplay() {
-            getAudioContext();
+            getAudioContext().resume();
 
             const overlay = document.getElementById('animal-start-overlay');
             if (overlay) overlay.remove();
@@ -1629,7 +1607,6 @@
 
             AnimalGame.locked = false;
 
-            // 이전 결과 오버레이 및 축하 효과 제거
             const oldOverlay = document.querySelector('.animal-result-overlay');
             if (oldOverlay) oldOverlay.remove();
             const oldCelebration = document.querySelector('.celebration-stars');
@@ -1639,31 +1616,25 @@
 
             const choiceCount = AnimalGame.getChoiceCount();
 
-            // 중복 방지: 아직 안 나온 동물 중에서 정답 선택
             let availableForAnswer = AnimalGame.animals.filter(
                 a => !AnimalGame.usedAnswers.includes(a.id)
             );
-            // 모두 사용했으면 리셋
             if (availableForAnswer.length === 0) {
                 AnimalGame.usedAnswers = [];
                 availableForAnswer = [...AnimalGame.animals];
             }
 
-            // 정답 선택
             const answerAnimal = availableForAnswer[Math.floor(Math.random() * availableForAnswer.length)];
             AnimalGame.currentAnswer = answerAnimal.id;
             AnimalGame.usedAnswers.push(answerAnimal.id);
 
-            // 선택지: 정답 포함 + 나머지 랜덤
             const others = AnimalGame.animals.filter(a => a.id !== answerAnimal.id);
             const shuffledOthers = others.sort(() => Math.random() - 0.5);
             const choices = [answerAnimal, ...shuffledOthers.slice(0, choiceCount - 1)];
-            // 카드 순서 섞기
             AnimalGame.currentChoices = choices.sort(() => Math.random() - 0.5);
 
             buildAnimalGameUI();
 
-            // 자동으로 소리 재생
             setTimeout(() => {
                 if (AnimalGame.running && AnimalGame.currentAnswer) {
                     playAnimalSound(AnimalGame.currentAnswer);
@@ -1679,13 +1650,11 @@
             content.className = 'animal-game-content';
             content.id = 'animal-game-content';
 
-            // 질문 텍스트
             const question = document.createElement('div');
             question.className = 'animal-question';
             question.id = 'animal-question';
             question.textContent = '이 소리는 어떤 동물일까요?';
 
-            // 소리 듣기 버튼
             const listenBtn = document.createElement('button');
             listenBtn.className = 'animal-listen-btn';
             listenBtn.id = 'animal-listen-btn';
@@ -1702,7 +1671,6 @@
                 }
             });
 
-            // 동물 카드 컨테이너
             const cardsContainer = document.createElement('div');
             cardsContainer.className = 'animal-cards';
             cardsContainer.id = 'animal-cards';
@@ -1752,7 +1720,6 @@
                 showCelebrationStars(area);
                 playCorrectSound();
 
-                // 단계 업 체크
                 const isStageUp = AnimalGame.stageScore >= AnimalGame.getStageGoal();
                 if (isStageUp) {
                     AnimalGame.stage++;
@@ -1761,7 +1728,6 @@
                     updateAnimalStage();
                     playStageUpSound();
 
-                    // 단계업 연출
                     const stageOverlay = document.createElement('div');
                     stageOverlay.className = 'bubble-stage-up';
                     stageOverlay.innerHTML = `
@@ -1769,14 +1735,14 @@
                         <div class="stage-up-text">${AnimalGame.stage}단계!</div>
                     `;
                     area.appendChild(stageOverlay);
-                    setTimeout(() => stageOverlay.remove(), 1800);
+                    setTimeout(() => stageOverlay.remove(), 2200);
                 }
 
                 AnimalGame.advanceTimer = setTimeout(() => {
                     if (AnimalGame.running) {
                         startAnimalRound();
                     }
-                }, isStageUp ? 2200 : 1500);
+                }, isStageUp ? 2500 : 1500);
 
             } else {
                 AnimalGame.locked = true;
@@ -1815,18 +1781,18 @@
             container.className = 'celebration-stars';
             const emojis = ['⭐', '🌟', '✨', '💫', '🎉', '🎊'];
 
-            for (let i = 0; i < 12; i++) {
+            for (let i = 0; i < 16; i++) {
                 const star = document.createElement('div');
                 star.className = 'celebration-star';
                 star.textContent = emojis[Math.floor(Math.random() * emojis.length)];
                 star.style.left = (Math.random() * 100) + '%';
-                star.style.animationDelay = (Math.random() * 0.5) + 's';
-                star.style.animationDuration = (1 + Math.random() * 1) + 's';
+                star.style.animationDelay = (Math.random() * 0.6) + 's';
+                star.style.animationDuration = (1.2 + Math.random() * 0.8) + 's';
                 container.appendChild(star);
             }
 
             parent.appendChild(container);
-            setTimeout(() => container.remove(), 2000);
+            setTimeout(() => container.remove(), 2300);
         }
 
         function updateAnimalScore() {
@@ -1845,37 +1811,20 @@
             }
         }
 
-        /* ===== Web Audio API: 동물 소리 합성 ===== */
-
         function playAnimalSound(animalId) {
+            if (!Settings.soundEnabled) return;
             const ctx = getAudioContext();
             if (!ctx) return;
             const now = ctx.currentTime;
 
-            // 유틸: 오실레이터+게인 빠른 생성
-            function makeOsc(type, freq, t, dur, vol) {
-                const o = ctx.createOscillator();
-                const g = ctx.createGain();
-                o.type = type;
-                if (typeof freq === 'number') o.frequency.setValueAtTime(freq, t);
-                g.gain.setValueAtTime(vol || 0.3, t);
-                g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-                o.connect(g); g.connect(ctx.destination);
-                o.start(t); o.stop(t + dur);
-                return o;
-            }
-
             switch (animalId) {
-
                 case 'dog': {
-                    // 멍멍! - 2회 짖음, 급격한 주파수 변화
                     for (let i = 0; i < 2; i++) {
                         const t = now + i * 0.35;
                         const o = ctx.createOscillator();
                         const g = ctx.createGain();
                         const flt = ctx.createBiquadFilter();
                         o.type = 'sawtooth';
-                        // 빠르게 올라갔다 내려오는 짖는 패턴
                         o.frequency.setValueAtTime(200, t);
                         o.frequency.linearRampToValueAtTime(450, t + 0.04);
                         o.frequency.setValueAtTime(400, t + 0.06);
@@ -1894,7 +1843,6 @@
                 }
 
                 case 'cat': {
-                    // 야~옹 - 부드러운 상승 후 하강, 2연속
                     for (let i = 0; i < 2; i++) {
                         const t = now + i * 0.7;
                         const o = ctx.createOscillator();
@@ -1911,7 +1859,6 @@
                         g.gain.exponentialRampToValueAtTime(0.001, t + 0.58);
                         o.connect(g); g.connect(ctx.destination);
                         o.start(t); o.stop(t + 0.58);
-                        // 비브라토
                         const v = ctx.createOscillator();
                         const vg = ctx.createGain();
                         v.frequency.setValueAtTime(5.5, t);
@@ -1923,7 +1870,6 @@
                 }
 
                 case 'lion': {
-                    // 으르렁~ - 아주 낮은 떨리는 소리
                     const dur = 1.4;
                     const o = ctx.createOscillator();
                     const g = ctx.createGain();
@@ -1940,29 +1886,15 @@
                     g.gain.exponentialRampToValueAtTime(0.001, now + dur);
                     o.connect(flt); flt.connect(g); g.connect(ctx.destination);
                     o.start(now); o.stop(now + dur);
-                    // 떨림
                     const tr = ctx.createOscillator();
                     const trg = ctx.createGain();
                     tr.frequency.setValueAtTime(7, now); trg.gain.setValueAtTime(18, now);
                     tr.connect(trg); trg.connect(o.frequency);
                     tr.start(now); tr.stop(now + dur);
-                    // 서브베이스
-                    makeOsc('sine', 45, now, dur, 0.2);
-                    // 숨소리 노이즈
-                    const bs = Math.floor(ctx.sampleRate * dur);
-                    const nb = ctx.createBuffer(1, bs, ctx.sampleRate);
-                    const nd = nb.getChannelData(0);
-                    for (let i = 0; i < bs; i++) { const e = Math.min(1, i/(ctx.sampleRate*0.2)) * Math.max(0, 1-(i-bs*0.6)/(bs*0.4)); nd[i] = (Math.random()*2-1)*0.12*e; }
-                    const ns = ctx.createBufferSource(); ns.buffer = nb;
-                    const ng = ctx.createGain(); ng.gain.setValueAtTime(0.15, now);
-                    const lp = ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.setValueAtTime(350, now);
-                    ns.connect(ng); ng.connect(lp); lp.connect(ctx.destination);
-                    ns.start(now); ns.stop(now + dur);
                     break;
                 }
 
                 case 'cow': {
-                    // 음~메~ - 2음절, 낮은 음에서 올라갔다 길게 유지
                     const dur = 1.6;
                     const o = ctx.createOscillator();
                     const g = ctx.createGain();
@@ -1980,19 +1912,14 @@
                     g.gain.exponentialRampToValueAtTime(0.001, now + dur);
                     o.connect(flt); flt.connect(g); g.connect(ctx.destination);
                     o.start(now); o.stop(now + dur);
-                    // 비브라토
                     const v = ctx.createOscillator(); const vg = ctx.createGain();
                     v.frequency.setValueAtTime(4, now); vg.gain.setValueAtTime(6, now);
                     v.connect(vg); vg.connect(o.frequency);
                     v.start(now); v.stop(now + dur);
-                    // 서브
-                    makeOsc('sine', 55, now, dur, 0.18);
                     break;
                 }
 
                 case 'chicken': {
-                    // 꼬-끼-오~ - 3음절, 점점 높아졌다 길게
-                    // 꼬
                     const o1 = ctx.createOscillator(); const g1 = ctx.createGain();
                     o1.type = 'sawtooth';
                     o1.frequency.setValueAtTime(300, now);
@@ -2002,7 +1929,6 @@
                     g1.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
                     o1.connect(g1); g1.connect(ctx.destination);
                     o1.start(now); o1.stop(now + 0.14);
-                    // 끼
                     const o2 = ctx.createOscillator(); const g2 = ctx.createGain();
                     o2.type = 'sawtooth';
                     o2.frequency.setValueAtTime(550, now + 0.18);
@@ -2012,7 +1938,6 @@
                     g2.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
                     o2.connect(g2); g2.connect(ctx.destination);
                     o2.start(now + 0.18); o2.stop(now + 0.35);
-                    // 오~~~ (길게 높은 음)
                     const o3 = ctx.createOscillator(); const g3 = ctx.createGain();
                     const flt = ctx.createBiquadFilter();
                     o3.type = 'sawtooth';
@@ -2031,7 +1956,6 @@
                 }
 
                 case 'duck': {
-                    // 꽥꽥꽥 - 납작한 콧소리, 빠르게 3회
                     for (let i = 0; i < 3; i++) {
                         const t = now + i * 0.25;
                         const o = ctx.createOscillator(); const g = ctx.createGain();
@@ -2053,7 +1977,6 @@
                 }
 
                 case 'sheep': {
-                    // 메~에~ - 떨리는 중간음 2회
                     for (let i = 0; i < 2; i++) {
                         const t = now + i * 0.6;
                         const o = ctx.createOscillator(); const g = ctx.createGain();
@@ -2070,7 +1993,6 @@
                         g.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
                         o.connect(flt); flt.connect(g); g.connect(ctx.destination);
                         o.start(t); o.stop(t + 0.45);
-                        // 강한 비브라토 (떨리는 양 울음)
                         const v = ctx.createOscillator(); const vg = ctx.createGain();
                         v.frequency.setValueAtTime(8, t); vg.gain.setValueAtTime(25, t);
                         v.connect(vg); vg.connect(o.frequency);
@@ -2080,7 +2002,6 @@
                 }
 
                 case 'pig': {
-                    // 꿀꿀 - 낮고 짧은 코 고는 소리 2회
                     for (let i = 0; i < 2; i++) {
                         const t = now + i * 0.3;
                         const o = ctx.createOscillator(); const g = ctx.createGain();
@@ -2097,22 +2018,11 @@
                         g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
                         o.connect(flt); flt.connect(g); g.connect(ctx.destination);
                         o.start(t); o.stop(t + 0.22);
-                        // 콧소리 노이즈
-                        const bs = Math.floor(ctx.sampleRate * 0.15);
-                        const nb = ctx.createBuffer(1, bs, ctx.sampleRate);
-                        const nd = nb.getChannelData(0);
-                        for (let j = 0; j < bs; j++) nd[j] = (Math.random()*2-1)*0.2*(1-j/bs);
-                        const ns = ctx.createBufferSource(); ns.buffer = nb;
-                        const ng = ctx.createGain(); ng.gain.setValueAtTime(0.12, t); ng.gain.exponentialRampToValueAtTime(0.001, t+0.15);
-                        const lp = ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.setValueAtTime(400, t);
-                        ns.connect(ng); ng.connect(lp); lp.connect(ctx.destination);
-                        ns.start(t); ns.stop(t + 0.15);
                     }
                     break;
                 }
 
                 case 'horse': {
-                    // 히힝~ - 높은 울음소리, 올라갔다 내려옴
                     const dur = 1.0;
                     const o = ctx.createOscillator(); const g = ctx.createGain();
                     o.type = 'sawtooth';
@@ -2129,25 +2039,14 @@
                     g.gain.exponentialRampToValueAtTime(0.001, now + dur);
                     o.connect(flt); flt.connect(g); g.connect(ctx.destination);
                     o.start(now); o.stop(now + dur);
-                    // 떨림
                     const v = ctx.createOscillator(); const vg = ctx.createGain();
                     v.frequency.setValueAtTime(6, now); vg.gain.setValueAtTime(20, now);
                     v.connect(vg); vg.connect(o.frequency);
                     v.start(now); v.stop(now + dur);
-                    // 콧바람
-                    const bs = Math.floor(ctx.sampleRate * 0.3);
-                    const nb = ctx.createBuffer(1, bs, ctx.sampleRate);
-                    const nd = nb.getChannelData(0);
-                    for (let j = 0; j < bs; j++) nd[j] = (Math.random()*2-1)*0.08*(1-j/bs);
-                    const ns = ctx.createBufferSource(); ns.buffer = nb;
-                    const ng = ctx.createGain(); ng.gain.setValueAtTime(0.1, now+0.7); ng.gain.exponentialRampToValueAtTime(0.001, now+1.0);
-                    ns.connect(ng); ng.connect(ctx.destination);
-                    ns.start(now+0.7); ns.stop(now+1.0);
                     break;
                 }
 
                 case 'elephant': {
-                    // 뿌우~ - 트럼펫 같은 낮고 웅장한 소리
                     const dur = 1.5;
                     const o = ctx.createOscillator(); const g = ctx.createGain();
                     o.type = 'sawtooth';
@@ -2164,9 +2063,6 @@
                     g.gain.exponentialRampToValueAtTime(0.001, now + dur);
                     o.connect(flt); flt.connect(g); g.connect(ctx.destination);
                     o.start(now); o.stop(now + dur);
-                    // 서브베이스
-                    makeOsc('sine', 75, now, dur, 0.25);
-                    // 2번째 하모닉
                     const o2 = ctx.createOscillator(); const g2 = ctx.createGain();
                     o2.type = 'sine';
                     o2.frequency.setValueAtTime(300, now);
@@ -2182,8 +2078,8 @@
             }
         }
 
-        // 정답 효과음 (밝은 상승 멜로디)
         function playCorrectSound() {
+            if (!Settings.soundEnabled) return;
             const ctx = getAudioContext();
             if (!ctx) return;
             const now = ctx.currentTime;
@@ -2206,8 +2102,8 @@
             });
         }
 
-        // 오답 효과음 (짧은 하강 톤)
         function playWrongSound() {
+            if (!Settings.soundEnabled) return;
             const ctx = getAudioContext();
             if (!ctx) return;
             const now = ctx.currentTime;
@@ -2254,13 +2150,7 @@
             if (area) area.innerHTML = '';
         }
 
-        /* ==============================================
-         *  게임 3: 마법의 스케치북 (Magic Sketchbook)
-         *  - Canvas 그리기 (터치/마우스)
-         *  - 윤곽선 배경 (물고기)
-         *  - 6색 색상 버튼 + 3단계 브러시
-         *  - 마법 보내기 → 수족관 애니메이션
-         * ============================================== */
+        /* ===== GAME 3: 마법의 스케치북 ===== */
         const SketchGame = {
             drawCanvas: null,
             drawCtx: null,
@@ -2271,8 +2161,8 @@
             brushSize: 12,
             lastX: 0,
             lastY: 0,
-            mode: 'draw',  // 'draw' | 'aquarium'
-            aquariumAnim: null,
+            mode: 'draw',
+            selectedOutline: 'fish',
             aquariumDrawings: [],
 
             colors: [
@@ -2288,6 +2178,13 @@
                 { label: '작게', size: 6 },
                 { label: '보통', size: 14 },
                 { label: '크게', size: 26 }
+            ],
+
+            outlines: [
+                { id: 'fish', label: '물고기' },
+                { id: 'car', label: '자동차' },
+                { id: 'house', label: '집' },
+                { id: 'butterfly', label: '나비' }
             ]
         };
 
@@ -2295,29 +2192,29 @@
             const area = document.getElementById('canvas-area');
             area.innerHTML = '';
 
-            // 시작 오버레이
             const overlay = document.createElement('div');
             overlay.className = 'sketch-start-overlay';
             overlay.id = 'sketch-start-overlay';
             overlay.innerHTML = `
                 <div class="start-emoji">🎨</div>
-                <div class="start-text">그림을 그리고 움직여요!</div>
-                <button class="sketch-start-btn" id="sketch-start-btn">시작! 🎉</button>
+                <div class="start-text">윤곽선을 선택하세요!</div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; width: 100%; max-width: 300px;">
+                    ${SketchGame.outlines.map((out, i) => `
+                        <button style="background: linear-gradient(135deg, #FFB74D, #FFA726); color: white; border: none; border-radius: 16px; padding: 16px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: transform 0.2s;" onclick="selectOutline('${out.id}')">${out.label}</button>
+                    `).join('')}
+                </div>
             `;
             area.appendChild(overlay);
+        }
 
-            document.getElementById('sketch-start-btn').addEventListener('click', startSketchGameplay);
-            document.getElementById('sketch-start-btn').addEventListener('touchend', (e) => {
-                e.preventDefault();
-                startSketchGameplay();
-            });
+        function selectOutline(id) {
+            SketchGame.selectedOutline = id;
+            const overlay = document.getElementById('sketch-start-overlay');
+            if (overlay) overlay.remove();
+            startSketchGameplay();
         }
 
         function startSketchGameplay() {
-            const overlay = document.getElementById('sketch-start-overlay');
-            if (overlay) overlay.remove();
-
-            SketchGame.mode = 'draw';
             buildSketchDrawScreen();
         }
 
@@ -2329,7 +2226,6 @@
             drawScreen.className = 'sketch-draw-screen';
             drawScreen.id = 'sketch-draw-screen';
 
-            // 캔버스 영역
             const canvasWrap = document.createElement('div');
             canvasWrap.className = 'sketch-canvas-wrap';
             canvasWrap.id = 'sketch-canvas-wrap';
@@ -2342,12 +2238,10 @@
             canvasWrap.appendChild(outlineCanvas);
             canvasWrap.appendChild(drawCanvas);
 
-            // 툴바
             const toolbar = document.createElement('div');
             toolbar.className = 'sketch-toolbar';
             toolbar.id = 'sketch-toolbar';
 
-            // 색상 버튼
             SketchGame.colors.forEach((c, i) => {
                 const btn = document.createElement('div');
                 btn.className = 'sketch-color-btn' + (i === 0 ? ' active' : '');
@@ -2358,12 +2252,10 @@
                 toolbar.appendChild(btn);
             });
 
-            // 구분선
             const div1 = document.createElement('div');
             div1.className = 'sketch-divider';
             toolbar.appendChild(div1);
 
-            // 브러시 크기 버튼
             SketchGame.brushes.forEach((b, i) => {
                 const btn = document.createElement('div');
                 btn.className = 'sketch-brush-btn' + (i === 1 ? ' active' : '');
@@ -2379,12 +2271,10 @@
                 toolbar.appendChild(btn);
             });
 
-            // 구분선
             const div2 = document.createElement('div');
             div2.className = 'sketch-divider';
             toolbar.appendChild(div2);
 
-            // 액션 버튼들
             const actionBtns = document.createElement('div');
             actionBtns.className = 'sketch-action-btns';
 
@@ -2397,8 +2287,8 @@
             const magicBtn = document.createElement('button');
             magicBtn.className = 'sketch-action-btn sketch-magic-btn';
             magicBtn.textContent = '마법 보내기 🪄';
-            magicBtn.addEventListener('click', sendToAquarium);
-            magicBtn.addEventListener('touchend', (e) => { e.preventDefault(); sendToAquarium(); });
+            magicBtn.addEventListener('click', sendToAnimation);
+            magicBtn.addEventListener('touchend', (e) => { e.preventDefault(); sendToAnimation(); });
 
             actionBtns.appendChild(clearBtn);
             actionBtns.appendChild(magicBtn);
@@ -2408,10 +2298,9 @@
             drawScreen.appendChild(toolbar);
             area.appendChild(drawScreen);
 
-            // 캔버스 초기화 (약간 딜레이 후 크기 설정)
             requestAnimationFrame(() => {
                 setupSketchCanvases();
-                drawOutlineFish();
+                drawOutlineShape();
             });
         }
 
@@ -2445,7 +2334,6 @@
             SketchGame.drawCtx.strokeStyle = SketchGame.currentColor;
             SketchGame.drawCtx.lineWidth = SketchGame.brushSize;
 
-            // 터치/마우스 이벤트
             draw.addEventListener('mousedown', sketchStart);
             draw.addEventListener('mousemove', sketchMove);
             draw.addEventListener('mouseup', sketchEnd);
@@ -2456,7 +2344,7 @@
             draw.addEventListener('touchend', sketchTouchEnd, { passive: false });
         }
 
-        function drawOutlineFish() {
+        function drawOutlineShape() {
             const ctx = SketchGame.outlineCtx;
             if (!ctx) return;
 
@@ -2466,87 +2354,89 @@
             const h = c.height / dpr;
 
             ctx.clearRect(0, 0, w, h);
-            ctx.strokeStyle = '#BDBDBD';
-            ctx.lineWidth = 3;
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 4;
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
-            // 물고기 - 화면 중앙에 크게
-            const cx = w * 0.45;
-            const cy = h * 0.48;
-            const scale = Math.min(w, h) * 0.0035;
+            const cx = w * 0.5;
+            const cy = h * 0.5;
 
-            ctx.save();
-            ctx.translate(cx, cy);
-            ctx.scale(scale, scale);
-
-            // 몸통 (타원)
-            ctx.beginPath();
-            ctx.ellipse(0, 0, 80, 50, 0, 0, Math.PI * 2);
-            ctx.stroke();
-
-            // 꼬리
-            ctx.beginPath();
-            ctx.moveTo(70, -10);
-            ctx.lineTo(110, -40);
-            ctx.lineTo(110, 40);
-            ctx.lineTo(70, 10);
-            ctx.stroke();
-
-            // 눈
-            ctx.beginPath();
-            ctx.arc(-35, -10, 10, 0, Math.PI * 2);
-            ctx.stroke();
-            // 눈동자
-            ctx.beginPath();
-            ctx.arc(-33, -10, 4, 0, Math.PI * 2);
-            ctx.stroke();
-
-            // 입
-            ctx.beginPath();
-            ctx.moveTo(-65, 5);
-            ctx.quadraticCurveTo(-55, 15, -45, 5);
-            ctx.stroke();
-
-            // 지느러미 (위)
-            ctx.beginPath();
-            ctx.moveTo(-15, -45);
-            ctx.quadraticCurveTo(0, -80, 25, -48);
-            ctx.stroke();
-
-            // 지느러미 (아래)
-            ctx.beginPath();
-            ctx.moveTo(0, 45);
-            ctx.quadraticCurveTo(15, 70, 30, 45);
-            ctx.stroke();
-
-            // 비늘 무늬
-            for (let i = 0; i < 3; i++) {
+            if (SketchGame.selectedOutline === 'fish') {
+                const scale = Math.min(w, h) * 0.003;
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.scale(scale, scale);
                 ctx.beginPath();
-                ctx.arc(-10 + i * 25, 0, 12, 0.3, Math.PI - 0.3);
+                ctx.ellipse(0, 0, 80, 50, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(70, -10);
+                ctx.lineTo(110, -40);
+                ctx.lineTo(110, 40);
+                ctx.lineTo(70, 10);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(-35, -10, 10, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(-15, -45);
+                ctx.quadraticCurveTo(0, -80, 25, -48);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(0, 45);
+                ctx.quadraticCurveTo(15, 70, 30, 45);
+                ctx.stroke();
+                ctx.restore();
+            } else if (SketchGame.selectedOutline === 'car') {
+                ctx.beginPath();
+                ctx.rect(cx - 80, cy - 20, 160, 40);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(cx - 50, cy + 25, 12, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(cx + 50, cy + 25, 12, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.rect(cx - 60, cy - 45, 120, 30);
+                ctx.stroke();
+            } else if (SketchGame.selectedOutline === 'house') {
+                ctx.beginPath();
+                ctx.moveTo(cx - 70, cy + 50);
+                ctx.lineTo(cx, cy - 50);
+                ctx.lineTo(cx + 70, cy + 50);
+                ctx.closePath();
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.rect(cx - 60, cy - 20, 120, 70);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.rect(cx - 25, cy, 50, 50);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(cx + 45, cy + 20, 10, 0, Math.PI * 2);
+                ctx.stroke();
+            } else if (SketchGame.selectedOutline === 'butterfly') {
+                ctx.beginPath();
+                ctx.ellipse(cx - 40, cy - 20, 35, 45, -0.3, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.ellipse(cx + 40, cy - 20, 35, 45, 0.3, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.ellipse(cx - 40, cy + 20, 35, 45, 0.3, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.ellipse(cx + 40, cy + 20, 35, 45, -0.3, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(cx, cy - 50);
+                ctx.lineTo(cx, cy + 50);
                 ctx.stroke();
             }
-
-            // 거품들
-            ctx.restore();
-
-            // 물거품 장식
-            const bubbles = [
-                { x: w * 0.15, y: h * 0.2, r: 8 },
-                { x: w * 0.12, y: h * 0.35, r: 5 },
-                { x: w * 0.2, y: h * 0.15, r: 6 },
-                { x: w * 0.78, y: h * 0.7, r: 7 },
-                { x: w * 0.82, y: h * 0.6, r: 4 },
-                { x: w * 0.75, y: h * 0.8, r: 9 },
-            ];
-            bubbles.forEach(b => {
-                ctx.beginPath();
-                ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-                ctx.stroke();
-            });
         }
 
-        // ===== 그리기 이벤트 =====
         function getSketchPos(e) {
             const rect = SketchGame.drawCanvas.getBoundingClientRect();
             return {
@@ -2560,7 +2450,6 @@
             const pos = getSketchPos(e);
             SketchGame.lastX = pos.x;
             SketchGame.lastY = pos.y;
-            // 점 찍기
             SketchGame.drawCtx.beginPath();
             SketchGame.drawCtx.arc(pos.x, pos.y, SketchGame.brushSize / 2, 0, Math.PI * 2);
             SketchGame.drawCtx.fillStyle = SketchGame.currentColor;
@@ -2602,7 +2491,6 @@
             sketchEnd();
         }
 
-        // ===== 색상/브러시 선택 =====
         function selectSketchColor(hex, btn) {
             SketchGame.currentColor = hex;
             document.querySelectorAll('.sketch-color-btn').forEach(b => b.classList.remove('active'));
@@ -2622,11 +2510,9 @@
             SketchGame.drawCtx.clearRect(0, 0, c.width / dpr, c.height / dpr);
         }
 
-        // ===== 마법 보내기 → 수족관 =====
-        function sendToAquarium() {
+        function sendToAnimation() {
             if (!SketchGame.drawCanvas) return;
 
-            // 그린 그림 캡처 (윤곽선 + 그림 합성)
             const dpr = window.devicePixelRatio || 1;
             const w = SketchGame.drawCanvas.width;
             const h = SketchGame.drawCanvas.height;
@@ -2638,7 +2524,6 @@
             mergeCtx.drawImage(SketchGame.outlineCanvas, 0, 0);
             mergeCtx.drawImage(SketchGame.drawCanvas, 0, 0);
 
-            // 내용 영역만 잘라내기 (여백 제거)
             const imgData = mergeCtx.getImageData(0, 0, w, h);
             let minX = w, minY = h, maxX = 0, maxY = 0;
             for (let y = 0; y < h; y++) {
@@ -2653,7 +2538,6 @@
                 }
             }
 
-            // 여백 패딩
             const pad = 10;
             minX = Math.max(0, minX - pad);
             minY = Math.max(0, minY - pad);
@@ -2664,7 +2548,6 @@
             const cropH = maxY - minY;
 
             if (cropW < 10 || cropH < 10) {
-                // 거의 안 그렸음
                 return;
             }
 
@@ -2675,55 +2558,27 @@
 
             const drawingDataURL = cropCanvas.toDataURL('image/png');
 
-            SketchGame.mode = 'aquarium';
-            buildAquariumScreen(drawingDataURL, cropW / dpr, cropH / dpr);
+            SketchGame.mode = 'animation';
+            buildAnimationScreen(drawingDataURL, cropW / dpr, cropH / dpr);
             playMagicSound();
         }
 
-        function buildAquariumScreen(drawingURL, drawW, drawH) {
+        function buildAnimationScreen(drawingURL, drawW, drawH) {
             const area = document.getElementById('canvas-area');
             area.innerHTML = '';
 
-            const aquarium = document.createElement('div');
-            aquarium.className = 'aquarium-screen';
-            aquarium.id = 'aquarium-screen';
+            const screen = document.createElement('div');
+            screen.className = 'aquarium-screen';
+            screen.id = 'aquarium-screen';
 
-            // 배경
             const bg = document.createElement('div');
             bg.className = 'aquarium-bg';
-            aquarium.appendChild(bg);
+            screen.appendChild(bg);
 
-            // 바닥
             const floor = document.createElement('div');
             floor.className = 'aquarium-floor';
-            aquarium.appendChild(floor);
+            screen.appendChild(floor);
 
-            // 해초
-            for (let i = 0; i < 6; i++) {
-                const sw = document.createElement('div');
-                sw.className = 'aquarium-seaweed';
-                sw.style.left = (8 + i * 17 + Math.random() * 5) + '%';
-                sw.style.height = (40 + Math.random() * 50) + 'px';
-                sw.style.animationDelay = (Math.random() * 2) + 's';
-                sw.style.background = i % 2 === 0 ? '#388E3C' : '#2E7D32';
-                aquarium.appendChild(sw);
-            }
-
-            // 거품
-            for (let i = 0; i < 10; i++) {
-                const bub = document.createElement('div');
-                bub.className = 'aquarium-bubble';
-                bub.style.left = (Math.random() * 90 + 5) + '%';
-                bub.style.bottom = (Math.random() * 20) + '%';
-                const bubSize = 6 + Math.random() * 12;
-                bub.style.width = bubSize + 'px';
-                bub.style.height = bubSize + 'px';
-                bub.style.animationDuration = (4 + Math.random() * 6) + 's';
-                bub.style.animationDelay = (Math.random() * 5) + 's';
-                aquarium.appendChild(bub);
-            }
-
-            // 그린 그림 수영시키기 (여러 개)
             const maxH = 120;
             const displayH = Math.min(maxH, drawH * 0.6);
             const displayW = drawW * (displayH / drawH);
@@ -2738,10 +2593,9 @@
                 img.style.animationDuration = (6 + i * 3 + Math.random() * 3) + 's';
                 img.style.animationDelay = (i * 2.5) + 's';
                 img.draggable = false;
-                aquarium.appendChild(img);
+                screen.appendChild(img);
             }
 
-            // 다시 그리기 버튼
             const redrawBtn = document.createElement('button');
             redrawBtn.className = 'aquarium-redraw-btn';
             redrawBtn.textContent = '다시 그리기 🔄';
@@ -2754,17 +2608,17 @@
                 SketchGame.mode = 'draw';
                 buildSketchDrawScreen();
             });
-            aquarium.appendChild(redrawBtn);
+            screen.appendChild(redrawBtn);
 
-            area.appendChild(aquarium);
+            area.appendChild(screen);
         }
 
         function playMagicSound() {
+            if (!Settings.soundEnabled) return;
             const ctx = getAudioContext();
             if (!ctx) return;
             const now = ctx.currentTime;
 
-            // 마법 효과음 (글리산도 + 벨)
             const notes = [523, 659, 784, 1047, 1319, 1568];
             notes.forEach((freq, i) => {
                 const t = now + i * 0.07;
@@ -2780,23 +2634,6 @@
                 osc.start(t);
                 osc.stop(t + 0.4);
             });
-
-            // 반짝이 노이즈
-            const bufSize = Math.floor(ctx.sampleRate * 0.3);
-            const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
-            const data = buf.getChannelData(0);
-            for (let i = 0; i < bufSize; i++) {
-                data[i] = (Math.random() * 2 - 1) * 0.05 * (1 - i / bufSize);
-            }
-            const src = ctx.createBufferSource();
-            src.buffer = buf;
-            const g = ctx.createGain();
-            g.gain.setValueAtTime(0.1, now);
-            g.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-            src.connect(g);
-            g.connect(ctx.destination);
-            src.start(now + 0.2);
-            src.stop(now + 0.5);
         }
 
         function cleanupCanvasGame() {
@@ -2816,7 +2653,6 @@
             buildMenu();
         });
 
-        /* ===== PWA 풀스크린 지원 (iOS 홈화면 추가 시) ===== */
         if ('standalone' in navigator && navigator.standalone) {
             document.documentElement.style.height = '100vh';
         }
