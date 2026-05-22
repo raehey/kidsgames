@@ -1268,190 +1268,19 @@
         };
 
         /* ===== SVG 동물 일러스트 ===== */
-        function getAnimalSVG(id) {
-            switch (id) {
-                case 'dog':
-                    return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                        <!-- 강아지 얼굴 -->
-                        <ellipse cx="50" cy="55" rx="35" ry="32" fill="#C88B53"/>
-                        <!-- 귀 -->
-                        <ellipse cx="20" cy="30" rx="14" ry="22" fill="#8B5E3C" transform="rotate(-15 20 30)"/>
-                        <ellipse cx="80" cy="30" rx="14" ry="22" fill="#8B5E3C" transform="rotate(15 80 30)"/>
-                        <!-- 귀 안쪽 -->
-                        <ellipse cx="20" cy="32" rx="8" ry="14" fill="#D4956B" transform="rotate(-15 20 32)"/>
-                        <ellipse cx="80" cy="32" rx="8" ry="14" fill="#D4956B" transform="rotate(15 80 32)"/>
-                        <!-- 얼굴 안쪽 (밝은 부분) -->
-                        <ellipse cx="50" cy="62" rx="22" ry="18" fill="#E8C89E"/>
-                        <!-- 눈 -->
-                        <circle cx="37" cy="50" r="5" fill="#333"/>
-                        <circle cx="63" cy="50" r="5" fill="#333"/>
-                        <circle cx="39" cy="48" r="2" fill="white"/>
-                        <circle cx="65" cy="48" r="2" fill="white"/>
-                        <!-- 코 -->
-                        <ellipse cx="50" cy="62" rx="7" ry="5" fill="#333"/>
-                        <ellipse cx="50" cy="61" rx="3" ry="2" fill="#666"/>
-                        <!-- 입 -->
-                        <path d="M 50 67 Q 43 74 38 70" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round"/>
-                        <path d="M 50 67 Q 57 74 62 70" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round"/>
-                        <!-- 혀 -->
-                        <ellipse cx="50" cy="74" rx="5" ry="6" fill="#FF6B6B"/>
-                        <!-- 볼 터치 -->
-                        <circle cx="28" cy="60" r="5" fill="#FFB4B4" opacity="0.5"/>
-                        <circle cx="72" cy="60" r="5" fill="#FFB4B4" opacity="0.5"/>
-                    </svg>`;
+        /* 동물 실제 사진 URL (Unsplash 무료 이미지) */
+        const ANIMAL_PHOTOS = {
+            dog:     'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=200&h=200&fit=crop&crop=face',
+            cat:     'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200&h=200&fit=crop&crop=face',
+            lion:    'https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=200&h=200&fit=crop&crop=face',
+            cow:     'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=200&h=200&fit=crop&crop=face',
+            chicken: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=200&h=200&fit=crop&crop=face',
+            duck:    'https://images.unsplash.com/photo-1459682687441-7761439a709d?w=200&h=200&fit=crop&crop=face'
+        };
 
-                case 'cat':
-                    return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                        <!-- 고양이 얼굴 -->
-                        <ellipse cx="50" cy="58" rx="33" ry="30" fill="#FFB74D"/>
-                        <!-- 귀 (삼각형) -->
-                        <polygon points="22,38 10,10 38,30" fill="#FFB74D"/>
-                        <polygon points="78,38 90,10 62,30" fill="#FFB74D"/>
-                        <!-- 귀 안쪽 -->
-                        <polygon points="24,36 15,16 35,32" fill="#FF8A65"/>
-                        <polygon points="76,36 85,16 65,32" fill="#FF8A65"/>
-                        <!-- 눈 -->
-                        <ellipse cx="37" cy="52" rx="6" ry="7" fill="#66BB6A"/>
-                        <ellipse cx="63" cy="52" rx="6" ry="7" fill="#66BB6A"/>
-                        <ellipse cx="37" cy="52" rx="3" ry="7" fill="#333"/>
-                        <ellipse cx="63" cy="52" rx="3" ry="7" fill="#333"/>
-                        <circle cx="39" cy="49" r="2" fill="white"/>
-                        <circle cx="65" cy="49" r="2" fill="white"/>
-                        <!-- 코 -->
-                        <polygon points="50,62 46,66 54,66" fill="#FF7043"/>
-                        <!-- 입 -->
-                        <path d="M 50 66 Q 44 72 40 68" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
-                        <path d="M 50 66 Q 56 72 60 68" fill="none" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
-                        <!-- 수염 -->
-                        <line x1="12" y1="58" x2="32" y2="62" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
-                        <line x1="12" y1="64" x2="32" y2="65" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
-                        <line x1="12" y1="70" x2="32" y2="68" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
-                        <line x1="88" y1="58" x2="68" y2="62" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
-                        <line x1="88" y1="64" x2="68" y2="65" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
-                        <line x1="88" y1="70" x2="68" y2="68" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
-                        <!-- 볼 터치 -->
-                        <circle cx="30" cy="64" r="5" fill="#FFCDD2" opacity="0.5"/>
-                        <circle cx="70" cy="64" r="5" fill="#FFCDD2" opacity="0.5"/>
-                    </svg>`;
-
-                case 'lion':
-                    return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                        <!-- 갈기 -->
-                        <circle cx="50" cy="52" r="42" fill="#FF8F00"/>
-                        <!-- 갈기 장식 -->
-                        <circle cx="50" cy="10" r="10" fill="#E65100"/>
-                        <circle cx="25" cy="18" r="10" fill="#EF6C00"/>
-                        <circle cx="75" cy="18" r="10" fill="#EF6C00"/>
-                        <circle cx="12" cy="38" r="10" fill="#E65100"/>
-                        <circle cx="88" cy="38" r="10" fill="#E65100"/>
-                        <circle cx="12" cy="60" r="10" fill="#EF6C00"/>
-                        <circle cx="88" cy="60" r="10" fill="#EF6C00"/>
-                        <circle cx="25" cy="80" r="9" fill="#E65100"/>
-                        <circle cx="75" cy="80" r="9" fill="#E65100"/>
-                        <!-- 얼굴 -->
-                        <circle cx="50" cy="52" r="28" fill="#FFB74D"/>
-                        <!-- 눈 -->
-                        <circle cx="39" cy="46" r="5" fill="#333"/>
-                        <circle cx="61" cy="46" r="5" fill="#333"/>
-                        <circle cx="41" cy="44" r="2" fill="white"/>
-                        <circle cx="63" cy="44" r="2" fill="white"/>
-                        <!-- 코 -->
-                        <ellipse cx="50" cy="56" rx="6" ry="5" fill="#8D6E63"/>
-                        <ellipse cx="50" cy="55" rx="3" ry="2" fill="#A1887F"/>
-                        <!-- 입 -->
-                        <path d="M 50 61 Q 43 68 38 64" fill="none" stroke="#5D4037" stroke-width="2" stroke-linecap="round"/>
-                        <path d="M 50 61 Q 57 68 62 64" fill="none" stroke="#5D4037" stroke-width="2" stroke-linecap="round"/>
-                        <!-- 볼 터치 -->
-                        <circle cx="32" cy="56" r="5" fill="#FFCDD2" opacity="0.4"/>
-                        <circle cx="68" cy="56" r="5" fill="#FFCDD2" opacity="0.4"/>
-                    </svg>`;
-
-                case 'cow':
-                    return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                        <!-- 소 얼굴 -->
-                        <ellipse cx="50" cy="55" rx="34" ry="30" fill="white"/>
-                        <!-- 반점 -->
-                        <ellipse cx="35" cy="38" rx="12" ry="10" fill="#333" transform="rotate(-10 35 38)"/>
-                        <ellipse cx="68" cy="42" rx="10" ry="8" fill="#333" transform="rotate(15 68 42)"/>
-                        <ellipse cx="55" cy="30" rx="8" ry="6" fill="#333"/>
-                        <!-- 귀 -->
-                        <ellipse cx="16" cy="40" rx="12" ry="8" fill="#FFCC80" transform="rotate(-30 16 40)"/>
-                        <ellipse cx="84" cy="40" rx="12" ry="8" fill="#FFCC80" transform="rotate(30 84 40)"/>
-                        <!-- 뿔 -->
-                        <path d="M 30 25 Q 25 10 20 15" fill="none" stroke="#FFE082" stroke-width="5" stroke-linecap="round"/>
-                        <path d="M 70 25 Q 75 10 80 15" fill="none" stroke="#FFE082" stroke-width="5" stroke-linecap="round"/>
-                        <!-- 눈 -->
-                        <circle cx="37" cy="50" r="5" fill="#333"/>
-                        <circle cx="63" cy="50" r="5" fill="#333"/>
-                        <circle cx="39" cy="48" r="2" fill="white"/>
-                        <circle cx="65" cy="48" r="2" fill="white"/>
-                        <!-- 주둥이 -->
-                        <ellipse cx="50" cy="68" rx="18" ry="12" fill="#FFCC80"/>
-                        <!-- 콧구멍 -->
-                        <ellipse cx="43" cy="66" rx="4" ry="3" fill="#A1887F"/>
-                        <ellipse cx="57" cy="66" rx="4" ry="3" fill="#A1887F"/>
-                        <!-- 입 -->
-                        <path d="M 42 74 Q 50 80 58 74" fill="none" stroke="#8D6E63" stroke-width="2" stroke-linecap="round"/>
-                    </svg>`;
-
-                case 'chicken':
-                    return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                        <!-- 닭 몸통 -->
-                        <ellipse cx="50" cy="58" rx="30" ry="28" fill="white"/>
-                        <!-- 볏 (벼슬) -->
-                        <circle cx="44" cy="20" r="7" fill="#F44336"/>
-                        <circle cx="50" cy="15" r="8" fill="#EF5350"/>
-                        <circle cx="56" cy="20" r="7" fill="#F44336"/>
-                        <!-- 머리 -->
-                        <circle cx="50" cy="35" r="18" fill="white"/>
-                        <!-- 눈 -->
-                        <circle cx="42" cy="33" r="4" fill="#333"/>
-                        <circle cx="58" cy="33" r="4" fill="#333"/>
-                        <circle cx="43" cy="31" r="1.5" fill="white"/>
-                        <circle cx="59" cy="31" r="1.5" fill="white"/>
-                        <!-- 부리 -->
-                        <polygon points="50,40 42,46 50,48 58,46" fill="#FF9800"/>
-                        <line x1="42" y1="46" x2="58" y2="46" stroke="#E65100" stroke-width="1"/>
-                        <!-- 턱 (수염) -->
-                        <ellipse cx="46" cy="50" rx="4" ry="6" fill="#F44336"/>
-                        <ellipse cx="54" cy="50" rx="4" ry="6" fill="#F44336"/>
-                        <!-- 날개 느낌 -->
-                        <ellipse cx="25" cy="62" rx="10" ry="15" fill="#F5F5F5" transform="rotate(-15 25 62)"/>
-                        <ellipse cx="75" cy="62" rx="10" ry="15" fill="#F5F5F5" transform="rotate(15 75 62)"/>
-                        <!-- 볼 터치 -->
-                        <circle cx="34" cy="38" r="4" fill="#FFCDD2" opacity="0.5"/>
-                        <circle cx="66" cy="38" r="4" fill="#FFCDD2" opacity="0.5"/>
-                    </svg>`;
-
-                case 'duck':
-                    return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                        <!-- 오리 몸통 -->
-                        <ellipse cx="50" cy="62" rx="32" ry="25" fill="#FFD54F"/>
-                        <!-- 머리 -->
-                        <circle cx="50" cy="35" r="22" fill="#FFD54F"/>
-                        <!-- 눈 -->
-                        <circle cx="40" cy="32" r="5" fill="#333"/>
-                        <circle cx="60" cy="32" r="5" fill="#333"/>
-                        <circle cx="42" cy="30" r="2" fill="white"/>
-                        <circle cx="62" cy="30" r="2" fill="white"/>
-                        <!-- 부리 (넓적한 오리 부리) -->
-                        <ellipse cx="50" cy="46" rx="16" ry="7" fill="#FF9800"/>
-                        <ellipse cx="50" cy="44" rx="14" ry="5" fill="#FFB74D"/>
-                        <ellipse cx="44" cy="45" rx="2" ry="1.5" fill="#E65100"/>
-                        <ellipse cx="56" cy="45" rx="2" ry="1.5" fill="#E65100"/>
-                        <!-- 날개 -->
-                        <ellipse cx="22" cy="62" rx="10" ry="16" fill="#FFC107" transform="rotate(-10 22 62)"/>
-                        <ellipse cx="78" cy="62" rx="10" ry="16" fill="#FFC107" transform="rotate(10 78 62)"/>
-                        <!-- 볼 터치 -->
-                        <circle cx="32" cy="38" r="5" fill="#FFAB91" opacity="0.4"/>
-                        <circle cx="68" cy="38" r="5" fill="#FFAB91" opacity="0.4"/>
-                        <!-- 머리 위 깃털 -->
-                        <path d="M 48 14 Q 45 5 50 8 Q 55 5 52 14" fill="#FFB300" stroke="none"/>
-                    </svg>`;
-
-                default:
-                    return `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="#ccc"/></svg>`;
-            }
+        function getAnimalImage(id) {
+            const url = ANIMAL_PHOTOS[id] || '';
+            return `<img src="${url}" alt="${id}" loading="eager" draggable="false" crossorigin="anonymous">`;
         }
 
         function initAnimalGame() {
@@ -1561,7 +1390,7 @@
                 card.className = 'animal-card';
                 card.dataset.animalId = animal.id;
                 card.innerHTML = `
-                    <div class="animal-svg-wrap">${getAnimalSVG(animal.id)}</div>
+                    <div class="animal-img-wrap">${getAnimalImage(animal.id)}</div>
                     <div class="animal-name">${animal.name}</div>
                 `;
 
