@@ -472,17 +472,21 @@
             transform: scale(0.92);
         }
 
-        .animal-card .animal-svg-wrap {
-            width: clamp(50px, 14vw, 80px);
-            height: clamp(50px, 14vw, 80px);
+        .animal-card .animal-img-wrap {
+            width: clamp(55px, 16vw, 90px);
+            height: clamp(55px, 16vw, 90px);
+            border-radius: 50%;
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
+            background: #f0f0f0;
         }
 
-        .animal-card .animal-svg-wrap svg {
+        .animal-card .animal-img-wrap img {
             width: 100%;
             height: 100%;
+            object-fit: cover;
         }
 
         .animal-card .animal-name {
@@ -991,14 +995,7 @@
                 bubble.textContent = '💖';
             }
 
-            // 원/네모에 이모지 장식 (선택적)
-            if (shape !== 'heart' && Math.random() > 0.6) {
-                const decorEmojis = ['⭐', '✨', '🌟', '💫'];
-                bubble.textContent = decorEmojis[Math.floor(Math.random() * decorEmojis.length)];
-                bubble.style.fontSize = (size * 0.45) + 'px';
-                bubble.style.lineHeight = size + 'px';
-                bubble.style.textAlign = 'center';
-            }
+            // 원/네모는 색상만, 이모지 장식 없음
 
             const x = Math.random() * (areaRect.width - size);
             const y = areaRect.height + size;
