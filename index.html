@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>KidsArcade 3in1 - 아빠표 통합 놀이 앱</title>
-    <!-- Updated: 2026-05-22 Run5 | Changes: Fixed home button size bug, improved animal sounds, fixed sketch result to show actual drawing instead of emoji, fixed head direction in aquarium -->
+    <!-- Updated: 2026-05-26 Run25 | Changes: Increased bubble sizes (min 200px, max 320px), added pause button auto-hide after 3 seconds of no touch in Game 1, increased animal card sizes (160px min, 260px max), verified correct answer overlay at clamp(18rem, 70vw, 32rem), confirmed bidirectional swimming + head direction code working, verified toDataURL() canvas capture -->
     <style>
         /* ===== 전역 리셋 & 기본 설정 ===== */
         * {
@@ -37,21 +37,23 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.4s ease;
         }
 
         .screen.active {
             display: flex;
-            animation: screenFadeIn 0.4s ease-out;
+            animation: screenFadeIn 0.5s cubic-bezier(0.22, 1, 0.36, 1);
         }
 
         @keyframes screenFadeIn {
-            0% { opacity: 0; transform: scale(0.97); }
-            100% { opacity: 1; transform: scale(1); }
+            0% { opacity: 0; transform: scale(0.92) translateY(8px); filter: blur(6px); }
+            40% { opacity: 0.8; transform: scale(1.01) translateY(-2px); filter: blur(1px); }
+            70% { opacity: 1; transform: scale(1.005) translateY(0); filter: blur(0); }
+            100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
         }
 
         .screen.exit-anim {
-            animation: screenFadeOut 0.25s ease-in forwards;
+            animation: screenFadeOut 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
         }
 
         @keyframes screenFadeOut {
@@ -61,9 +63,9 @@
 
         /* ===== 메인 메뉴 화면 ===== */
         #menu-screen {
-            background: linear-gradient(135deg, #FFF8E1, #E3F2FD, #FCE4EC, #E8F5E9);
-            background-size: 400% 400%;
-            animation: gradientMove 10s ease infinite;
+            background: linear-gradient(135deg, #FFF8E1, #E3F2FD, #FCE4EC, #E8F5E9, #F3E5F5, #E0F7FA);
+            background-size: 600% 600%;
+            animation: gradientMove 14s ease infinite;
         }
 
         @keyframes gradientMove {
@@ -98,13 +100,25 @@
         .menu-title {
             font-size: clamp(1.8rem, 6vw, 3.5rem);
             font-weight: 900;
-            color: #FF6B6B;
-            text-shadow: 2px 2px 0px #FFE0E0, 0 4px 12px rgba(255,107,107,0.15);
+            background: linear-gradient(135deg, #FF6B6B, #FF9F43, #FFD93D, #6BCB77, #4D96FF, #9B59B6, #FF6B6B);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: rainbowTitle 6s ease infinite;
+            text-shadow: none;
             margin-bottom: 5vh;
             text-align: center;
             line-height: 1.3;
             z-index: 1;
             position: relative;
+            filter: drop-shadow(2px 2px 4px rgba(255,107,107,0.2));
+        }
+
+        @keyframes rainbowTitle {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         .menu-title .emoji {
@@ -248,9 +262,9 @@
             padding: clamp(24px, 5vw, 44px);
             text-align: center;
             cursor: pointer;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: 0 12px 36px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.06);
             border: 3px solid transparent;
-            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s, border-color 0.25s;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -260,9 +274,15 @@
             backdrop-filter: blur(8px);
         }
 
+        .game-card:nth-child(1) { animation-delay: 0s; }
+        .game-card:nth-child(2) { animation-delay: 1.3s; }
+        .game-card:nth-child(3) { animation-delay: 2.6s; }
+
         .game-card:active {
-            transform: scale(0.95);
+            transform: scale(0.95) !important;
             box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            animation: none;
+            filter: brightness(1.05);
         }
 
         .game-card::after {
@@ -280,31 +300,74 @@
             opacity: 1;
         }
 
+        .game-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -70%;
+            width: 40%;
+            height: 200%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+            transform: rotate(25deg);
+            animation: cardShineSweep 4s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes cardShineSweep {
+            0%, 70%, 100% { left: -70%; }
+            40% { left: 130%; }
+        }
+
+        .game-card:nth-child(2)::before { animation-delay: 1.3s; }
+        .game-card:nth-child(3)::before { animation-delay: 2.6s; }
+
         .game-card {
             position: relative;
             overflow: hidden;
         }
 
-        .game-card:nth-child(1) { border-color: #FFCDD2; background: linear-gradient(145deg, #FFF, #FFEBEE); }
-        .game-card:nth-child(2) { border-color: #C8E6C9; background: linear-gradient(145deg, #FFF, #E8F5E9); }
-        .game-card:nth-child(3) { border-color: #BBDEFB; background: linear-gradient(145deg, #FFF, #E3F2FD); }
+        .game-card:nth-child(1) {
+            background: linear-gradient(145deg, #FFF5F5, #FFE0E0, #FFEBEE);
+            animation: cardGlow 2.5s ease-in-out infinite, cardGlowPulse 3.2s ease-in-out infinite;
+            border: 3px solid #FF8A80;
+            box-shadow: 0 12px 36px rgba(255,138,128,0.18), inset 0 0 0 1px rgba(255,138,128,0.15);
+            --glow-color: rgba(255,138,128,0.4);
+        }
+        .game-card:nth-child(2) {
+            background: linear-gradient(145deg, #F1F8E9, #E0F2E0, #E8F5E9);
+            animation: cardGlow 2.5s ease-in-out infinite, cardGlowPulse 3.2s ease-in-out infinite;
+            border: 3px solid #81C784;
+            box-shadow: 0 12px 36px rgba(129,199,132,0.18), inset 0 0 0 1px rgba(129,199,132,0.15);
+            --glow-color: rgba(129,199,132,0.4);
+        }
+        .game-card:nth-child(3) {
+            background: linear-gradient(145deg, #E8F4FD, #D6EAFF, #E3F2FD);
+            animation: cardGlow 2.5s ease-in-out infinite, cardGlowPulse 3.2s ease-in-out infinite;
+            border: 3px solid #64B5F6;
+            box-shadow: 0 12px 36px rgba(100,181,246,0.18), inset 0 0 0 1px rgba(100,181,246,0.15);
+            --glow-color: rgba(100,181,246,0.4);
+        }
 
         .game-card .card-emoji {
-            font-size: clamp(2.5rem, 8vw, 4.5rem);
-            margin-bottom: 10px;
+            font-size: clamp(3rem, 9vw, 5rem);
+            margin-bottom: 12px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
         }
 
         .game-card .card-title {
-            font-size: clamp(1rem, 3.5vw, 1.5rem);
-            font-weight: 800;
+            font-size: clamp(1.1rem, 3.5vw, 1.6rem);
+            font-weight: 900;
             color: #333;
-            margin-bottom: 5px;
+            margin-bottom: 6px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.08);
         }
 
         .game-card .card-desc {
-            font-size: clamp(0.7rem, 2.2vw, 0.95rem);
-            color: #777;
+            font-size: clamp(0.75rem, 2.3vw, 1rem);
+            color: #666;
             line-height: 1.4;
+            font-weight: 500;
         }
 
         /* ===== 게임 화면 공통 ===== */
@@ -313,27 +376,65 @@
             overflow: hidden;
         }
 
-        /* 게임별 배경색 */
-        #game-bubble { background: linear-gradient(180deg, #E3F2FD, #BBDEFB); }
-        #game-animal { background: linear-gradient(180deg, #E8F5E9, #C8E6C9); }
-        #game-canvas { background: linear-gradient(180deg, #FFF3E0, #FFE0B2); }
+        /* 게임별 배경색 - richer gradients */
+        #game-bubble {
+            background: linear-gradient(180deg, #E1F5FE 0%, #B3E5FC 30%, #81D4FA 60%, #4FC3F7 100%);
+            background-size: 100% 200%;
+            animation: gameGradientShift 12s ease infinite alternate;
+        }
+        #game-animal {
+            background: linear-gradient(180deg, #E8F5E9 0%, #C8E6C9 30%, #A5D6A7 60%, #81C784 100%);
+            background-size: 100% 200%;
+            animation: gameGradientShift 12s ease infinite alternate;
+        }
+        #game-canvas {
+            background: linear-gradient(180deg, #FFF8E1 0%, #FFECB3 30%, #FFE082 60%, #FFD54F 100%);
+            background-size: 100% 200%;
+            animation: gameGradientShift 12s ease infinite alternate;
+        }
+
+        @keyframes gameGradientShift {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 0% 100%; }
+        }
+
+        /* Ambient floating decorations for game screens */
+        .game-ambient {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+        .game-ambient-item {
+            position: absolute;
+            opacity: 0.08;
+            will-change: transform;
+            animation: ambientDrift 10s ease-in-out infinite;
+        }
+        @keyframes ambientDrift {
+            0%, 100% { transform: translateY(0) translateX(0) rotate(0deg); }
+            25% { transform: translateY(-12px) translateX(6px) rotate(5deg); }
+            50% { transform: translateY(-3px) translateX(-4px) rotate(-3deg); }
+            75% { transform: translateY(-18px) translateX(8px) rotate(3deg); }
+        }
 
         /* ===== 홈 버튼 ===== */
         .home-btn {
             position: absolute;
             top: clamp(10px, 2vh, 20px);
             left: clamp(10px, 2vw, 20px);
-            width: clamp(44px, 10vw, 64px);
-            height: clamp(44px, 10vw, 64px);
+            width: clamp(48px, 11vw, 68px);
+            height: clamp(48px, 11vw, 68px);
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             border: 3px solid #FFB74D;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: clamp(1.3rem, 4vw, 2rem);
+            font-size: clamp(1.4rem, 4.5vw, 2.2rem);
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15), 0 0 0 2px rgba(255,183,77,0.2);
             z-index: 1000;
             transition: transform 0.2s;
         }
@@ -370,9 +471,118 @@
             font-weight: 600;
         }
 
+        @keyframes cardGlow {
+            0%, 100% { transform: translateY(0); box-shadow: 0 12px 36px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.06); }
+            50% { transform: translateY(-6px); }
+        }
+
+        @keyframes cardGlowPulse {
+            0%, 100% {
+                box-shadow: 0 12px 36px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.06), 0 0 0 0px var(--glow-color);
+            }
+            50% {
+                box-shadow: 0 12px 36px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.06), 0 0 24px 8px var(--glow-color);
+            }
+        }
+
+        @keyframes startButtonPulse {
+            0%, 100% { box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3); }
+            50% { box-shadow: 0 8px 30px rgba(255, 107, 107, 0.5), 0 0 20px rgba(255, 107, 107, 0.3); }
+        }
+
+        @keyframes jellyFall {
+            0% { top: -10%; opacity: 0; transform: translateX(0); }
+            10% { opacity: 0.6; }
+            25% { transform: translateX(15px); }
+            50% { transform: translateX(-10px); }
+            75% { transform: translateX(8px); }
+            90% { opacity: 0.6; }
+            100% { top: 110%; opacity: 0; transform: translateX(-5px); }
+        }
+
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-15px); }
+        }
+
+        /* ===== 게임 일시정지 시스템 ===== */
+        .pause-btn {
+            position: absolute;
+            top: clamp(10px, 2vh, 20px);
+            left: clamp(10px, 2vw, 20px);
+            width: clamp(48px, 11vw, 68px);
+            height: clamp(48px, 11vw, 68px);
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            border: 2.5px solid rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1.4rem, 4.5vw, 2.2rem);
+            cursor: pointer;
+            z-index: 150;
+            transition: transform 0.2s, opacity 0.3s;
+            opacity: 0.8;
+            backdrop-filter: blur(6px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .pause-btn:active {
+            transform: scale(0.9);
+            opacity: 1;
+        }
+
+        .pause-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: clamp(16px, 3vh, 28px);
+            z-index: 500;
+            backdrop-filter: blur(6px);
+            animation: pauseFadeIn 0.25s ease-out;
+        }
+
+        @keyframes pauseFadeIn {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .pause-title {
+            font-size: clamp(2rem, 6vw, 3rem);
+            font-weight: 900;
+            color: white;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+        }
+
+        .pause-btn-action {
+            background: white;
+            border: none;
+            border-radius: 20px;
+            padding: clamp(14px, 2.5vh, 20px) clamp(36px, 8vw, 56px);
+            font-size: clamp(1.1rem, 3vw, 1.5rem);
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+            min-height: 48px;
+        }
+
+        .pause-btn-action:active {
+            transform: scale(0.95);
+        }
+
+        .pause-btn-continue {
+            background: linear-gradient(135deg, #66BB6A, #43A047);
+            color: white;
+        }
+
+        .pause-btn-home {
+            background: rgba(255,255,255,0.9);
+            color: #555;
         }
 
         /* ===== 비누방울 팡팡 게임 스타일 ===== */
@@ -388,16 +598,22 @@
         }
 
         .bubble-score {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 24px;
-            padding: clamp(10px, 2vh, 18px) clamp(20px, 4vw, 36px);
-            font-size: clamp(1.8rem, 6vw, 3rem);
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 28px;
+            padding: clamp(10px, 2vh, 18px) clamp(22px, 5.5vw, 38px);
+            font-size: clamp(2.8rem, 9vw, 4.5rem);
             font-weight: 900;
             color: #FF3D00;
-            box-shadow: 0 4px 16px rgba(255,61,0,0.2);
+            box-shadow: 0 6px 24px rgba(255,61,0,0.2), 0 0 0 2px rgba(255,110,64,0.15);
             border: 3px solid #FF6E40;
-            transition: transform 0.15s;
+            transition: transform 0.15s, box-shadow 0.3s;
             will-change: transform;
+            text-shadow: 0 2px 4px rgba(255,61,0,0.15);
+        }
+
+        .bubble-score.pulse {
+            box-shadow: 0 8px 32px rgba(255,61,0,0.35), 0 0 24px rgba(255,108,64,0.3);
+            transform: scale(1.08);
         }
 
         .bubble-stage {
@@ -418,7 +634,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: rgba(255, 255, 255, 0.92);
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.96), rgba(255, 240, 220, 0.92));
             z-index: 300;
             animation: stageUpFade 2.2s ease forwards;
             pointer-events: none;
@@ -467,16 +683,22 @@
             will-change: transform;
             font-size: clamp(3rem, 8vw, 5rem);
             line-height: 1;
+            animation: bubbleShimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes bubbleShimmer {
+            0%, 100% { filter: brightness(1) drop-shadow(0 0 6px rgba(255,255,255,0.2)); }
+            50% { filter: brightness(1.1) drop-shadow(0 0 12px rgba(255,255,255,0.4)); }
         }
 
         .bubble.circle-shape {
             border-radius: 50%;
-            border: 4px solid;
+            border: 6px solid;
         }
 
         .bubble.square-shape {
             border-radius: 15%;
-            border: 4px solid;
+            border: 6px solid;
         }
 
         .bubble.triangle-shape {
@@ -497,12 +719,12 @@
 
         .score-float {
             position: absolute;
-            font-size: clamp(2rem, 6vw, 3rem);
+            font-size: clamp(2.2rem, 7vw, 3.5rem);
             font-weight: 900;
             color: #FF3D00;
             pointer-events: none;
-            animation: scoreFloatUp 0.8s ease-out forwards;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            animation: scoreFloatUp 0.9s ease-out forwards;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2), 0 0 12px rgba(255,61,0,0.3);
         }
 
         @keyframes scoreFloatUp {
@@ -527,16 +749,27 @@
             transform: rotate(45deg);
         }
 
+        .pop-particle.sparkle-star {
+            animation: starSparkle 1s ease-out forwards;
+        }
+
+        @keyframes starSparkle {
+            0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
+            50% { opacity: 1; }
+            100% { transform: translate(var(--dx), var(--dy)) scale(0.3) rotate(360deg); opacity: 0; }
+        }
+
         @keyframes particleFloat {
-            0% { transform: translate(0, 0) scale(1); opacity: 1; }
-            100% { transform: translate(var(--dx), var(--dy)) scale(0.3); opacity: 0; }
+            0% { transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; }
+            50% { opacity: 0.9; }
+            100% { transform: translate(var(--dx), var(--dy)) scale(0.2) rotate(180deg); opacity: 0; }
         }
 
         .screen-flash {
             position: fixed;
             inset: 0;
-            background: rgba(255, 255, 255, 0.7);
-            animation: flashEffect 0.2s ease-out forwards;
+            background: rgba(255, 255, 255, 0.35);
+            animation: flashEffect 0.15s ease-out forwards;
             pointer-events: none;
             z-index: 250;
         }
@@ -550,39 +783,43 @@
         .bubble-start-overlay {
             position: absolute;
             inset: 0;
-            background: rgba(255, 255, 255, 0.92);
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.96), rgba(225, 245, 254, 0.92));
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 20px;
+            gap: 24px;
             z-index: 200;
         }
 
         .start-emoji {
-            font-size: clamp(4rem, 15vw, 7rem);
+            font-size: clamp(4.5rem, 16vw, 8rem);
             animation: bounce 2s ease-in-out infinite;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
         }
 
         .start-text {
-            font-size: clamp(1.5rem, 4.5vw, 2.5rem);
-            font-weight: 800;
+            font-size: clamp(1.6rem, 5vw, 2.8rem);
+            font-weight: 900;
             color: #333;
             text-align: center;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.08);
         }
 
         .bubble-start-btn, .animal-start-btn, .sketch-start-btn {
-            background: linear-gradient(135deg, #FF6B6B, #FF5252);
+            background: linear-gradient(135deg, #FF6B6B, #FF5252, #FF4081);
             color: white;
             border: none;
-            border-radius: 24px;
-            padding: clamp(14px, 3vh, 20px) clamp(32px, 6vw, 48px);
-            font-size: clamp(1.2rem, 3.5vw, 1.8rem);
+            border-radius: 28px;
+            padding: clamp(16px, 3vh, 22px) clamp(36px, 7vw, 56px);
+            font-size: clamp(1.3rem, 3.8vw, 2rem);
             font-weight: 900;
             cursor: pointer;
-            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3);
+            animation: startButtonPulse 2s ease-in-out infinite;
+            box-shadow: 0 8px 24px rgba(255, 107, 107, 0.35);
             transition: transform 0.2s, box-shadow 0.2s;
             min-height: 48px;
+            letter-spacing: 1px;
         }
 
         .bubble-start-btn:active, .animal-start-btn:active, .sketch-start-btn:active {
@@ -629,12 +866,12 @@
         .animal-start-overlay {
             position: absolute;
             inset: 0;
-            background: rgba(255, 255, 255, 0.92);
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.96), rgba(232, 245, 233, 0.92));
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 20px;
+            gap: 24px;
             z-index: 200;
         }
 
@@ -644,34 +881,45 @@
             align-items: center;
             width: 100%;
             height: 100%;
-            padding: clamp(20px, 3vh, 40px);
-            gap: clamp(16px, 2vh, 24px);
-            justify-content: center;
+            padding: clamp(60px, 8vh, 80px) clamp(12px, 2vw, 24px) clamp(16px, 2vh, 32px);
+            gap: clamp(10px, 1.5vh, 18px);
+            justify-content: flex-start;
         }
 
         .animal-question {
-            font-size: clamp(1.3rem, 3.8vw, 1.8rem);
-            font-weight: 800;
-            color: #333;
+            font-size: clamp(1.4rem, 4vw, 2rem);
+            font-weight: 900;
+            color: #2E7D32;
             text-align: center;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.08);
         }
 
         .animal-listen-btn {
             background: linear-gradient(135deg, #42A5F5, #1E88E5);
             color: white;
             border: none;
-            border-radius: 20px;
-            padding: clamp(10px, 2vh, 14px) clamp(20px, 4vw, 28px);
-            font-size: clamp(1rem, 2.8vw, 1.3rem);
-            font-weight: 700;
+            border-radius: 22px;
+            padding: clamp(12px, 2.2vh, 16px) clamp(24px, 5vw, 32px);
+            font-size: clamp(1.05rem, 3vw, 1.4rem);
+            font-weight: 800;
             cursor: pointer;
-            box-shadow: 0 6px 16px rgba(66, 165, 245, 0.3);
+            box-shadow: 0 6px 20px rgba(66, 165, 245, 0.35), 0 2px 0 #1565C0;
             transition: transform 0.2s;
             min-height: 48px;
         }
 
+        .animal-listen-btn {
+            animation: listenPulse 2s ease-in-out infinite;
+        }
+
         .animal-listen-btn:active {
-            transform: scale(0.95);
+            transform: scale(0.95) !important;
+            animation: none;
+        }
+
+        @keyframes listenPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 6px 16px rgba(66, 165, 245, 0.3), 0 0 0 0 rgba(66,165,245,0.3); }
+            50% { transform: scale(1.06); box-shadow: 0 8px 28px rgba(66, 165, 245, 0.55), 0 0 0 8px rgba(66,165,245,0.1); }
         }
 
         .animal-cards {
@@ -683,24 +931,54 @@
         }
 
         .animal-card {
-            background: white;
-            border: none;
+            background: rgba(255,255,255,0.92);
+            border: 2.5px solid rgba(0,0,0,0.06);
             border-radius: clamp(16px, 3vw, 24px);
-            padding: clamp(8px, 1.5vw, 14px);
+            padding: clamp(6px, 1vw, 10px);
             cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: clamp(4px, 1vw, 8px);
-            transition: all 0.2s;
+            justify-content: center;
+            gap: clamp(4px, 0.8vw, 6px);
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
             will-change: transform, box-shadow;
             min-height: 48px;
             min-width: 48px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+            backdrop-filter: blur(6px);
+            animation: cardBounceIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+            position: relative;
+            overflow: hidden;
+        }
+        .animal-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: radial-gradient(ellipse at 30% 20%, rgba(255,255,255,0.6), transparent 70%);
+            pointer-events: none;
+        }
+
+        .animal-card:nth-child(1) { animation-delay: 0.05s; }
+        .animal-card:nth-child(2) { animation-delay: 0.1s; }
+        .animal-card:nth-child(3) { animation-delay: 0.15s; }
+        .animal-card:nth-child(4) { animation-delay: 0.2s; }
+
+        @keyframes cardBounceIn {
+            0% { transform: scale(0.3) translateY(30px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .animal-card:hover {
+            transform: scale(1.04) translateY(-3px);
+            box-shadow: 0 10px 28px rgba(0,0,0,0.12), 0 0 0 2px currentColor;
+            filter: brightness(1.03);
         }
 
         .animal-card:active {
-            transform: scale(0.95);
+            transform: scale(0.95) !important;
+            border: 2.5px solid rgba(76,175,80,0.3);
         }
 
         .animal-card.correct-flash {
@@ -710,7 +988,7 @@
 
         .animal-card.wrong-flash {
             background: #FFCDD2;
-            animation: wrongFlash 0.4s ease;
+            animation: wrongShake 0.5s ease;
         }
 
         @keyframes correctFlash {
@@ -718,22 +996,29 @@
             50% { background: #C8E6C9; }
         }
 
-        @keyframes wrongFlash {
-            0%, 100% { background: white; }
-            50% { background: #FFCDD2; }
+        @keyframes wrongShake {
+            0% { background: white; transform: translateX(0); }
+            15% { background: #FFCDD2; transform: translateX(-8px); }
+            30% { background: #FFCDD2; transform: translateX(8px); }
+            45% { background: #FFCDD2; transform: translateX(-6px); }
+            60% { background: #FFCDD2; transform: translateX(6px); }
+            75% { background: #FFCDD2; transform: translateX(-3px); }
+            90% { background: #FFCDD2; transform: translateX(3px); }
+            100% { background: white; transform: translateX(0); }
         }
 
         .animal-photo-circle {
-            width: clamp(140px, 42vw, 220px);
-            height: clamp(140px, 42vw, 220px);
-            border-radius: 20px;
+            width: clamp(160px, 50vw, 260px);
+            height: clamp(160px, 50vw, 260px);
+            border-radius: 14px;
             overflow: hidden;
             background: transparent;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            padding: 4px;
+            padding: 0;
+            transition: transform 0.3s ease;
         }
 
         .animal-photo-circle svg {
@@ -742,8 +1027,8 @@
         }
 
         .animal-name {
-            font-size: clamp(0.9rem, 2.5vw, 1.1rem);
-            font-weight: 700;
+            font-size: clamp(1rem, 2.8vw, 1.2rem);
+            font-weight: 800;
             color: #333;
             text-align: center;
         }
@@ -751,22 +1036,54 @@
         .animal-result-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(255, 255, 255, 0.7);
+            background: radial-gradient(circle at center, rgba(76, 175, 80, 0.2), rgba(76, 175, 80, 0.08));
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 250;
+            backdrop-filter: blur(3px);
+            animation: resultOverlayIn 0.3s ease-out;
+        }
+
+        @keyframes resultOverlayIn {
+            0% { opacity: 0; backdrop-filter: blur(0); }
+            100% { opacity: 1; backdrop-filter: blur(3px); }
         }
 
         .animal-result-symbol {
-            font-size: clamp(12rem, 40vw, 20rem);
-            animation: resultPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            font-size: clamp(18rem, 70vw, 32rem);
+            animation: resultPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            line-height: 1;
+        }
+
+        .animal-result-symbol.correct {
+            animation: resultPopCorrect 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards, correctPulse 0.8s ease-in-out 0.3s infinite;
+            color: #4CAF50;
+            text-shadow: 0 0 20px rgba(76, 175, 80, 0.8), 0 0 40px rgba(76, 175, 80, 0.5);
         }
 
         @keyframes resultPop {
-            0% { transform: scale(0); }
-            70% { transform: scale(1.2); }
-            100% { transform: scale(1); }
+            0% { transform: scale(0) rotate(-15deg); }
+            50% { transform: scale(1.3) rotate(5deg); }
+            70% { transform: scale(0.95) rotate(-2deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        @keyframes resultPopCorrect {
+            0% { transform: scale(0) rotate(-20deg); }
+            40% { transform: scale(1.4) rotate(8deg); }
+            65% { transform: scale(1.05) rotate(-3deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 20px rgba(76, 175, 80, 0.8)) drop-shadow(0 0 40px rgba(76, 175, 80, 0.5)); }
+            50% { transform: scale(1.08); filter: drop-shadow(0 0 30px rgba(76, 175, 80, 1)) drop-shadow(0 0 60px rgba(76, 175, 80, 0.7)); }
+        }
+
+        @keyframes correctGlow {
+            0%, 100% { filter: drop-shadow(0 0 12px rgba(76, 175, 80, 0.7)) drop-shadow(0 0 24px rgba(76, 175, 80, 0.3)); }
+            50% { filter: drop-shadow(0 0 24px rgba(76, 175, 80, 1)) drop-shadow(0 0 48px rgba(76, 175, 80, 0.5)); }
         }
 
         .confetti-container {
@@ -778,12 +1095,24 @@
 
         .confetti {
             position: absolute;
-            animation: confettiFall 2s ease-out forwards;
+            animation: confettiFall 2.5s ease-out forwards;
+            filter: drop-shadow(0 0 3px rgba(255, 200, 100, 0.8));
+        }
+
+        .confetti:nth-child(odd) {
+            animation: confettiFall 2.2s ease-out forwards;
+        }
+
+        .confetti:nth-child(3n) {
+            animation: confettiFallSpin 2.8s ease-out forwards;
         }
 
         @keyframes confettiFall {
             0% {
                 transform: translateY(-100px) rotateZ(0deg);
+                opacity: 1;
+            }
+            50% {
                 opacity: 1;
             }
             100% {
@@ -792,16 +1121,31 @@
             }
         }
 
+        @keyframes confettiFallSpin {
+            0% {
+                transform: translateY(-100px) rotateZ(0deg) scale(1);
+                opacity: 1;
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(50vh) rotateZ(360deg) scale(1.1);
+            }
+            100% {
+                transform: translateY(100vh) rotateZ(1080deg) scale(0.8);
+                opacity: 0;
+            }
+        }
+
         /* ===== Canvas 게임 ===== */
         .sketch-start-overlay {
             position: absolute;
             inset: 0;
-            background: rgba(255, 255, 255, 0.92);
+            background: radial-gradient(circle at center, rgba(255, 255, 255, 0.96), rgba(255, 248, 225, 0.92));
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 20px;
+            gap: 24px;
             z-index: 200;
         }
 
@@ -816,11 +1160,12 @@
         .sketch-option {
             background: white;
             border: 3px solid #E0E0E0;
-            border-radius: 20px;
-            padding: clamp(16px, 3vw, 24px);
+            border-radius: 22px;
+            padding: clamp(18px, 3.5vw, 28px);
             cursor: pointer;
             display: flex;
             flex-direction: column;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.06);
             align-items: center;
             gap: clamp(8px, 2vw, 12px);
             transition: all 0.2s;
@@ -830,10 +1175,16 @@
 
         .sketch-option:active {
             transform: scale(0.95);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
 
+        .sketch-option:nth-child(1) { border-color: #64B5F6; }
+        .sketch-option:nth-child(2) { border-color: #FF8A65; }
+        .sketch-option:nth-child(3) { border-color: #81C784; }
+        .sketch-option:nth-child(4) { border-color: #CE93D8; }
+
         .sketch-option-emoji {
-            font-size: clamp(2.5rem, 10vw, 3.5rem);
+            font-size: clamp(3.5rem, 14vw, 5rem);
         }
 
         .sketch-option-text {
@@ -872,13 +1223,14 @@
         .sketch-toolbar {
             background: rgba(255, 255, 255, 0.98);
             border-top: 2px solid #E0E0E0;
-            padding: clamp(8px, 1.5vh, 12px);
+            padding: clamp(8px, 1.5vh, 14px) clamp(10px, 2vw, 16px);
             display: flex;
             flex-wrap: wrap;
             align-items: center;
             gap: clamp(6px, 1vw, 10px);
             justify-content: center;
             min-height: clamp(60px, 10vh, 100px);
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
         }
 
         .sketch-color-btn {
@@ -898,7 +1250,8 @@
 
         .sketch-color-btn.active {
             border-color: #333;
-            box-shadow: 0 0 12px rgba(0,0,0,0.3);
+            box-shadow: 0 0 12px rgba(0,0,0,0.3), 0 0 20px currentColor;
+            transform: scale(1.15);
         }
 
         .sketch-divider {
@@ -967,7 +1320,37 @@
         }
 
         .sketch-magic-btn {
-            background: linear-gradient(135deg, #AB47BC, #9C27B0);
+            background: linear-gradient(135deg, #AB47BC, #9C27B0, #7B1FA2);
+            background-size: 200% 200%;
+            animation: magicBtnPulse 2.5s ease-in-out infinite, magicBtnGradient 4s ease infinite;
+            position: relative;
+            overflow: hidden;
+        }
+        .sketch-magic-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -70%;
+            width: 40%;
+            height: 200%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+            transform: rotate(25deg);
+            animation: magicBtnShine 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes magicBtnPulse {
+            0%, 100% { box-shadow: 0 4px 12px rgba(171,71,188,0.3), 0 0 0 0 rgba(171,71,188,0); }
+            50% { box-shadow: 0 4px 24px rgba(171,71,188,0.6), 0 0 40px rgba(171,71,188,0.25), 0 0 0 6px rgba(171,71,188,0.1); }
+        }
+        @keyframes magicBtnGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes magicBtnShine {
+            0%, 60%, 100% { left: -70%; }
+            30% { left: 130%; }
         }
 
         /* ===== Aquarium ===== */
@@ -997,6 +1380,75 @@
             z-index: 1;
         }
 
+        .aquarium-bg::after {
+            content: '';
+            position: absolute;
+            top: -20%;
+            left: 10%;
+            width: 30%;
+            height: 140%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.02) 60%, transparent);
+            transform: rotate(15deg);
+            animation: lightRay 6s ease-in-out infinite alternate;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        @keyframes lightRay {
+            0% { opacity: 0.6; left: 10%; }
+            100% { opacity: 0.3; left: 25%; }
+        }
+
+        /* Caustic light pattern overlay */
+        .aquarium-caustics {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse 80px 60px at 20% 30%, rgba(100,220,255,0.12), transparent),
+                radial-gradient(ellipse 60px 80px at 55% 20%, rgba(120,230,255,0.10), transparent),
+                radial-gradient(ellipse 90px 50px at 80% 45%, rgba(100,200,255,0.08), transparent),
+                radial-gradient(ellipse 50px 70px at 35% 60%, rgba(130,240,255,0.06), transparent);
+            animation: causticShift 8s ease-in-out infinite alternate;
+            mix-blend-mode: screen;
+        }
+        @keyframes causticShift {
+            0% { background-position: 0% 0%; opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { background-position: 20% 10%; opacity: 0.7; }
+        }
+
+        /* Second light ray for depth */
+        .aquarium-lightray2 {
+            position: absolute;
+            top: -15%;
+            right: 15%;
+            width: 20%;
+            height: 130%;
+            background: linear-gradient(180deg, rgba(255,255,200,0.08), rgba(255,255,200,0.01) 50%, transparent);
+            transform: rotate(-12deg);
+            animation: lightRay2 7s ease-in-out infinite alternate;
+            z-index: 2;
+            pointer-events: none;
+        }
+        @keyframes lightRay2 {
+            0% { opacity: 0.5; right: 15%; }
+            100% { opacity: 0.2; right: 25%; }
+        }
+
+        /* Depth fog at bottom of aquarium */
+        .aquarium-depthfog {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 35%;
+            z-index: 2;
+            pointer-events: none;
+            background: linear-gradient(180deg, transparent 0%, rgba(0,50,50,0.15) 60%, rgba(0,40,40,0.25) 100%);
+        }
+
         .aquarium-bubbles {
             position: absolute;
             inset: 0;
@@ -1005,10 +1457,11 @@
 
         .aquarium-bubble {
             position: absolute;
-            background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.8), rgba(255,255,255,0.2));
-            border: 2px solid rgba(255,255,255,0.4);
+            background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.85), rgba(200,230,255,0.3) 60%, rgba(255,255,255,0.15));
+            border: 1.5px solid rgba(255,255,255,0.5);
             border-radius: 50%;
             animation: bubbleRise 5s ease-in forwards infinite;
+            box-shadow: inset 0 -2px 6px rgba(255,255,255,0.2), 0 0 8px rgba(100,200,255,0.15);
         }
 
         @keyframes bubbleRise {
@@ -1040,24 +1493,22 @@
 
         .aquarium-wave {
             position: absolute;
-            top: 25%;
-            left: 0;
+            top: 0;
+            left: -50%;
             right: 0;
-            height: 8px;
-            background: repeating-linear-gradient(
-                90deg,
-                transparent,
-                transparent 10px,
-                rgba(255,255,255,0.2) 10px,
-                rgba(255,255,255,0.2) 20px
-            );
-            animation: wave 3s linear infinite;
+            width: 200%;
+            height: 100%;
+            background:
+                repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,0.04) 40px, rgba(255,255,255,0.04) 80px),
+                repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(100,200,255,0.03) 60px, rgba(100,200,255,0.03) 120px);
+            animation: wave 8s linear infinite;
             z-index: 4;
+            pointer-events: none;
         }
 
         @keyframes wave {
             0% { transform: translateX(0); }
-            100% { transform: translateX(20px); }
+            100% { transform: translateX(80px); }
         }
 
         .aquarium-drawing {
@@ -1068,6 +1519,23 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.6, 1);
+            filter: drop-shadow(0 0 12px rgba(100,200,255,0.4)) drop-shadow(0 0 24px rgba(100,200,255,0.2));
+            animation: aquariumGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes aquariumGlow {
+            0%, 100% { filter: drop-shadow(0 0 12px rgba(100,200,255,0.4)) drop-shadow(0 0 24px rgba(100,200,255,0.2)) brightness(1.05); }
+            50% { filter: drop-shadow(0 0 20px rgba(100,200,255,0.6)) drop-shadow(0 0 40px rgba(100,200,255,0.3)) brightness(1.1); }
+        }
+
+        
+        .aquarium-jellyfish {
+            position: absolute;
+            z-index: 4;
+            font-size: 3rem;
+            opacity: 0.6;
+            animation: jellyFall 8s linear infinite;
         }
 
         @keyframes swimRight {
@@ -1101,29 +1569,55 @@
             transform: scale(0.95);
         }
 
+        .aquarium-home-btn {
+            position: absolute;
+            top: clamp(10px, 2vh, 20px);
+            left: clamp(10px, 2vw, 20px);
+            width: clamp(48px, 11vw, 68px);
+            height: clamp(48px, 11vw, 68px);
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            border: 3px solid #FFB74D;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1.4rem, 4.5vw, 2.2rem);
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2), 0 0 0 2px rgba(255,183,77,0.2);
+            z-index: 100;
+            transition: transform 0.2s;
+        }
+
+        .aquarium-home-btn:active {
+            transform: scale(0.9);
+        }
+
         /* ===== Onomatopoeia text display ===== */
         .onomatopoeia-float {
             position: fixed;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            font-size: clamp(3rem, 12vw, 5rem);
+            transform: translate(-50%, -50%);
+            font-size: clamp(5.5rem, 20vw, 11rem);
             font-weight: 900;
-            color: #FF6D00;
-            text-shadow: 3px 3px 0px rgba(255,109,0,0.3), 0 0 20px rgba(255,109,0,0.2);
+            color: var(--ono-color, #FF6D00);
+            text-shadow: 4px 4px 0 var(--ono-shadow, #FFB74D), -2px -2px 0 var(--ono-shadow, #FFB74D), 0 0 50px var(--ono-glow, rgba(255,109,0,0.5)), 0 0 100px var(--ono-glow, rgba(255,109,0,0.2));
+            z-index: 400;
             pointer-events: none;
-            z-index: 180;
-            animation: onomatopoeiaShow 1.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-            letter-spacing: 4px;
+            animation: onomatoFloat 1.6s ease-out forwards;
+            letter-spacing: 8px;
+            -webkit-text-stroke: 2.5px var(--ono-stroke, #E65100);
         }
 
-        @keyframes onomatopoeiaShow {
-            0% { transform: translate(-50%, -50%) scale(0) rotate(-8deg); opacity: 0; }
-            20% { transform: translate(-50%, -50%) scale(1.3) rotate(3deg); opacity: 1; }
-            40% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
-            80% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
-            100% { transform: translate(-50%, -60%) scale(0.8) rotate(0deg); opacity: 0; }
+        @keyframes onomatoFloat {
+            0% { transform: translate(-50%, -50%) scale(0.1) rotate(-12deg); opacity: 0; }
+            12% { transform: translate(-50%, -50%) scale(1.5) rotate(4deg); opacity: 1; }
+            24% { transform: translate(-50%, -50%) scale(0.9) rotate(-2deg); opacity: 1; }
+            36% { transform: translate(-50%, -50%) scale(1.1) rotate(1deg); opacity: 1; }
+            50% { transform: translate(-50%, -50%) scale(1.0) rotate(0deg); opacity: 1; }
+            100% { transform: translate(-50%, -70%) scale(1.2); opacity: 0; }
         }
+
 
         /* ===== Bubble combo display ===== */
         .bubble-combo {
@@ -1152,15 +1646,115 @@
             100% { transform: translate(-50%, -70%) scale(0.6); opacity: 0; }
         }
 
+        /* ===== Bubble game combo counter visual ===== */
+        .bubble-combo-counter {
+            position: fixed;
+            bottom: clamp(60px, 12vh, 120px);
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: clamp(1.8rem, 6vw, 3.5rem);
+            font-weight: 900;
+            color: #FF6D00;
+            text-shadow: 0 2px 8px rgba(255,109,0,0.4), 0 0 12px rgba(255,109,0,0.3);
+            z-index: 180;
+            pointer-events: none;
+            animation: comboCounterPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            background: rgba(255,255,255,0.9);
+            border: 3px solid #FF6D00;
+            border-radius: 50%;
+            width: clamp(80px, 15vw, 140px);
+            height: clamp(80px, 15vw, 140px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(255,109,0,0.25), inset 0 0 0 2px rgba(255,109,0,0.15);
+        }
+
+        .bubble-combo-counter.x2 { color: #4CAF50; border-color: #4CAF50; }
+        .bubble-combo-counter.x3 { color: #2196F3; border-color: #2196F3; font-size: clamp(2rem, 7vw, 4rem); }
+        .bubble-combo-counter.x4 { color: #FF9800; border-color: #FF9800; font-size: clamp(2.2rem, 7.5vw, 4.3rem); }
+        .bubble-combo-counter.x5plus { color: #9C27B0; border-color: #9C27B0; font-size: clamp(2.5rem, 8vw, 4.5rem); }
+
+        @keyframes comboCounterPop {
+            0% { transform: translateX(-50%) scale(0) rotate(-15deg); opacity: 0; }
+            40% { transform: translateX(-50%) scale(1.25) rotate(5deg); opacity: 1; }
+            70% { transform: translateX(-50%) scale(1) rotate(0deg); opacity: 1; }
+            100% { transform: translateX(-50%) scale(0.8); opacity: 0; }
+        }
+
+        /* ===== Animal progress bar ===== */
+        .animal-progress-wrap {
+            width: 85%;
+            max-width: 420px;
+            height: clamp(12px, 2.2vh, 18px);
+            background: rgba(255,255,255,0.6);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 2px solid rgba(0,200,83,0.3);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .animal-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #66BB6A, #43A047, #00C853);
+            background-size: 200% 100%;
+            border-radius: 20px;
+            transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            animation: progressShine 2s linear infinite;
+            box-shadow: 0 0 8px rgba(0,200,83,0.4);
+        }
+
+        @keyframes progressShine {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .animal-progress-text {
+            font-size: clamp(0.7rem, 2vw, 0.9rem);
+            font-weight: 700;
+            color: #66BB6A;
+            text-align: center;
+            margin-top: 4px;
+        }
+
+        /* ===== Enhanced 3D buttons ===== */
+        .bubble-start-btn, .animal-start-btn, .sketch-start-btn {
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.3), inset 0 1px 0 rgba(255,255,255,0.3), 0 2px 0 #D32F2F;
+        }
+
+        .bubble-start-btn:active, .animal-start-btn:active, .sketch-start-btn:active {
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3), inset 0 1px 0 rgba(255,255,255,0.3);
+            transform: scale(0.95) translateY(2px);
+        }
+
         /* ===== 레이아웃 개선 ===== */
         @media (max-width: 480px) {
             .animal-cards {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
                 max-width: 100%;
-                padding: 0 16px;
+                padding: 0 8px;
+                gap: clamp(8px, 2vw, 14px);
+            }
+            .animal-photo-circle {
+                width: clamp(130px, 45vw, 200px) !important;
+                height: clamp(130px, 45vw, 200px) !important;
             }
             .sketch-selection {
-                grid-template-columns: 1fr;
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .animal-question {
+                font-size: clamp(1.2rem, 4vw, 1.6rem);
+            }
+            .animal-game-content {
+                padding-top: clamp(55px, 7vh, 70px);
+                gap: clamp(8px, 1.2vh, 14px);
+            }
+        }
+
+        @media (min-width: 768px) {
+            .animal-photo-circle {
+                width: clamp(150px, 20vw, 220px) !important;
+                height: clamp(150px, 20vw, 220px) !important;
             }
         }
     </style>
@@ -1174,11 +1768,14 @@
             <span>KidsArcade 3in1</span>
         </div>
         <div class="game-grid" id="game-grid"></div>
+        <div style="position:absolute;bottom:clamp(8px,2vh,16px);font-size:clamp(0.65rem,1.8vw,0.85rem);color:rgba(0,0,0,0.2);font-weight:600;z-index:1;">아빠표 놀이앱 v2.1</div>
     </div>
 
     <!-- ========== 게임 1: 비누방울 팡팡 ========== -->
     <div id="game-bubble" class="screen game-screen">
-        <div class="home-btn" id="home-btn" onclick="goHome()">🏠</div>
+        <div class="game-ambient" id="bubble-ambient"></div>
+        <div class="home-btn" id="home-btn" onclick="goHome()" style="display:flex;">🏠</div>
+        <div class="pause-btn" id="bubble-pause-btn" onclick="toggleBubblePause()" style="display:none;">⏸️</div>
         <div class="bubble-hud" id="bubble-hud">
             <div class="bubble-score" id="bubble-score">⭐ 0</div>
             <div class="bubble-stage" id="bubble-stage">1단계</div>
@@ -1193,7 +1790,9 @@
 
     <!-- ========== 게임 2: 동물 친구 찾기 ========== -->
     <div id="game-animal" class="screen game-screen">
+        <div class="game-ambient" id="animal-ambient"></div>
         <div class="home-btn" id="home-btn-2" onclick="goHome()">🏠</div>
+        <div class="pause-btn" id="animal-pause-btn" onclick="toggleAnimalPause()" style="display:none;">⏸️</div>
         <div class="animal-hud" id="animal-hud">
             <div class="animal-score" id="animal-score">⭐ 0</div>
             <div class="animal-stage" id="animal-stage">1단계</div>
@@ -1208,7 +1807,9 @@
 
     <!-- ========== 게임 3: 마법의 스케치북 ========== -->
     <div id="game-canvas" class="screen game-screen">
+        <div class="game-ambient" id="canvas-ambient"></div>
         <div class="home-btn" id="home-btn-3" onclick="goHome()">🏠</div>
+        <div class="pause-btn" id="canvas-pause-btn" onclick="toggleCanvasPause()" style="display:none;">⏸️</div>
         <div class="game-area" id="canvas-area">
             <div class="game-placeholder">
                 <div class="placeholder-emoji">🎨</div>
@@ -1225,15 +1826,34 @@
         };
 
         let globalAudioContext = null;
+        let masterCompressor = null;
 
         function getAudioContext() {
             if (!globalAudioContext) {
                 globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                // Master compressor for cleaner, safer audio output (protects toddler ears)
+                masterCompressor = globalAudioContext.createDynamicsCompressor();
+                masterCompressor.threshold.setValueAtTime(-24, globalAudioContext.currentTime);
+                masterCompressor.knee.setValueAtTime(12, globalAudioContext.currentTime);
+                masterCompressor.ratio.setValueAtTime(4, globalAudioContext.currentTime);
+                masterCompressor.attack.setValueAtTime(0.003, globalAudioContext.currentTime);
+                masterCompressor.release.setValueAtTime(0.15, globalAudioContext.currentTime);
+                // Master gain for overall volume control
+                const masterGain = globalAudioContext.createGain();
+                masterGain.gain.setValueAtTime(0.7, globalAudioContext.currentTime);
+                masterCompressor.connect(masterGain);
+                masterGain.connect(globalAudioContext.destination);
             }
             if (globalAudioContext.state === 'suspended') {
                 globalAudioContext.resume();
             }
             return globalAudioContext;
+        }
+
+        // Get the master output node (compressor) for connecting audio
+        function getAudioDest() {
+            getAudioContext();
+            return masterCompressor || globalAudioContext.destination;
         }
 
         // 첫 터치/클릭 시 오디오 언락
@@ -1244,6 +1864,19 @@
         document.addEventListener('click', () => {
             getAudioContext();
         }, { once: true });
+
+        /* ===== Haptic Feedback ===== */
+        function haptic(type) {
+            if (!navigator.vibrate) return;
+            switch(type) {
+                case 'light': navigator.vibrate(10); break;
+                case 'pop': navigator.vibrate(15); break;
+                case 'success': navigator.vibrate([15, 50, 15]); break;
+                case 'wrong': navigator.vibrate([30, 30, 30]); break;
+                case 'stageup': navigator.vibrate([20, 40, 20, 40, 30]); break;
+                default: navigator.vibrate(10);
+            }
+        }
 
         /* ===== 설정 UI ===== */
         function openSettings() {
@@ -1326,7 +1959,7 @@
                 card.className = 'game-card';
                 card.style.borderColor = game.borderColor;
                 card.style.background = game.bgGradient;
-                card.onclick = () => openGame(game);
+                card.onclick = () => { haptic('light'); openGame(game); };
 
                 card.innerHTML = `
                     <div class="card-emoji">${game.emoji}</div>
@@ -1359,6 +1992,44 @@
                 floater.style.animationDuration = (6 + Math.random() * 6) + 's';
                 container.appendChild(floater);
             }
+            // Subtle sparkle dots for ambient magic
+            const sparkleColors = ['#FFD54F', '#FF80AB', '#80D8FF', '#B9F6CA', '#E1BEE7', '#FFE082'];
+            for (let i = 0; i < 18; i++) {
+                const dot = document.createElement('div');
+                dot.style.cssText = `position:absolute;width:${3+Math.random()*5}px;height:${3+Math.random()*5}px;border-radius:50%;background:${sparkleColors[i%sparkleColors.length]};left:${Math.random()*100}%;top:${Math.random()*100}%;opacity:0;animation:menuSparkle ${2+Math.random()*3}s ease-in-out ${Math.random()*4}s infinite;pointer-events:none;`;
+                container.appendChild(dot);
+            }
+            // Add sparkle keyframe if needed
+            if (!document.getElementById('menu-sparkle-style')) {
+                const s = document.createElement('style');
+                s.id = 'menu-sparkle-style';
+                s.textContent = '@keyframes menuSparkle { 0%,100%{opacity:0;transform:scale(0.5);} 50%{opacity:0.5;transform:scale(1.2);} }';
+                document.head.appendChild(s);
+            }
+        }
+
+        function buildGameAmbient(gameId) {
+            const ambientConfigs = {
+                bubble: { emojis: ['☁️', '⭐', '💫', '🌸', '✨'], containerId: 'bubble-ambient' },
+                animal: { emojis: ['🌿', '🍃', '🌸', '🦋', '☁️', '🌼'], containerId: 'animal-ambient' },
+                canvas: { emojis: ['✏️', '🌈', '⭐', '🎨', '💫', '🎵'], containerId: 'canvas-ambient' }
+            };
+            const config = ambientConfigs[gameId];
+            if (!config) return;
+            const container = document.getElementById(config.containerId);
+            if (!container) return;
+            container.innerHTML = '';
+            for (let i = 0; i < 8; i++) {
+                const item = document.createElement('div');
+                item.className = 'game-ambient-item';
+                item.textContent = config.emojis[i % config.emojis.length];
+                item.style.fontSize = (18 + Math.random() * 24) + 'px';
+                item.style.left = (Math.random() * 90 + 5) + '%';
+                item.style.top = (Math.random() * 85 + 5) + '%';
+                item.style.animationDelay = (Math.random() * 8) + 's';
+                item.style.animationDuration = (8 + Math.random() * 8) + 's';
+                container.appendChild(item);
+            }
         }
 
         function openGame(game) {
@@ -1370,6 +2041,8 @@
                 const screen = document.getElementById(game.screenId);
                 screen.classList.add('active');
                 currentGame = game;
+
+                buildGameAmbient(game.id);
 
                 if (game.onEnter && typeof game.onEnter === 'function') {
                     game.onEnter();
@@ -1410,9 +2083,12 @@
             animFrameId: null,
             spawnTimer: null,
             running: false,
+            paused: false,
             comboCount: 0,
             lastPopTime: 0,
             comboTimeout: null,
+            pauseBtnHideTimer: null,
+            lastTouchTime: 0,
 
             colors: [
                 '#FF1744', '#FF6D00', '#FFD600', '#00C853', '#2979FF',
@@ -1429,15 +2105,18 @@
             },
 
             getStageGoal(stage) {
-                return 10 + stage * 10;
+                return stage === 1 ? 20 : stage === 2 ? 30 : 10 + stage * 10;
             },
 
             getStageDifficulty() {
                 const s = this.stage;
                 const speedMult = 1 + (s - 1) * 0.5; // x1, x1.5, x2, x2.5 ...
+                // Responsive bubble sizes - bigger on smaller screens
+                const vw = window.innerWidth;
+                const sizeScale = vw < 480 ? 1.15 : 1.0;
                 return {
-                    minSize: 120,
-                    maxSize: 200,
+                    minSize: Math.round(200 * sizeScale),
+                    maxSize: Math.round(320 * sizeScale),
                     minSpeed: Math.min(0.7 * speedMult, 4.0),
                     maxSpeed: Math.min(1.3 * speedMult, 6.0),
                     spawnInterval: Math.max(350, 1100 - s * 80),
@@ -1473,6 +2152,25 @@
             const overlay = document.getElementById('bubble-start-overlay');
             if (overlay) overlay.remove();
 
+            // Hide home button, show pause button during gameplay
+            const homeBtn = document.getElementById('home-btn');
+            if (homeBtn) homeBtn.style.display = 'none';
+            const pauseBtn = document.getElementById('bubble-pause-btn');
+            if (pauseBtn) pauseBtn.style.display = 'flex';
+
+            // Setup pause button auto-hide on touch
+            BubbleGame.lastTouchTime = Date.now();
+            const area = document.getElementById('bubble-area');
+            if (area) {
+                area.addEventListener('touchstart', () => {
+                    BubbleGame.lastTouchTime = Date.now();
+                    if (pauseBtn) pauseBtn.style.opacity = '0.8';
+                    clearTimeout(BubbleGame.pauseBtnHideTimer);
+                    BubbleGame.pauseBtnHideTimer = setTimeout(() => {
+                        if (pauseBtn && !BubbleGame.paused) pauseBtn.style.opacity = '0';
+                    }, 3000);
+                }, { passive: true });
+            }
 
             BubbleGame.score = 0;
             BubbleGame.stage = 1;
@@ -1483,6 +2181,25 @@
             BubbleGame.lastPopTime = 0;
             updateBubbleScore();
             updateBubbleStage();
+
+            // Play a starting jingle
+            if (Settings.soundEnabled) {
+                const ctx = getAudioContext();
+                if (ctx) {
+                    const t = ctx.currentTime;
+                    [523, 659, 784].forEach((f, i) => {
+                        const o = ctx.createOscillator();
+                        const g = ctx.createGain();
+                        o.type = 'sine';
+                        o.frequency.setValueAtTime(f, t + i * 0.1);
+                        g.gain.setValueAtTime(0, t + i * 0.1);
+                        g.gain.linearRampToValueAtTime(0.15, t + i * 0.1 + 0.03);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + i * 0.1 + 0.25);
+                        o.connect(g); g.connect(getAudioDest());
+                        o.start(t + i * 0.1); o.stop(t + i * 0.1 + 0.25);
+                    });
+                }
+            }
 
             scheduleBubbleSpawn();
             BubbleGame.animFrameId = requestAnimationFrame(updateBubbles);
@@ -1517,18 +2234,19 @@
             bubble.style.color = color;
 
             if (shape === 'circle') {
-                bubble.style.background = `radial-gradient(circle at 35% 35%, rgba(255,255,255,0.7), ${color}88, ${color})`;
+                bubble.style.background = `radial-gradient(circle at 35% 35%, rgba(255,255,255,0.8), ${color}99, ${color})`;
                 bubble.style.borderColor = color;
-                bubble.style.boxShadow = `0 0 18px ${color}66, inset 0 -6px 12px rgba(0,0,0,0.12)`;
+                bubble.style.boxShadow = `0 0 28px ${color}99, 0 0 56px ${color}44, inset 0 -8px 16px rgba(0,0,0,0.1), inset 0 4px 8px rgba(255,255,255,0.4)`;
             } else if (shape === 'square') {
-                bubble.style.background = `linear-gradient(135deg, rgba(255,255,255,0.4), ${color}CC, ${color})`;
+                bubble.style.background = `linear-gradient(135deg, rgba(255,255,255,0.5), ${color}CC, ${color})`;
                 bubble.style.borderColor = color;
-                bubble.style.boxShadow = `0 4px 16px ${color}55`;
+                bubble.style.boxShadow = `0 6px 24px ${color}88, 0 0 40px ${color}33, inset 0 3px 6px rgba(255,255,255,0.3)`;
             } else if (shape === 'triangle' || shape === 'heart') {
                 bubble.style.fontSize = size * 0.85 + 'px';
                 bubble.textContent = BubbleGame.shapeEmojis[shape];
-                bubble.style.filter = `drop-shadow(0 0 6px ${color}88)`;
-                bubble.style.textShadow = `0 0 4px ${color}`;
+                bubble.style.filter = `drop-shadow(0 0 10px ${color}AA) drop-shadow(0 0 20px ${color}55)`;
+                bubble.style.textShadow = `0 0 6px ${color}, 0 2px 4px rgba(0,0,0,0.2)`;
+                bubble.style.webkitTextStroke = `2px ${color}`;
             }
 
             const x = Math.random() * (areaRect.width - size);
@@ -1583,7 +2301,10 @@
                 b.el.style.transform = `translate3d(${b.x}px, ${b.y}px, 0)`;
 
                 if (b.y < -b.size - 20) {
-                    b.el.remove();
+                    b.el.style.opacity = '0';
+                    b.el.style.transition = 'opacity 0.2s';
+                    const el = b.el;
+                    setTimeout(() => el.remove(), 200);
                     BubbleGame.bubbles.splice(i, 1);
                 }
             }
@@ -1594,6 +2315,7 @@
         function popBubble(bubbleData) {
             if (!BubbleGame.running) return;
 
+            haptic('pop');
             BubbleGame.score++;
             BubbleGame.stageScore++;
 
@@ -1657,6 +2379,18 @@
             area.appendChild(comboEl);
             setTimeout(() => comboEl.remove(), 900);
 
+            // Show combo counter visual at bottom
+            const counterEl = document.createElement('div');
+            counterEl.className = 'bubble-combo-counter';
+            if (count === 2) counterEl.classList.add('x2');
+            else if (count === 3) counterEl.classList.add('x3');
+            else if (count === 4) counterEl.classList.add('x4');
+            else if (count >= 5) counterEl.classList.add('x5plus');
+
+            counterEl.textContent = `x${count}!`;
+            document.body.appendChild(counterEl);
+            setTimeout(() => counterEl.remove(), 800);
+
             // Play combo sound
             if (Settings.soundEnabled) {
                 const ctx = getAudioContext();
@@ -1672,7 +2406,7 @@
                         gain.gain.linearRampToValueAtTime(0.2, t + i * 0.06 + 0.02);
                         gain.gain.exponentialRampToValueAtTime(0.001, t + i * 0.06 + 0.2);
                         osc.connect(gain);
-                        gain.connect(ctx.destination);
+                        gain.connect(getAudioDest());
                         osc.start(t + i * 0.06);
                         osc.stop(t + i * 0.06 + 0.2);
                     }
@@ -1688,6 +2422,7 @@
                 updateBubbleStage();
                 showStageUpOverlay();
                 playStageUpSound();
+                haptic('stageup');
             }
         }
 
@@ -1732,7 +2467,11 @@
             if (scoreEl) {
                 scoreEl.textContent = `⭐ ${BubbleGame.score}`;
                 scoreEl.style.transform = 'scale(1.25)';
-                setTimeout(() => { scoreEl.style.transform = 'scale(1)'; }, 150);
+                scoreEl.classList.add('pulse');
+                setTimeout(() => {
+                    scoreEl.style.transform = 'scale(1)';
+                    scoreEl.classList.remove('pulse');
+                }, 250);
             }
         }
 
@@ -1747,6 +2486,24 @@
             const area = document.getElementById('bubble-area');
             if (!area) return;
 
+            // Add ring burst keyframe if not present
+            if (!document.getElementById('ring-burst-styles')) {
+                const style = document.createElement('style');
+                style.id = 'ring-burst-styles';
+                style.textContent = `
+                    @keyframes ringBurst {
+                        0% { width: 0; height: 0; border-width: 6px; opacity: 1; }
+                        60% { opacity: 0.7; }
+                        100% { width: 200px; height: 200px; border-width: 1px; opacity: 0; }
+                    }
+                    @keyframes ringBurst2 {
+                        0% { width: 0; height: 0; border-width: 4px; opacity: 0.8; }
+                        100% { width: 140px; height: 140px; border-width: 1px; opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
             const colors = color ? [color, '#FFCA28', '#FF6B6B', '#66BB6A', '#42A5F5', '#FFD700'] :
                 ['#FF6B6B', '#FFCA28', '#66BB6A', '#42A5F5', '#AB47BC', '#FF7043', '#FFD700'];
             const container = document.createElement('div');
@@ -1754,39 +2511,72 @@
             container.style.left = cx + 'px';
             container.style.top = cy + 'px';
 
-            // Big round particles
-            for (let i = 0; i < 14; i++) {
+            // Expanding ring burst effect
+            const ringColor = color || colors[0];
+            const ring = document.createElement('div');
+            ring.style.cssText = `position:absolute;border-radius:50%;border:6px solid ${ringColor};transform:translate(-50%,-50%);animation:ringBurst 0.6s ease-out forwards;pointer-events:none;box-shadow:0 0 20px ${ringColor}60;`;
+            container.appendChild(ring);
+            // Second ring with slight delay
+            const ring2 = document.createElement('div');
+            ring2.style.cssText = `position:absolute;border-radius:50%;border:4px solid ${ringColor}80;transform:translate(-50%,-50%);animation:ringBurst2 0.5s ease-out 0.08s forwards;pointer-events:none;`;
+            container.appendChild(ring2);
+
+            // Big round particles - larger and more dramatic (16 particles)
+            for (let i = 0; i < 16; i++) {
                 const p = document.createElement('div');
                 p.className = 'pop-particle';
-                const angle = (i / 14) * Math.PI * 2;
-                const dist = 80 + Math.random() * 120;
+                const angle = (i / 16) * Math.PI * 2;
+                const dist = 120 + Math.random() * 200;
                 const dx = Math.cos(angle) * dist;
                 const dy = Math.sin(angle) * dist;
-                const size = 14 + Math.random() * 12;
+                const size = 20 + Math.random() * 25;
                 p.style.width = size + 'px';
                 p.style.height = size + 'px';
                 p.style.setProperty('--dx', dx + 'px');
                 p.style.setProperty('--dy', dy + 'px');
-                p.style.background = colors[Math.floor(Math.random() * colors.length)];
-                p.style.boxShadow = `0 0 8px ${p.style.background}`;
+                const c = colors[Math.floor(Math.random() * colors.length)];
+                p.style.background = c;
+                p.style.boxShadow = `0 0 14px ${c}, 0 0 28px ${c}70`;
                 container.appendChild(p);
             }
 
-            // Sparkle diamond particles
-            for (let i = 0; i < 10; i++) {
+            // Star-shaped sparkles mixed in - using unicode star character
+            for (let i = 0; i < 14; i++) {
                 const p = document.createElement('div');
-                p.className = 'pop-particle sparkle';
-                const angle = (i / 10) * Math.PI * 2 + 0.3;
-                const dist = 50 + Math.random() * 100;
+                p.className = 'pop-particle sparkle-star';
+                const angle = (i / 14) * Math.PI * 2 + 0.2;
+                const dist = 80 + Math.random() * 160;
                 const dx = Math.cos(angle) * dist;
                 const dy = Math.sin(angle) * dist;
-                const size = 8 + Math.random() * 10;
-                p.style.width = size + 'px';
-                p.style.height = size + 'px';
+                p.style.width = 'auto';
+                p.style.height = 'auto';
+                p.style.fontSize = (22 + Math.random() * 10) + 'px';
                 p.style.setProperty('--dx', dx + 'px');
                 p.style.setProperty('--dy', dy + 'px');
-                p.style.background = '#FFD700';
-                p.style.boxShadow = '0 0 6px #FFD700';
+                p.style.background = 'none';
+                const sc = colors[Math.floor(Math.random() * colors.length)];
+                p.style.color = sc;
+                p.style.filter = `drop-shadow(0 0 6px ${sc})`;
+                p.textContent = ['✦', '✧', '◆', '★'][i % 4];
+                container.appendChild(p);
+            }
+
+            // Star emoji particles - much bigger
+            const starEmojis = ['✨', '⭐', '💫', '🌟'];
+            for (let i = 0; i < 8; i++) {
+                const p = document.createElement('div');
+                p.className = 'pop-particle';
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 90 + Math.random() * 140;
+                const dx = Math.cos(angle) * dist;
+                const dy = Math.sin(angle) * dist;
+                p.style.width = 'auto';
+                p.style.height = 'auto';
+                p.style.fontSize = (26 + Math.random() * 10) + 'px';
+                p.style.background = 'none';
+                p.style.setProperty('--dx', dx + 'px');
+                p.style.setProperty('--dy', dy + 'px');
+                p.textContent = starEmojis[i % 4];
                 container.appendChild(p);
             }
 
@@ -1801,19 +2591,35 @@
 
             const now = ctx.currentTime;
 
+            // Main pop tone - bright chirp sweeping down
             const osc = ctx.createOscillator();
             const oscGain = ctx.createGain();
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(800 + Math.random() * 400, now);
+            const baseFreq = 900 + Math.random() * 500;
+            osc.frequency.setValueAtTime(baseFreq, now);
             osc.frequency.exponentialRampToValueAtTime(200, now + 0.1);
             oscGain.gain.setValueAtTime(0.3, now);
             oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
             osc.connect(oscGain);
-            oscGain.connect(ctx.destination);
+            oscGain.connect(getAudioDest());
             osc.start(now);
             osc.stop(now + 0.12);
 
-            const bufferSize = ctx.sampleRate * 0.06;
+            // Sweet harmonic overtone for sparkle
+            const osc2 = ctx.createOscillator();
+            const g2 = ctx.createGain();
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(baseFreq * 2, now);
+            osc2.frequency.exponentialRampToValueAtTime(600, now + 0.08);
+            g2.gain.setValueAtTime(0.1, now);
+            g2.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+            osc2.connect(g2);
+            g2.connect(getAudioDest());
+            osc2.start(now);
+            osc2.stop(now + 0.08);
+
+            // Pop noise burst
+            const bufferSize = ctx.sampleRate * 0.05;
             const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
             const data = noiseBuffer.getChannelData(0);
             for (let i = 0; i < bufferSize; i++) {
@@ -1821,13 +2627,17 @@
             }
             const noise = ctx.createBufferSource();
             noise.buffer = noiseBuffer;
+            const noiseFilter = ctx.createBiquadFilter();
+            noiseFilter.type = 'highpass';
+            noiseFilter.frequency.setValueAtTime(2000, now);
             const noiseGain = ctx.createGain();
-            noiseGain.gain.setValueAtTime(0.15, now);
-            noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
-            noise.connect(noiseGain);
-            noiseGain.connect(ctx.destination);
+            noiseGain.gain.setValueAtTime(0.12, now);
+            noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+            noise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(getAudioDest());
             noise.start(now);
-            noise.stop(now + 0.06);
+            noise.stop(now + 0.05);
         }
 
         function playStageUpSound() {
@@ -1848,14 +2658,62 @@
                 gain.gain.setValueAtTime(0.25, t + 0.1);
                 gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
                 osc.connect(gain);
-                gain.connect(ctx.destination);
+                gain.connect(getAudioDest());
                 osc.start(t);
                 osc.stop(t + 0.3);
             });
         }
 
+        function toggleBubblePause() {
+            if (BubbleGame.paused) {
+                // Resume
+                BubbleGame.paused = false;
+                const pauseOverlay = document.querySelector('.pause-overlay');
+                if (pauseOverlay) pauseOverlay.remove();
+                BubbleGame.running = true;
+                scheduleBubbleSpawn();
+                BubbleGame.animFrameId = requestAnimationFrame(updateBubbles);
+                const pauseBtn = document.getElementById('bubble-pause-btn');
+                if (pauseBtn) {
+                    pauseBtn.textContent = '⏸️';
+                    pauseBtn.style.opacity = '0.8';
+                    // Reset auto-hide timer
+                    clearTimeout(BubbleGame.pauseBtnHideTimer);
+                    BubbleGame.pauseBtnHideTimer = setTimeout(() => {
+                        if (pauseBtn && !BubbleGame.paused) pauseBtn.style.opacity = '0';
+                    }, 3000);
+                }
+            } else {
+                // Pause
+                BubbleGame.paused = true;
+                BubbleGame.running = false;
+                if (BubbleGame.spawnTimer) {
+                    clearTimeout(BubbleGame.spawnTimer);
+                    BubbleGame.spawnTimer = null;
+                }
+                if (BubbleGame.animFrameId) {
+                    cancelAnimationFrame(BubbleGame.animFrameId);
+                    BubbleGame.animFrameId = null;
+                }
+                const pauseBtn = document.getElementById('bubble-pause-btn');
+                if (pauseBtn) pauseBtn.textContent = '▶️';
+
+                // Show pause overlay
+                const gameScreen = document.getElementById('game-bubble');
+                const overlay = document.createElement('div');
+                overlay.className = 'pause-overlay';
+                overlay.innerHTML = `
+                    <div class="pause-title">⏸️ 일시정지</div>
+                    <button class="pause-btn-action pause-btn-continue" onclick="toggleBubblePause()">계속하기 ▶️</button>
+                    <button class="pause-btn-action pause-btn-home" onclick="goHome()">홈으로 🏠</button>
+                `;
+                gameScreen.appendChild(overlay);
+            }
+        }
+
         function cleanupBubbleGame() {
             BubbleGame.running = false;
+            BubbleGame.paused = false;
 
             if (BubbleGame.spawnTimer) {
                 clearTimeout(BubbleGame.spawnTimer);
@@ -1872,13 +2730,53 @@
                 BubbleGame.comboTimeout = null;
             }
 
+            if (BubbleGame.pauseBtnHideTimer) {
+                clearTimeout(BubbleGame.pauseBtnHideTimer);
+                BubbleGame.pauseBtnHideTimer = null;
+            }
+
             BubbleGame.bubbles.forEach(b => b.el.remove());
             BubbleGame.bubbles = [];
 
+            // Restore home button, hide pause button
             const homeBtn = document.getElementById('home-btn');
+            if (homeBtn) homeBtn.style.display = 'flex';
+            const pauseBtn = document.getElementById('bubble-pause-btn');
+            if (pauseBtn) { pauseBtn.style.display = 'none'; pauseBtn.textContent = '⏸️'; }
+
+            // Remove pause overlay if exists
+            const pauseOverlay = document.querySelector('.pause-overlay');
+            if (pauseOverlay) pauseOverlay.remove();
 
             const area = document.getElementById('bubble-area');
             if (area) area.innerHTML = '';
+        }
+
+        function toggleAnimalPause() {
+            if (AnimalGame.paused) {
+                // Resume
+                AnimalGame.paused = false;
+                const pauseOverlay = document.querySelector('.animal-pause-overlay');
+                if (pauseOverlay) pauseOverlay.remove();
+                const pauseBtn = document.getElementById('animal-pause-btn');
+                if (pauseBtn) pauseBtn.textContent = '⏸️';
+            } else {
+                // Pause
+                AnimalGame.paused = true;
+                const pauseBtn = document.getElementById('animal-pause-btn');
+                if (pauseBtn) pauseBtn.textContent = '▶️';
+
+                // Show pause overlay
+                const gameScreen = document.getElementById('game-animal');
+                const overlay = document.createElement('div');
+                overlay.className = 'animal-pause-overlay pause-overlay';
+                overlay.innerHTML = `
+                    <div class="pause-title">⏸️ 일시정지</div>
+                    <button class="pause-btn-action pause-btn-continue" onclick="toggleAnimalPause()">계속하기 ▶️</button>
+                    <button class="pause-btn-action pause-btn-home" onclick="goHome()">홈으로 🏠</button>
+                `;
+                gameScreen.appendChild(overlay);
+            }
         }
 
         /* ===== GAME 2: 동물 친구 찾기 ===== */
@@ -1903,7 +2801,8 @@
                 { id: 'sheep',    name: '양' },
                 { id: 'pig',      name: '돼지' },
                 { id: 'horse',    name: '말' },
-                { id: 'elephant', name: '코끼리' }
+                { id: 'elephant', name: '코끼리' },
+                { id: 'frog',     name: '개구리' }
             ],
 
             getStageGoal() { return 5; },
@@ -2162,6 +3061,29 @@
                     <!-- Cheeks -->
                     <circle cx="32" cy="52" r="6" fill="#B8A8C8" opacity="0.4"/>
                     <circle cx="68" cy="52" r="6" fill="#B8A8C8" opacity="0.4"/>
+                </svg>`,
+                frog: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Body -->
+                    <ellipse cx="50" cy="60" rx="34" ry="28" fill="#4CAF50"/>
+                    <!-- Big eyes (protruding) -->
+                    <circle cx="32" cy="28" r="16" fill="#4CAF50"/>
+                    <circle cx="68" cy="28" r="16" fill="#4CAF50"/>
+                    <circle cx="32" cy="28" r="12" fill="white"/>
+                    <circle cx="68" cy="28" r="12" fill="white"/>
+                    <circle cx="34" cy="28" r="6" fill="#1A1A1A"/>
+                    <circle cx="70" cy="28" r="6" fill="#1A1A1A"/>
+                    <circle cx="36" cy="26" r="2" fill="white"/>
+                    <circle cx="72" cy="26" r="2" fill="white"/>
+                    <!-- Wide mouth -->
+                    <path d="M25 62 Q50 78 75 62" fill="none" stroke="#2E7D32" stroke-width="2.5" stroke-linecap="round"/>
+                    <!-- Belly -->
+                    <ellipse cx="50" cy="65" rx="22" ry="16" fill="#A5D6A7"/>
+                    <!-- Cheeks -->
+                    <circle cx="28" cy="55" r="7" fill="#81C784" opacity="0.5"/>
+                    <circle cx="72" cy="55" r="7" fill="#81C784" opacity="0.5"/>
+                    <!-- Nostrils -->
+                    <circle cx="42" cy="48" r="2" fill="#2E7D32"/>
+                    <circle cx="58" cy="48" r="2" fill="#2E7D32"/>
                 </svg>`
             };
             return svgs[id] || '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" fill="#ccc"/></svg>';
@@ -2194,6 +3116,11 @@
             const overlay = document.getElementById('animal-start-overlay');
             if (overlay) overlay.remove();
 
+            // Hide home button, show pause button during gameplay
+            const homeBtn = document.getElementById('home-btn-2');
+            if (homeBtn) homeBtn.style.display = 'none';
+            const pauseBtn = document.getElementById('animal-pause-btn');
+            if (pauseBtn) pauseBtn.style.display = 'flex';
 
             AnimalGame.score = 0;
             AnimalGame.stage = 1;
@@ -2201,6 +3128,7 @@
             AnimalGame.usedAnswers = [];
             AnimalGame.running = true;
             AnimalGame.locked = false;
+            AnimalGame.paused = false;
             updateAnimalScore();
             updateAnimalStage();
 
@@ -2280,10 +3208,26 @@
             cardsContainer.className = 'animal-cards';
             cardsContainer.id = 'animal-cards';
 
+            const animalCardColors = {
+                dog: { bg: 'rgba(139,94,60,0.08)', border: '#C68E5B' },
+                cat: { bg: 'rgba(255,167,38,0.08)', border: '#FFA726' },
+                lion: { bg: 'rgba(255,183,77,0.08)', border: '#FFB74D' },
+                cow: { bg: 'rgba(121,85,72,0.08)', border: '#8D6E63' },
+                chicken: { bg: 'rgba(255,202,40,0.08)', border: '#FFCA28' },
+                duck: { bg: 'rgba(255,238,88,0.08)', border: '#FDD835' },
+                sheep: { bg: 'rgba(189,189,189,0.08)', border: '#BDBDBD' },
+                pig: { bg: 'rgba(244,143,177,0.08)', border: '#F48FB1' },
+                horse: { bg: 'rgba(161,136,127,0.08)', border: '#A1887F' },
+                elephant: { bg: 'rgba(144,164,174,0.08)', border: '#90A4AE' },
+                frog: { bg: 'rgba(102,187,106,0.08)', border: '#66BB6A' }
+            };
             AnimalGame.currentChoices.forEach(animal => {
                 const card = document.createElement('div');
                 card.className = 'animal-card';
                 card.dataset.animalId = animal.id;
+                const cc = animalCardColors[animal.id] || { bg: 'rgba(200,200,200,0.08)', border: '#BDBDBD' };
+                card.style.background = `linear-gradient(145deg, rgba(255,255,255,0.95), ${cc.bg})`;
+                card.style.borderColor = cc.border;
                 card.innerHTML = `
                     <div class="animal-photo-circle">${getAnimalSVG(animal.id)}</div>
                     <div class="animal-name">${animal.name}</div>
@@ -2301,8 +3245,25 @@
                 cardsContainer.appendChild(card);
             });
 
+            // Progress bar
+            const progressWrap = document.createElement('div');
+            progressWrap.className = 'animal-progress-wrap';
+            const progressBar = document.createElement('div');
+            progressBar.className = 'animal-progress-bar';
+            progressBar.id = 'animal-progress-bar';
+            const goal = AnimalGame.getStageGoal();
+            const pct = Math.min((AnimalGame.stageScore / goal) * 100, 100);
+            progressBar.style.width = pct + '%';
+            progressWrap.appendChild(progressBar);
+            const progressText = document.createElement('div');
+            progressText.className = 'animal-progress-text';
+            progressText.id = 'animal-progress-text';
+            progressText.textContent = `${AnimalGame.stageScore} / ${goal}`;
+
             content.appendChild(question);
             content.appendChild(listenBtn);
+            content.appendChild(progressWrap);
+            content.appendChild(progressText);
             content.appendChild(cardsContainer);
             area.appendChild(content);
         }
@@ -2319,6 +3280,8 @@
                 AnimalGame.score++;
                 AnimalGame.stageScore++;
                 updateAnimalScore();
+                updateAnimalProgress();
+                haptic('success');
 
                 if (selectedCard) selectedCard.classList.add('correct-flash');
                 showAnimalResultOverlay('⭕', area);
@@ -2331,7 +3294,9 @@
                     AnimalGame.stageScore = 0;
                     AnimalGame.usedAnswers = [];
                     updateAnimalStage();
+                    updateAnimalProgress();
                     playStageUpSound();
+                    haptic('stageup');
 
                     const stageOverlay = document.createElement('div');
                     stageOverlay.className = 'bubble-stage-up';
@@ -2351,6 +3316,7 @@
 
             } else {
                 AnimalGame.locked = true;
+                haptic('wrong');
 
                 if (selectedCard) selectedCard.classList.add('wrong-flash');
                 showAnimalResultOverlay('❌', area);
@@ -2376,7 +3342,13 @@
 
             const overlay = document.createElement('div');
             overlay.className = 'animal-result-overlay';
-            overlay.innerHTML = `<div class="animal-result-symbol">${symbol}</div>`;
+            const symbolDiv = document.createElement('div');
+            symbolDiv.className = 'animal-result-symbol';
+            if (symbol === '⭕') {
+                symbolDiv.classList.add('correct');
+            }
+            symbolDiv.textContent = symbol;
+            overlay.appendChild(symbolDiv);
             parent.appendChild(overlay);
         }
 
@@ -2398,6 +3370,16 @@
                         0% { transform: translateY(-80px) rotateZ(0deg) rotateX(0deg); opacity: 1; }
                         100% { transform: translateY(100vh) rotateZ(720deg) rotateX(360deg); opacity: 0; }
                     }
+                    @keyframes goldenRingExpand {
+                        0% { width: 0; height: 0; opacity: 1; border-width: 5px; }
+                        50% { opacity: 0.8; }
+                        100% { width: 90vmin; height: 90vmin; opacity: 0; border-width: 1px; }
+                    }
+                    @keyframes celebrationFlash {
+                        0% { opacity: 0; }
+                        15% { opacity: 0.3; }
+                        100% { opacity: 0; }
+                    }
                 `;
                 document.head.appendChild(style);
             }
@@ -2406,52 +3388,64 @@
             container.className = 'confetti-container';
             const colors = ['#FFD700', '#FF6B6B', '#1E88E5', '#43A047', '#FF6D00', '#E040FB', '#00E5FF', '#FF4081', '#00BFA5'];
 
+            // Golden ring expansion from center
+            for (let r = 0; r < 3; r++) {
+                const ring = document.createElement('div');
+                ring.style.cssText = `position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;border:5px solid #FFD700;box-shadow:0 0 30px rgba(255,215,0,0.5),inset 0 0 30px rgba(255,215,0,0.2);animation:goldenRingExpand ${0.8+r*0.15}s ease-out ${r*0.12}s forwards;pointer-events:none;`;
+                container.appendChild(ring);
+            }
+
+            // Celebration flash
+            const flash = document.createElement('div');
+            flash.style.cssText = 'position:fixed;inset:0;background:radial-gradient(circle at center,rgba(255,215,0,0.3),transparent 70%);animation:celebrationFlash 0.5s ease-out forwards;pointer-events:none;';
+            container.appendChild(flash);
+
             // Firework bursts from 2 random center points
             for (let burst = 0; burst < 2; burst++) {
                 const cx = 20 + Math.random() * 60;
                 const cy = 15 + Math.random() * 30;
-                for (let i = 0; i < 18; i++) {
+                for (let i = 0; i < 20; i++) {
                     const spark = document.createElement('div');
-                    const angle = (i / 18) * Math.PI * 2;
-                    const dist = 80 + Math.random() * 100;
+                    const angle = (i / 20) * Math.PI * 2;
+                    const dist = 80 + Math.random() * 120;
                     const fx = Math.cos(angle) * dist;
                     const fy = Math.sin(angle) * dist;
-                    const size = 4 + Math.random() * 6;
+                    const size = 4 + Math.random() * 7;
                     const color = colors[Math.floor(Math.random() * colors.length)];
-                    spark.style.cssText = `position:absolute;left:${cx}%;top:${cy}%;width:${size}px;height:${size}px;border-radius:50%;background:${color};box-shadow:0 0 8px ${color},0 0 16px ${color}40;--fx:${fx}px;--fy:${fy}px;animation:fireworkBurst ${0.6+Math.random()*0.4}s ease-out ${burst*0.3+0.1}s forwards;pointer-events:none;`;
+                    spark.style.cssText = `position:absolute;left:${cx}%;top:${cy}%;width:${size}px;height:${size}px;border-radius:50%;background:${color};box-shadow:0 0 10px ${color},0 0 20px ${color}50;--fx:${fx}px;--fy:${fy}px;animation:fireworkBurst ${0.6+Math.random()*0.4}s ease-out ${burst*0.3+0.1}s forwards;pointer-events:none;`;
                     container.appendChild(spark);
                 }
             }
 
             // Glowing sparkle dots scattered across screen
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < 35; i++) {
                 const dot = document.createElement('div');
                 const color = colors[Math.floor(Math.random() * colors.length)];
-                dot.style.cssText = `position:absolute;left:${Math.random()*100}%;top:${Math.random()*70}%;width:6px;height:6px;border-radius:50%;background:${color};box-shadow:0 0 12px ${color},0 0 24px ${color}60;animation:sparkleGlow ${0.4+Math.random()*0.6}s ease-in-out ${Math.random()*0.8}s infinite;pointer-events:none;`;
+                dot.style.cssText = `position:absolute;left:${Math.random()*100}%;top:${Math.random()*70}%;width:${3+Math.random()*8}px;height:${3+Math.random()*8}px;border-radius:50%;background:${color};box-shadow:0 0 12px ${color},0 0 24px ${color}60;animation:sparkleGlow ${0.4+Math.random()*0.6}s ease-in-out ${Math.random()*0.8}s infinite;pointer-events:none;`;
                 container.appendChild(dot);
             }
 
             // Confetti ribbons falling with spin
-            for (let i = 0; i < 40; i++) {
+            for (let i = 0; i < 60; i++) {
                 const confetti = document.createElement('div');
-                const w = 4 + Math.random() * 7;
-                const h = 8 + Math.random() * 14;
+                const w = 5 + Math.random() * 9;
+                const h = 10 + Math.random() * 16;
                 const color = colors[Math.floor(Math.random() * colors.length)];
                 confetti.style.cssText = `position:absolute;left:${Math.random()*100}%;top:0;width:${w}px;height:${h}px;background:${color};border-radius:${Math.random()>0.5?'50%':'2px'};box-shadow:0 0 6px ${color}80;animation:confettiSpin ${1.5+Math.random()*1.2}s ease-out ${Math.random()*0.5}s forwards;pointer-events:none;`;
                 container.appendChild(confetti);
             }
 
-            // Sparkle emojis with glow
-            const sparkleEmojis = ['✨', '⭐', '🌟', '💫', '🎉', '🎊', '💖', '🎆'];
-            for (let i = 0; i < 15; i++) {
+            // Sparkle emojis with glow - much larger and more variety
+            const sparkleEmojis = ['✨', '🌟', '⭐', '🎉', '💖', '🎊', '🎆', '💫'];
+            for (let i = 0; i < 28; i++) {
                 const sparkle = document.createElement('div');
                 sparkle.className = 'confetti';
                 sparkle.textContent = sparkleEmojis[Math.floor(Math.random() * sparkleEmojis.length)];
                 sparkle.style.left = (Math.random() * 100) + '%';
-                sparkle.style.fontSize = (18 + Math.random() * 20) + 'px';
-                sparkle.style.filter = 'drop-shadow(0 0 4px rgba(255,215,0,0.6))';
-                sparkle.style.animationDelay = (Math.random() * 0.6) + 's';
-                sparkle.style.animationDuration = (1.6 + Math.random() * 0.8) + 's';
+                sparkle.style.fontSize = (28 + Math.random() * 32) + 'px';
+                sparkle.style.filter = 'drop-shadow(0 0 8px rgba(255,215,0,0.9)) drop-shadow(0 0 16px rgba(255,215,0,0.5))';
+                sparkle.style.animationDelay = (Math.random() * 0.4) + 's';
+                sparkle.style.animationDuration = (1.4 + Math.random() * 0.8) + 's';
                 container.appendChild(sparkle);
             }
 
@@ -2463,8 +3457,9 @@
             const scoreEl = document.getElementById('animal-score');
             if (scoreEl) {
                 scoreEl.textContent = `⭐ ${AnimalGame.score}`;
-                scoreEl.style.transform = 'scale(1.25)';
-                setTimeout(() => { scoreEl.style.transform = 'scale(1)'; }, 150);
+                scoreEl.style.transform = 'scale(1.3)';
+                scoreEl.style.transition = 'transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                setTimeout(() => { scoreEl.style.transform = 'scale(1)'; }, 200);
             }
         }
 
@@ -2472,6 +3467,20 @@
             const stageEl = document.getElementById('animal-stage');
             if (stageEl) {
                 stageEl.textContent = `${AnimalGame.stage}단계`;
+            }
+        }
+
+        function updateAnimalProgress() {
+            const progressBar = document.getElementById('animal-progress-bar');
+            const progressText = document.getElementById('animal-progress-text');
+            if (progressBar) {
+                const goal = AnimalGame.getStageGoal();
+                const pct = Math.min((AnimalGame.stageScore / goal) * 100, 100);
+                progressBar.style.width = pct + '%';
+            }
+            if (progressText) {
+                const goal = AnimalGame.getStageGoal();
+                progressText.textContent = `${AnimalGame.stageScore} / ${goal}`;
             }
         }
 
@@ -2485,7 +3494,22 @@
             sheep: '메에~',
             pig: '꿀꿀!',
             horse: '히힝~',
-            elephant: '뿌우~'
+            elephant: '뿌우~',
+            frog: '개굴개굴!'
+        };
+
+        const ONOMATOPOEIA_COLORS = {
+            dog: { color: '#8B5E3C', shadow: '#C68E5B', glow: 'rgba(139,94,60,0.5)', stroke: '#5C3A20' },
+            cat: { color: '#FF9F43', shadow: '#FFD093', glow: 'rgba(255,159,67,0.5)', stroke: '#CC6B00' },
+            lion: { color: '#E8A020', shadow: '#F5D480', glow: 'rgba(232,160,32,0.5)', stroke: '#A06010' },
+            cow: { color: '#333333', shadow: '#888888', glow: 'rgba(50,50,50,0.4)', stroke: '#111111' },
+            chicken: { color: '#FF6D00', shadow: '#FFB74D', glow: 'rgba(255,109,0,0.5)', stroke: '#E65100' },
+            duck: { color: '#FFB300', shadow: '#FFE082', glow: 'rgba(255,179,0,0.5)', stroke: '#E68A00' },
+            sheep: { color: '#666666', shadow: '#AAAAAA', glow: 'rgba(100,100,100,0.4)', stroke: '#444444' },
+            pig: { color: '#FF6B8A', shadow: '#FFB6C1', glow: 'rgba(255,107,138,0.5)', stroke: '#D46A7A' },
+            horse: { color: '#8B5E3C', shadow: '#C68E5B', glow: 'rgba(139,94,60,0.5)', stroke: '#5C3A20' },
+            elephant: { color: '#7070A0', shadow: '#A0A0C0', glow: 'rgba(112,112,160,0.5)', stroke: '#505080' },
+            frog: { color: '#4CAF50', shadow: '#A5D6A7', glow: 'rgba(76,175,80,0.5)', stroke: '#2E7D32' }
         };
 
         function showOnomatopoeia(animalId) {
@@ -2496,11 +3520,16 @@
             const old = document.querySelector('.onomatopoeia-float');
             if (old) old.remove();
 
+            const colors = ONOMATOPOEIA_COLORS[animalId] || { color: '#FF6D00', shadow: '#FFB74D', glow: 'rgba(255,109,0,0.5)', stroke: '#E65100' };
             const el = document.createElement('div');
             el.className = 'onomatopoeia-float';
             el.textContent = text;
+            el.style.setProperty('--ono-color', colors.color);
+            el.style.setProperty('--ono-shadow', colors.shadow);
+            el.style.setProperty('--ono-glow', colors.glow);
+            el.style.setProperty('--ono-stroke', colors.stroke);
             document.body.appendChild(el);
-            setTimeout(() => el.remove(), 1600);
+            setTimeout(() => el.remove(), 1700);
         }
 
         function playAnimalSound(animalId) {
@@ -2513,109 +3542,168 @@
 
             switch (animalId) {
                 case 'dog': {
-                    // 멍멍! - Two short punchy barks
+                    // 멍멍! - Two friendly barks: warm, round, clearly "멍멍" for toddlers
+                    const dest = getAudioDest();
                     for (let i = 0; i < 2; i++) {
-                        const t = now + i * 0.35;
+                        const t = now + i * 0.45;
+                        const pitchVar = 1 + (i * 0.05); // second bark slightly higher
+                        // Main bark: warm "멍" with clear vowel
                         const o = ctx.createOscillator();
                         const g = ctx.createGain();
-                        const flt = ctx.createBiquadFilter();
-                        o.type = 'square';
-                        o.frequency.setValueAtTime(180, t);
-                        o.frequency.linearRampToValueAtTime(380, t + 0.04);
-                        o.frequency.linearRampToValueAtTime(250, t + 0.12);
-                        o.frequency.linearRampToValueAtTime(180, t + 0.22);
-                        flt.type = 'lowpass';
-                        flt.frequency.setValueAtTime(1200, t);
-                        flt.Q.setValueAtTime(1, t);
+                        const f1 = ctx.createBiquadFilter();
+                        o.type = 'sawtooth';
+                        o.frequency.setValueAtTime(180 * pitchVar, t);
+                        o.frequency.linearRampToValueAtTime(350 * pitchVar, t + 0.03);
+                        o.frequency.linearRampToValueAtTime(250 * pitchVar, t + 0.10);
+                        o.frequency.linearRampToValueAtTime(160 * pitchVar, t + 0.28);
+                        // Warm bandpass for clear "ㅓ" vowel
+                        f1.type = 'bandpass'; f1.frequency.setValueAtTime(650, t); f1.Q.setValueAtTime(3, t);
                         g.gain.setValueAtTime(0.001, t);
-                        g.gain.linearRampToValueAtTime(0.42, t + 0.02);
-                        g.gain.setValueAtTime(0.38, t + 0.1);
-                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
-                        o.connect(flt); flt.connect(g); g.connect(ctx.destination);
-                        o.start(t); o.stop(t + 0.22);
+                        g.gain.linearRampToValueAtTime(0.45, t + 0.015);
+                        g.gain.setValueAtTime(0.38, t + 0.10);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+                        o.connect(f1); f1.connect(g); g.connect(dest);
+                        o.start(t); o.stop(t + 0.28);
+                        // Warm sub for body
+                        const sub = ctx.createOscillator();
+                        const subG = ctx.createGain();
+                        sub.type = 'sine';
+                        sub.frequency.setValueAtTime(110 * pitchVar, t);
+                        sub.frequency.linearRampToValueAtTime(85 * pitchVar, t + 0.25);
+                        subG.gain.setValueAtTime(0.001, t);
+                        subG.gain.linearRampToValueAtTime(0.18, t + 0.02);
+                        subG.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+                        sub.connect(subG); subG.connect(dest);
+                        sub.start(t); sub.stop(t + 0.25);
+                        // Soft "ㅁ" attack noise
+                        const nBuf = ctx.createBuffer(1, ctx.sampleRate * 0.025, ctx.sampleRate);
+                        const nData = nBuf.getChannelData(0);
+                        for (let j = 0; j < nData.length; j++) nData[j] = (Math.random() * 2 - 1) * (1 - j / nData.length) * 0.6;
+                        const ns = ctx.createBufferSource(); ns.buffer = nBuf;
+                        const nf = ctx.createBiquadFilter(); nf.type = 'lowpass'; nf.frequency.setValueAtTime(1200, t);
+                        const ng = ctx.createGain();
+                        ng.gain.setValueAtTime(0.12, t); ng.gain.exponentialRampToValueAtTime(0.001, t + 0.025);
+                        ns.connect(nf); nf.connect(ng); ng.connect(dest);
+                        ns.start(t); ns.stop(t + 0.025);
                     }
                     break;
                 }
                 case 'cat': {
-                    // 야옹~ - Smooth rising-falling meow with vibrato
+                    // 야옹~ - Sweet meow: clear "야" rising → "옹" falling, gentle vibrato
+                    const dest = getAudioDest();
+                    const dur = 0.85;
                     const o = ctx.createOscillator();
                     const g = ctx.createGain();
                     o.type = 'sine';
-                    o.frequency.setValueAtTime(280, now);
-                    o.frequency.linearRampToValueAtTime(520, now + 0.15);
-                    o.frequency.setValueAtTime(520, now + 0.35);
-                    o.frequency.linearRampToValueAtTime(380, now + 0.55);
-                    o.frequency.linearRampToValueAtTime(300, now + 0.8);
+                    // Clear pitch contour: "야" rises, "옹" falls gently
+                    o.frequency.setValueAtTime(320, now);
+                    o.frequency.linearRampToValueAtTime(580, now + 0.10);
+                    o.frequency.setValueAtTime(570, now + 0.28);
+                    o.frequency.linearRampToValueAtTime(440, now + 0.50);
+                    o.frequency.linearRampToValueAtTime(340, now + dur);
                     g.gain.setValueAtTime(0.001, now);
-                    g.gain.linearRampToValueAtTime(0.35, now + 0.05);
-                    g.gain.setValueAtTime(0.32, now + 0.35);
-                    g.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
-                    o.connect(g); g.connect(ctx.destination);
-                    o.start(now); o.stop(now + 0.8);
+                    g.gain.linearRampToValueAtTime(0.32, now + 0.04);
+                    g.gain.setValueAtTime(0.30, now + 0.30);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+                    o.connect(g); g.connect(dest);
+                    o.start(now); o.stop(now + dur);
+                    // Soft harmonic for warmth
+                    const o2 = ctx.createOscillator();
+                    const g2 = ctx.createGain();
+                    o2.type = 'sine';
+                    o2.frequency.setValueAtTime(640, now);
+                    o2.frequency.linearRampToValueAtTime(1160, now + 0.10);
+                    o2.frequency.setValueAtTime(1140, now + 0.28);
+                    o2.frequency.linearRampToValueAtTime(880, now + 0.50);
+                    o2.frequency.linearRampToValueAtTime(680, now + dur);
+                    g2.gain.setValueAtTime(0.001, now);
+                    g2.gain.linearRampToValueAtTime(0.12, now + 0.04);
+                    g2.gain.setValueAtTime(0.10, now + 0.30);
+                    g2.gain.exponentialRampToValueAtTime(0.001, now + dur);
+                    o2.connect(g2); g2.connect(dest);
+                    o2.start(now); o2.stop(now + dur);
+                    // Gentle vibrato for meow character
                     const v = ctx.createOscillator();
                     const vg = ctx.createGain();
-                    v.frequency.setValueAtTime(5.5, now);
-                    vg.gain.setValueAtTime(12, now);
+                    v.frequency.setValueAtTime(5.5, now); vg.gain.setValueAtTime(16, now);
                     v.connect(vg); vg.connect(o.frequency);
-                    v.start(now); v.stop(now + 0.8);
+                    v.start(now); v.stop(now + dur);
                     break;
                 }
                 case 'lion': {
-                    // 어흥! - Deep powerful roar with sub-bass rumble
+                    // 어흥! - Deep growl: clearly "어흥" with rumble, but not scary for toddlers
+                    const dest = getAudioDest();
+                    const dur = 1.3;
+                    const o = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    const flt = ctx.createBiquadFilter();
+                    o.type = 'sawtooth';
+                    o.frequency.setValueAtTime(75, now);
+                    o.frequency.linearRampToValueAtTime(130, now + 0.20);
+                    o.frequency.setValueAtTime(120, now + 0.6);
+                    o.frequency.linearRampToValueAtTime(65, now + dur);
+                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(420, now); flt.Q.setValueAtTime(1, now);
+                    g.gain.setValueAtTime(0.001, now);
+                    g.gain.linearRampToValueAtTime(0.38, now + 0.10);
+                    g.gain.setValueAtTime(0.34, now + 0.45);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+                    o.connect(flt); flt.connect(g); g.connect(dest);
+                    o.start(now); o.stop(now + dur);
+                    // Sub-bass body
+                    const o2 = ctx.createOscillator();
+                    const g2 = ctx.createGain();
+                    o2.type = 'sine';
+                    o2.frequency.setValueAtTime(45, now);
+                    o2.frequency.linearRampToValueAtTime(72, now + 0.20);
+                    o2.frequency.linearRampToValueAtTime(40, now + 1.1);
+                    g2.gain.setValueAtTime(0.001, now);
+                    g2.gain.linearRampToValueAtTime(0.22, now + 0.10);
+                    g2.gain.exponentialRampToValueAtTime(0.001, now + 1.1);
+                    o2.connect(g2); g2.connect(dest);
+                    o2.start(now); o2.stop(now + 1.1);
+                    // Gentle growl tremor
+                    const tr = ctx.createOscillator();
+                    const trg = ctx.createGain();
+                    tr.frequency.setValueAtTime(6, now); trg.gain.setValueAtTime(18, now);
+                    tr.connect(trg); trg.connect(o.frequency);
+                    tr.start(now); tr.stop(now + dur);
+                    // Soft breath noise
+                    const nBuf = ctx.createBuffer(1, ctx.sampleRate * 0.25, ctx.sampleRate);
+                    const nData = nBuf.getChannelData(0);
+                    for (let j = 0; j < nData.length; j++) nData[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / nData.length, 0.5) * 0.35;
+                    const ns = ctx.createBufferSource(); ns.buffer = nBuf;
+                    const nFlt = ctx.createBiquadFilter(); nFlt.type = 'lowpass'; nFlt.frequency.setValueAtTime(380, now);
+                    const ng = ctx.createGain();
+                    ng.gain.setValueAtTime(0.08, now); ng.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                    ns.connect(nFlt); nFlt.connect(ng); ng.connect(dest);
+                    ns.start(now); ns.stop(now + 0.25);
+                    break;
+                }
+                case 'cow': {
+                    // 음메~ - Long gentle moo
+                    const dest = getAudioDest();
                     const dur = 1.6;
                     const o = ctx.createOscillator();
                     const g = ctx.createGain();
                     const flt = ctx.createBiquadFilter();
                     o.type = 'sawtooth';
-                    o.frequency.setValueAtTime(65, now);
-                    o.frequency.linearRampToValueAtTime(110, now + 0.3);
-                    o.frequency.setValueAtTime(100, now + 0.8);
-                    o.frequency.linearRampToValueAtTime(55, now + dur);
-                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(350, now); flt.Q.setValueAtTime(0.8, now);
-                    g.gain.setValueAtTime(0.001, now);
-                    g.gain.linearRampToValueAtTime(0.45, now + 0.15);
-                    g.gain.setValueAtTime(0.42, now + 0.6);
-                    g.gain.exponentialRampToValueAtTime(0.001, now + dur);
-                    o.connect(flt); flt.connect(g); g.connect(ctx.destination);
-                    o.start(now); o.stop(now + dur);
-                    // Sub bass layer
-                    const o2 = ctx.createOscillator();
-                    const g2 = ctx.createGain();
-                    o2.type = 'sine';
-                    o2.frequency.setValueAtTime(40, now);
-                    o2.frequency.linearRampToValueAtTime(65, now + 0.3);
-                    o2.frequency.linearRampToValueAtTime(35, now + 1.4);
-                    g2.gain.setValueAtTime(0.001, now);
-                    g2.gain.linearRampToValueAtTime(0.25, now + 0.15);
-                    g2.gain.exponentialRampToValueAtTime(0.001, now + 1.4);
-                    o2.connect(g2); g2.connect(ctx.destination);
-                    o2.start(now); o2.stop(now + 1.4);
-                    // Tremor vibrato
-                    const tr = ctx.createOscillator();
-                    const trg = ctx.createGain();
-                    tr.frequency.setValueAtTime(7, now); trg.gain.setValueAtTime(18, now);
-                    tr.connect(trg); trg.connect(o.frequency);
-                    tr.start(now); tr.stop(now + dur);
-                    break;
-                }
-                case 'cow': {
-                    // 음메~ - Long sustained moo with nasal quality
-                    const dur = 1.8;
-                    const o = ctx.createOscillator();
-                    const g = ctx.createGain();
-                    const flt = ctx.createBiquadFilter();
-                    o.type = 'sawtooth';
-                    o.frequency.setValueAtTime(100, now);
-                    o.frequency.linearRampToValueAtTime(155, now + 0.25);
+                    o.frequency.setValueAtTime(95, now);
+                    o.frequency.setValueAtTime(95, now + 0.3);
+                    o.frequency.linearRampToValueAtTime(155, now + 0.55);
                     o.frequency.setValueAtTime(155, now + 0.9);
-                    o.frequency.linearRampToValueAtTime(125, now + 1.4);
-                    o.frequency.linearRampToValueAtTime(95, now + dur);
-                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(650, now); flt.Q.setValueAtTime(1.5, now);
+                    o.frequency.linearRampToValueAtTime(125, now + 1.3);
+                    o.frequency.linearRampToValueAtTime(88, now + dur);
+                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(500, now);
+                    flt.frequency.linearRampToValueAtTime(900, now + 0.55);
+                    flt.frequency.linearRampToValueAtTime(600, now + dur);
+                    flt.Q.setValueAtTime(1.4, now);
                     g.gain.setValueAtTime(0.001, now);
-                    g.gain.linearRampToValueAtTime(0.4, now + 0.1);
-                    g.gain.setValueAtTime(0.38, now + 0.9);
+                    g.gain.linearRampToValueAtTime(0.35, now + 0.08);
+                    g.gain.setValueAtTime(0.30, now + 0.3);
+                    g.gain.linearRampToValueAtTime(0.35, now + 0.55);
+                    g.gain.setValueAtTime(0.32, now + 0.9);
                     g.gain.exponentialRampToValueAtTime(0.001, now + dur);
-                    o.connect(flt); flt.connect(g); g.connect(ctx.destination);
+                    o.connect(flt); flt.connect(g); g.connect(dest);
                     o.start(now); o.stop(now + dur);
                     const v = ctx.createOscillator(); const vg = ctx.createGain();
                     v.frequency.setValueAtTime(4.5, now); vg.gain.setValueAtTime(8, now);
@@ -2624,189 +3712,278 @@
                     break;
                 }
                 case 'chicken': {
-                    // 꼬끼오! - Three ascending chirps: ko-ki-o!
+                    // 꼬끼오! - Three ascending chirps, gentle and clear
+                    const dest = getAudioDest();
+                    // "꼬" - short low
                     const o1 = ctx.createOscillator(); const g1 = ctx.createGain();
                     o1.type = 'square';
-                    o1.frequency.setValueAtTime(350, now);
-                    o1.frequency.linearRampToValueAtTime(550, now + 0.08);
-                    o1.frequency.linearRampToValueAtTime(400, now + 0.14);
+                    o1.frequency.setValueAtTime(380, now);
+                    o1.frequency.linearRampToValueAtTime(520, now + 0.065);
+                    o1.frequency.linearRampToValueAtTime(420, now + 0.14);
                     g1.gain.setValueAtTime(0.001, now);
-                    g1.gain.linearRampToValueAtTime(0.32, now + 0.02);
+                    g1.gain.linearRampToValueAtTime(0.28, now + 0.02);
                     g1.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
-                    const f1 = ctx.createBiquadFilter(); f1.type = 'lowpass'; f1.frequency.setValueAtTime(1800, now);
-                    o1.connect(f1); f1.connect(g1); g1.connect(ctx.destination);
+                    const f1 = ctx.createBiquadFilter(); f1.type = 'lowpass'; f1.frequency.setValueAtTime(1600, now);
+                    o1.connect(f1); f1.connect(g1); g1.connect(dest);
                     o1.start(now); o1.stop(now + 0.14);
-                    // ki
+                    // "끼" - clear high
                     const o2 = ctx.createOscillator(); const g2 = ctx.createGain();
                     o2.type = 'square';
-                    o2.frequency.setValueAtTime(650, now + 0.18);
-                    o2.frequency.linearRampToValueAtTime(900, now + 0.26);
-                    o2.frequency.linearRampToValueAtTime(700, now + 0.32);
-                    g2.gain.setValueAtTime(0.001, now + 0.18);
-                    g2.gain.linearRampToValueAtTime(0.35, now + 0.2);
-                    g2.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
-                    const f2 = ctx.createBiquadFilter(); f2.type = 'lowpass'; f2.frequency.setValueAtTime(2000, now + 0.18);
-                    o2.connect(f2); f2.connect(g2); g2.connect(ctx.destination);
-                    o2.start(now + 0.18); o2.stop(now + 0.32);
-                    // o~!
+                    o2.frequency.setValueAtTime(700, now + 0.21);
+                    o2.frequency.linearRampToValueAtTime(950, now + 0.27);
+                    o2.frequency.linearRampToValueAtTime(750, now + 0.36);
+                    g2.gain.setValueAtTime(0.001, now + 0.21);
+                    g2.gain.linearRampToValueAtTime(0.30, now + 0.23);
+                    g2.gain.exponentialRampToValueAtTime(0.001, now + 0.36);
+                    const f2 = ctx.createBiquadFilter(); f2.type = 'lowpass'; f2.frequency.setValueAtTime(2000, now + 0.21);
+                    o2.connect(f2); f2.connect(g2); g2.connect(dest);
+                    o2.start(now + 0.21); o2.stop(now + 0.36);
+                    // "오~!" - long slide down
                     const o3 = ctx.createOscillator(); const g3 = ctx.createGain();
                     o3.type = 'square';
-                    o3.frequency.setValueAtTime(850, now + 0.38);
-                    o3.frequency.linearRampToValueAtTime(1000, now + 0.55);
-                    o3.frequency.linearRampToValueAtTime(650, now + 1.2);
-                    g3.gain.setValueAtTime(0.001, now + 0.38);
-                    g3.gain.linearRampToValueAtTime(0.35, now + 0.4);
-                    g3.gain.setValueAtTime(0.32, now + 0.7);
-                    g3.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
-                    const f3 = ctx.createBiquadFilter(); f3.type = 'bandpass'; f3.frequency.setValueAtTime(950, now + 0.38); f3.Q.setValueAtTime(1.2, now + 0.38);
-                    o3.connect(f3); f3.connect(g3); g3.connect(ctx.destination);
-                    o3.start(now + 0.38); o3.stop(now + 1.2);
+                    o3.frequency.setValueAtTime(900, now + 0.43);
+                    o3.frequency.linearRampToValueAtTime(1050, now + 0.56);
+                    o3.frequency.linearRampToValueAtTime(700, now + 1.1);
+                    g3.gain.setValueAtTime(0.001, now + 0.43);
+                    g3.gain.linearRampToValueAtTime(0.30, now + 0.45);
+                    g3.gain.setValueAtTime(0.26, now + 0.8);
+                    g3.gain.exponentialRampToValueAtTime(0.001, now + 1.1);
+                    const f3 = ctx.createBiquadFilter(); f3.type = 'bandpass'; f3.frequency.setValueAtTime(950, now + 0.43); f3.Q.setValueAtTime(1.5, now + 0.43);
+                    o3.connect(f3); f3.connect(g3); g3.connect(dest);
+                    o3.start(now + 0.43); o3.stop(now + 1.1);
                     break;
                 }
                 case 'duck': {
-                    // 꽥꽥! - Two flat nasal quacks
+                    // 꽥꽥! - Two clear nasal quacks, softer
+                    const dest = getAudioDest();
                     for (let i = 0; i < 2; i++) {
-                        const t = now + i * 0.3;
+                        const t = now + i * 0.42;
                         const o = ctx.createOscillator(); const g = ctx.createGain();
                         const bp = ctx.createBiquadFilter();
                         o.type = 'sawtooth';
                         o.frequency.setValueAtTime(220, t);
-                        o.frequency.linearRampToValueAtTime(350, t + 0.03);
-                        o.frequency.linearRampToValueAtTime(260, t + 0.09);
-                        o.frequency.linearRampToValueAtTime(200, t + 0.18);
-                        bp.type = 'bandpass'; bp.frequency.setValueAtTime(800, t); bp.Q.setValueAtTime(5, t);
+                        o.frequency.linearRampToValueAtTime(400, t + 0.04);
+                        o.frequency.linearRampToValueAtTime(300, t + 0.11);
+                        o.frequency.linearRampToValueAtTime(200, t + 0.25);
+                        bp.type = 'bandpass'; bp.frequency.setValueAtTime(700, t); bp.Q.setValueAtTime(5, t);
                         g.gain.setValueAtTime(0.001, t);
                         g.gain.linearRampToValueAtTime(0.35, t + 0.02);
-                        g.gain.setValueAtTime(0.32, t + 0.08);
-                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
-                        o.connect(bp); bp.connect(g); g.connect(ctx.destination);
-                        o.start(t); o.stop(t + 0.18);
-                        // Extra nasal layer
+                        g.gain.setValueAtTime(0.30, t + 0.08);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+                        o.connect(bp); bp.connect(g); g.connect(dest);
+                        o.start(t); o.stop(t + 0.25);
+                        // Nasal overtone
                         const o2 = ctx.createOscillator(); const g2 = ctx.createGain();
+                        const bp2 = ctx.createBiquadFilter();
                         o2.type = 'sawtooth';
-                        o2.frequency.setValueAtTime(440, t);
-                        o2.frequency.linearRampToValueAtTime(700, t + 0.03);
-                        o2.frequency.linearRampToValueAtTime(500, t + 0.18);
+                        o2.frequency.setValueAtTime(500, t);
+                        o2.frequency.linearRampToValueAtTime(850, t + 0.04);
+                        o2.frequency.linearRampToValueAtTime(650, t + 0.22);
+                        bp2.type = 'bandpass'; bp2.frequency.setValueAtTime(1400, t); bp2.Q.setValueAtTime(4, t);
                         g2.gain.setValueAtTime(0.001, t);
-                        g2.gain.linearRampToValueAtTime(0.12, t + 0.02);
-                        g2.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
-                        o2.connect(g2); g2.connect(ctx.destination);
-                        o2.start(t); o2.stop(t + 0.16);
+                        g2.gain.linearRampToValueAtTime(0.18, t + 0.02);
+                        g2.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+                        o2.connect(bp2); bp2.connect(g2); g2.connect(dest);
+                        o2.start(t); o2.stop(t + 0.22);
                     }
                     break;
                 }
                 case 'sheep': {
-                    // 메에~ - Bleating with strong trembling vibrato
+                    // 메에~ - Classic bleating with wobble vibrato, softer
+                    const dest = getAudioDest();
+                    const dur = 0.85;
                     const o = ctx.createOscillator(); const g = ctx.createGain();
                     const flt = ctx.createBiquadFilter();
                     o.type = 'sawtooth';
-                    o.frequency.setValueAtTime(220, now);
-                    o.frequency.linearRampToValueAtTime(340, now + 0.08);
-                    o.frequency.setValueAtTime(330, now + 0.3);
-                    o.frequency.linearRampToValueAtTime(280, now + 0.7);
-                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(800, now);
+                    o.frequency.setValueAtTime(240, now);
+                    o.frequency.linearRampToValueAtTime(360, now + 0.06);
+                    o.frequency.setValueAtTime(345, now + 0.30);
+                    o.frequency.linearRampToValueAtTime(295, now + dur);
+                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(850, now);
                     g.gain.setValueAtTime(0.001, now);
-                    g.gain.linearRampToValueAtTime(0.32, now + 0.04);
-                    g.gain.setValueAtTime(0.30, now + 0.3);
-                    g.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
-                    o.connect(flt); flt.connect(g); g.connect(ctx.destination);
-                    o.start(now); o.stop(now + 0.7);
-                    // Strong vibrato for bleating character
+                    g.gain.linearRampToValueAtTime(0.30, now + 0.03);
+                    g.gain.setValueAtTime(0.26, now + 0.28);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+                    o.connect(flt); flt.connect(g); g.connect(dest);
+                    o.start(now); o.stop(now + dur);
+                    // Wobble vibrato for sheep character
                     const v = ctx.createOscillator(); const vg = ctx.createGain();
-                    v.frequency.setValueAtTime(9, now); vg.gain.setValueAtTime(28, now);
+                    v.frequency.setValueAtTime(9, now); vg.gain.setValueAtTime(40, now);
                     v.connect(vg); vg.connect(o.frequency);
-                    v.start(now); v.stop(now + 0.7);
+                    v.start(now); v.stop(now + dur);
+                    // "에" vowel resonance
+                    const o2 = ctx.createOscillator(); const g2 = ctx.createGain();
+                    o2.type = 'sine';
+                    o2.frequency.setValueAtTime(480, now);
+                    o2.frequency.linearRampToValueAtTime(720, now + 0.06);
+                    o2.frequency.linearRampToValueAtTime(600, now + dur);
+                    g2.gain.setValueAtTime(0.001, now);
+                    g2.gain.linearRampToValueAtTime(0.10, now + 0.03);
+                    g2.gain.exponentialRampToValueAtTime(0.001, now + dur);
+                    o2.connect(g2); g2.connect(dest);
+                    o2.start(now); o2.stop(now + dur);
+                    const v2 = ctx.createOscillator(); const vg2 = ctx.createGain();
+                    v2.frequency.setValueAtTime(9.3, now); vg2.gain.setValueAtTime(42, now);
+                    v2.connect(vg2); vg2.connect(o2.frequency);
+                    v2.start(now); v2.stop(now + dur);
                     break;
                 }
                 case 'pig': {
-                    // 꿀꿀! - Two low snorty grunts with noise
+                    // 꿀꿀! - Two gentle grunts
+                    const dest = getAudioDest();
                     for (let i = 0; i < 2; i++) {
-                        const t = now + i * 0.4;
+                        const t = now + i * 0.48;
                         const o = ctx.createOscillator(); const g = ctx.createGain();
                         const flt = ctx.createBiquadFilter();
                         o.type = 'sawtooth';
-                        o.frequency.setValueAtTime(110, t);
-                        o.frequency.linearRampToValueAtTime(180, t + 0.04);
-                        o.frequency.linearRampToValueAtTime(130, t + 0.12);
-                        o.frequency.linearRampToValueAtTime(100, t + 0.22);
-                        flt.type = 'lowpass'; flt.frequency.setValueAtTime(500, t); flt.Q.setValueAtTime(1, t);
+                        o.frequency.setValueAtTime(105, t);
+                        o.frequency.linearRampToValueAtTime(175, t + 0.04);
+                        o.frequency.linearRampToValueAtTime(125, t + 0.14);
+                        o.frequency.linearRampToValueAtTime(88, t + 0.26);
+                        flt.type = 'lowpass'; flt.frequency.setValueAtTime(460, t); flt.Q.setValueAtTime(1.2, t);
                         g.gain.setValueAtTime(0.001, t);
-                        g.gain.linearRampToValueAtTime(0.36, t + 0.02);
-                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
-                        o.connect(flt); flt.connect(g); g.connect(ctx.destination);
-                        o.start(t); o.stop(t + 0.22);
-                        // Snort noise burst
-                        const bufSize = ctx.sampleRate * 0.06;
+                        g.gain.linearRampToValueAtTime(0.35, t + 0.02);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.26);
+                        o.connect(flt); flt.connect(g); g.connect(dest);
+                        o.start(t); o.stop(t + 0.26);
+                        // Soft snort
+                        const bufSize = ctx.sampleRate * 0.07;
                         const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
                         const d = buf.getChannelData(0);
-                        for (let j = 0; j < bufSize; j++) d[j] = (Math.random() * 2 - 1) * (1 - j / bufSize);
+                        for (let j = 0; j < bufSize; j++) d[j] = (Math.random() * 2 - 1) * (1 - j / bufSize) * 0.5;
                         const ns = ctx.createBufferSource(); ns.buffer = buf;
                         const ng = ctx.createGain();
                         const nf = ctx.createBiquadFilter(); nf.type = 'lowpass'; nf.frequency.setValueAtTime(400, t);
-                        ng.gain.setValueAtTime(0.08, t);
-                        ng.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
-                        ns.connect(nf); nf.connect(ng); ng.connect(ctx.destination);
-                        ns.start(t); ns.stop(t + 0.06);
+                        ng.gain.setValueAtTime(0.10, t);
+                        ng.gain.exponentialRampToValueAtTime(0.001, t + 0.07);
+                        ns.connect(nf); nf.connect(ng); ng.connect(dest);
+                        ns.start(t); ns.stop(t + 0.07);
                     }
                     break;
                 }
                 case 'horse': {
-                    // 히힝~ - High whinny that rises then falls
+                    // 히힝~ - Gentle whinny
+                    const dest = getAudioDest();
                     const dur = 1.3;
                     const o = ctx.createOscillator();
                     const g = ctx.createGain();
                     o.type = 'sine';
-                    o.frequency.setValueAtTime(300, now);
-                    o.frequency.linearRampToValueAtTime(700, now + 0.2);
-                    o.frequency.setValueAtTime(750, now + 0.4);
-                    o.frequency.linearRampToValueAtTime(500, now + 0.8);
-                    o.frequency.linearRampToValueAtTime(350, now + dur);
+                    o.frequency.setValueAtTime(350, now);
+                    o.frequency.linearRampToValueAtTime(720, now + 0.14);
+                    o.frequency.setValueAtTime(760, now + 0.32);
+                    o.frequency.linearRampToValueAtTime(530, now + 0.78);
+                    o.frequency.linearRampToValueAtTime(370, now + dur);
                     g.gain.setValueAtTime(0.001, now);
-                    g.gain.linearRampToValueAtTime(0.38, now + 0.06);
-                    g.gain.setValueAtTime(0.36, now + 0.4);
+                    g.gain.linearRampToValueAtTime(0.32, now + 0.05);
+                    g.gain.setValueAtTime(0.30, now + 0.32);
                     g.gain.exponentialRampToValueAtTime(0.001, now + dur);
-                    o.connect(g); g.connect(ctx.destination);
+                    o.connect(g); g.connect(dest);
                     o.start(now); o.stop(now + dur);
+                    // Harmonic
+                    const o2 = ctx.createOscillator();
+                    const g2 = ctx.createGain();
+                    o2.type = 'sine';
+                    o2.frequency.setValueAtTime(700, now);
+                    o2.frequency.linearRampToValueAtTime(1440, now + 0.14);
+                    o2.frequency.linearRampToValueAtTime(1060, now + 0.75);
+                    o2.frequency.linearRampToValueAtTime(740, now + dur);
+                    g2.gain.setValueAtTime(0.001, now);
+                    g2.gain.linearRampToValueAtTime(0.12, now + 0.05);
+                    g2.gain.exponentialRampToValueAtTime(0.001, now + dur * 0.8);
+                    o2.connect(g2); g2.connect(dest);
+                    o2.start(now); o2.stop(now + dur);
+                    // Vibrato
                     const v = ctx.createOscillator();
                     const vg = ctx.createGain();
-                    v.frequency.setValueAtTime(6, now); vg.gain.setValueAtTime(14, now);
+                    v.frequency.setValueAtTime(6, now); vg.gain.setValueAtTime(18, now);
                     v.connect(vg); vg.connect(o.frequency);
                     v.start(now); v.stop(now + dur);
                     break;
                 }
                 case 'elephant': {
-                    // 뿌우~ - Loud trumpet blast through trunk
+                    // 뿌우~ - Trumpet blast, gentler
+                    const dest = getAudioDest();
                     const dur = 1.5;
                     const o = ctx.createOscillator();
                     const g = ctx.createGain();
                     const flt = ctx.createBiquadFilter();
                     o.type = 'sawtooth';
-                    o.frequency.setValueAtTime(140, now);
-                    o.frequency.linearRampToValueAtTime(350, now + 0.3);
-                    o.frequency.setValueAtTime(380, now + 0.7);
-                    o.frequency.linearRampToValueAtTime(220, now + 1.2);
-                    o.frequency.linearRampToValueAtTime(150, now + dur);
-                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(700, now); flt.Q.setValueAtTime(0.8, now);
+                    o.frequency.setValueAtTime(160, now);
+                    o.frequency.linearRampToValueAtTime(360, now + 0.22);
+                    o.frequency.setValueAtTime(380, now + 0.60);
+                    o.frequency.linearRampToValueAtTime(240, now + 1.1);
+                    o.frequency.linearRampToValueAtTime(155, now + dur);
+                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(700, now); flt.Q.setValueAtTime(1, now);
                     g.gain.setValueAtTime(0.001, now);
-                    g.gain.linearRampToValueAtTime(0.42, now + 0.15);
-                    g.gain.setValueAtTime(0.40, now + 0.7);
+                    g.gain.linearRampToValueAtTime(0.38, now + 0.1);
+                    g.gain.setValueAtTime(0.35, now + 0.60);
                     g.gain.exponentialRampToValueAtTime(0.001, now + dur);
-                    o.connect(flt); flt.connect(g); g.connect(ctx.destination);
+                    o.connect(flt); flt.connect(g); g.connect(dest);
                     o.start(now); o.stop(now + dur);
-                    // Brass overtone for trumpet effect
+                    // Brass overtone
                     const o2 = ctx.createOscillator();
                     const g2 = ctx.createGain();
                     const f2 = ctx.createBiquadFilter();
                     o2.type = 'square';
-                    o2.frequency.setValueAtTime(280, now + 0.1);
-                    o2.frequency.linearRampToValueAtTime(700, now + 0.3);
-                    o2.frequency.linearRampToValueAtTime(400, now + 1.1);
-                    f2.type = 'lowpass'; f2.frequency.setValueAtTime(1200, now); f2.Q.setValueAtTime(2, now);
-                    g2.gain.setValueAtTime(0.001, now + 0.1);
-                    g2.gain.linearRampToValueAtTime(0.15, now + 0.2);
-                    g2.gain.exponentialRampToValueAtTime(0.001, now + 1.1);
-                    o2.connect(f2); f2.connect(g2); g2.connect(ctx.destination);
-                    o2.start(now + 0.1); o2.stop(now + 1.1);
+                    o2.frequency.setValueAtTime(320, now + 0.08);
+                    o2.frequency.linearRampToValueAtTime(720, now + 0.22);
+                    o2.frequency.linearRampToValueAtTime(430, now + 1.0);
+                    f2.type = 'lowpass'; f2.frequency.setValueAtTime(1200, now); f2.Q.setValueAtTime(3, now);
+                    g2.gain.setValueAtTime(0.001, now + 0.08);
+                    g2.gain.linearRampToValueAtTime(0.16, now + 0.16);
+                    g2.gain.exponentialRampToValueAtTime(0.001, now + 1.0);
+                    o2.connect(f2); f2.connect(g2); g2.connect(dest);
+                    o2.start(now + 0.08); o2.stop(now + 1.0);
+                    // Soft "뿌" attack
+                    const nBuf = ctx.createBuffer(1, ctx.sampleRate * 0.04, ctx.sampleRate);
+                    const nData = nBuf.getChannelData(0);
+                    for (let j = 0; j < nData.length; j++) nData[j] = (Math.random() * 2 - 1) * (1 - j / nData.length) * 0.7;
+                    const ns = ctx.createBufferSource(); ns.buffer = nBuf;
+                    const ng = ctx.createGain();
+                    ng.gain.setValueAtTime(0.12, now); ng.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+                    ns.connect(ng); ng.connect(dest);
+                    ns.start(now); ns.stop(now + 0.04);
+                    break;
+                }
+                case 'frog': {
+                    // 개굴개굴! - Two croaks, gentler
+                    const dest = getAudioDest();
+                    for (let i = 0; i < 2; i++) {
+                        const t = now + i * 0.45;
+                        const o = ctx.createOscillator();
+                        const g = ctx.createGain();
+                        const flt = ctx.createBiquadFilter();
+                        o.type = 'square';
+                        o.frequency.setValueAtTime(185, t);
+                        o.frequency.linearRampToValueAtTime(340, t + 0.04);
+                        o.frequency.setValueAtTime(310, t + 0.08);
+                        o.frequency.linearRampToValueAtTime(150, t + 0.24);
+                        flt.type = 'bandpass'; flt.frequency.setValueAtTime(450, t); flt.Q.setValueAtTime(3.5, t);
+                        g.gain.setValueAtTime(0.001, t);
+                        g.gain.linearRampToValueAtTime(0.32, t + 0.015);
+                        g.gain.setValueAtTime(0.28, t + 0.08);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.24);
+                        o.connect(flt); flt.connect(g); g.connect(dest);
+                        o.start(t); o.stop(t + 0.24);
+                        // Resonant body
+                        const o2 = ctx.createOscillator();
+                        const g2 = ctx.createGain();
+                        o2.type = 'sine';
+                        o2.frequency.setValueAtTime(120, t + 0.05);
+                        o2.frequency.linearRampToValueAtTime(82, t + 0.21);
+                        g2.gain.setValueAtTime(0.001, t + 0.05);
+                        g2.gain.linearRampToValueAtTime(0.18, t + 0.07);
+                        g2.gain.exponentialRampToValueAtTime(0.001, t + 0.21);
+                        o2.connect(g2); g2.connect(dest);
+                        o2.start(t + 0.05); o2.stop(t + 0.21);
+                        // Gentle AM modulation
+                        const am = ctx.createOscillator();
+                        const amG = ctx.createGain();
+                        am.frequency.setValueAtTime(22, t);
+                        amG.gain.setValueAtTime(0.22, t);
+                        am.connect(amG); amG.connect(g.gain);
+                        am.start(t); am.stop(t + 0.24);
+                    }
                     break;
                 }
             }
@@ -2818,19 +3995,38 @@
             if (!ctx) return;
             const now = ctx.currentTime;
 
+            // Celebratory ding ding ding - 3 ascending tones
+            const dingFreqs = [800, 1000, 1200];
+            dingFreqs.forEach((freq, i) => {
+                const t = now + i * 0.15;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, t);
+                gain.gain.setValueAtTime(0.001, t);
+                gain.gain.linearRampToValueAtTime(0.35, t + 0.03);
+                gain.gain.setValueAtTime(0.32, t + 0.08);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+                osc.connect(gain);
+                gain.connect(getAudioDest());
+                osc.start(t);
+                osc.stop(t + 0.22);
+            });
+
+            // Extended celebratory notes
             const notes = [523, 659, 784, 1047, 1319];
             notes.forEach((freq, i) => {
-                const t = now + i * 0.08;
+                const t = now + 0.5 + i * 0.08;
                 const osc = ctx.createOscillator();
                 const gain = ctx.createGain();
                 osc.type = 'sine';
                 osc.frequency.setValueAtTime(freq, t);
                 gain.gain.setValueAtTime(0, t);
-                gain.gain.linearRampToValueAtTime(0.25, t + 0.02);
-                gain.gain.setValueAtTime(0.25, t + 0.1);
+                gain.gain.linearRampToValueAtTime(0.2, t + 0.02);
+                gain.gain.setValueAtTime(0.2, t + 0.1);
                 gain.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
                 osc.connect(gain);
-                gain.connect(ctx.destination);
+                gain.connect(getAudioDest());
                 osc.start(t);
                 osc.stop(t + 0.3);
             });
@@ -2842,17 +4038,22 @@
             if (!ctx) return;
             const now = ctx.currentTime;
 
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(150, now);
-            osc.frequency.linearRampToValueAtTime(100, now + 0.3);
-            gain.gain.setValueAtTime(0.25, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start(now);
-            osc.stop(now + 0.3);
+            // Two descending tones: "boo-boop"
+            [300, 200].forEach((freq, i) => {
+                const t = now + i * 0.15;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, t);
+                osc.frequency.linearRampToValueAtTime(freq * 0.7, t + 0.15);
+                gain.gain.setValueAtTime(0, t);
+                gain.gain.linearRampToValueAtTime(0.25, t + 0.02);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+                osc.connect(gain);
+                gain.connect(getAudioDest());
+                osc.start(t);
+                osc.stop(t + 0.18);
+            });
         }
 
         function cleanupAnimalGame() {
@@ -2862,6 +4063,16 @@
                 clearTimeout(AnimalGame.advanceTimer);
                 AnimalGame.advanceTimer = null;
             }
+
+            // Restore home button, hide pause button
+            const homeBtn = document.getElementById('home-btn-2');
+            if (homeBtn) homeBtn.style.display = 'flex';
+            const pauseBtn = document.getElementById('animal-pause-btn');
+            if (pauseBtn) { pauseBtn.style.display = 'none'; pauseBtn.textContent = '⏸️'; }
+
+            // Remove pause overlay if exists
+            const pauseOverlay = document.querySelector('.animal-pause-overlay');
+            if (pauseOverlay) pauseOverlay.remove();
 
             const area = document.getElementById('animal-area');
             if (area) area.innerHTML = '';
@@ -2874,7 +4085,8 @@
             canvases: { outline: null, draw: null },
             canvasCtx: { outline: null, draw: null },
             running: false,
-            brushSize: 8
+            brushSize: 8,
+            eraserMode: false
         };
 
         function initCanvasGame() {
@@ -2891,7 +4103,7 @@
             const shapes = [
                 { id: 'fish', emoji: '🐟', name: '물고기' },
                 { id: 'car', emoji: '🚗', name: '자동차' },
-                { id: 'house', emoji: '🏠', name: '집' },
+                { id: 'dino', emoji: '🦕', name: '공룡' },
                 { id: 'butterfly', emoji: '🦋', name: '나비' }
             ];
 
@@ -2902,8 +4114,8 @@
                     <div class="sketch-option-emoji">${shape.emoji}</div>
                     <div class="sketch-option-text">${shape.name}</div>
                 `;
-                option.onclick = () => startSketchDrawing(shape.id);
-                option.ontouchend = (e) => { e.preventDefault(); startSketchDrawing(shape.id); };
+                option.onclick = () => { haptic('light'); startSketchDrawing(shape.id); };
+                option.ontouchend = (e) => { e.preventDefault(); haptic('light'); startSketchDrawing(shape.id); };
                 selection.appendChild(option);
             });
 
@@ -2917,9 +4129,15 @@
             const overlay = document.getElementById('sketch-start-overlay');
             if (overlay) overlay.remove();
 
+            // Hide home button, show pause button during drawing
+            const homeBtn = document.getElementById('home-btn-3');
+            if (homeBtn) homeBtn.style.display = 'none';
+            const pauseBtn = document.getElementById('canvas-pause-btn');
+            if (pauseBtn) pauseBtn.style.display = 'flex';
 
             CanvasGame.currentShape = shapeId;
             CanvasGame.running = true;
+            CanvasGame.paused = false;
 
             const area = document.getElementById('canvas-area');
             area.innerHTML = '';
@@ -2970,6 +4188,24 @@
                 toolbar.appendChild(brushBtn);
             });
 
+            // Eraser
+            const eraserDivider = document.createElement('div');
+            eraserDivider.className = 'sketch-divider';
+            toolbar.appendChild(eraserDivider);
+
+            const eraserBtn = document.createElement('button');
+            eraserBtn.className = 'sketch-brush-btn';
+            eraserBtn.textContent = '🧹';
+            eraserBtn.style.fontSize = 'clamp(1.2rem, 3vw, 1.6rem)';
+            eraserBtn.style.minHeight = '48px';
+            eraserBtn.style.minWidth = '48px';
+            eraserBtn.onclick = () => {
+                CanvasGame.eraserMode = true;
+                document.querySelectorAll('.sketch-color-btn').forEach(b => b.classList.remove('active'));
+                eraserBtn.classList.add('active');
+            };
+            toolbar.appendChild(eraserBtn);
+
             toolbar.innerHTML += '<div style="flex: 1;"></div>';
 
             const actionBtns = document.createElement('div');
@@ -2986,7 +4222,7 @@
             magicBtn.className = 'sketch-action-btn sketch-magic-btn';
             magicBtn.textContent = '완성! 🎬';
             magicBtn.style.minHeight = '48px';
-            magicBtn.onclick = startAquarium;
+            magicBtn.onclick = () => { haptic('success'); startAquarium(); };
             actionBtns.appendChild(magicBtn);
 
             toolbar.appendChild(actionBtns);
@@ -3041,8 +4277,8 @@
                 case 'car':
                     drawCarOutline(ctx);
                     break;
-                case 'house':
-                    drawHouseOutline(ctx);
+                case 'dino':
+                    drawDinoOutline(ctx);
                     break;
                 case 'butterfly':
                     drawButterflyOutline(ctx);
@@ -3058,6 +4294,21 @@
 
         function drawFishOutline(ctx) {
             // Body - smooth fish shape with bezier curves
+            // Subtle fill hint
+            ctx.save();
+            ctx.globalAlpha = 0.06;
+            ctx.fillStyle = '#4FC3F7';
+            ctx.beginPath();
+            ctx.moveTo(75, 0);
+            ctx.bezierCurveTo(80, -30, 60, -55, 30, -52);
+            ctx.bezierCurveTo(0, -50, -40, -45, -65, -25);
+            ctx.bezierCurveTo(-80, -15, -80, 15, -65, 25);
+            ctx.bezierCurveTo(-40, 45, 0, 50, 30, 52);
+            ctx.bezierCurveTo(60, 55, 80, 30, 75, 0);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+
             ctx.beginPath();
             ctx.moveTo(75, 0);
             ctx.bezierCurveTo(80, -30, 60, -55, 30, -52);
@@ -3153,6 +4404,40 @@
 
         function drawCarOutline(ctx) {
             // Main body - rounded sedan shape
+            // Subtle fill hint
+            ctx.save();
+            ctx.globalAlpha = 0.06;
+            ctx.fillStyle = '#FF6F00';
+            ctx.beginPath();
+            ctx.moveTo(-95, 5);
+            ctx.quadraticCurveTo(-100, -5, -95, -15);
+            ctx.lineTo(-90, -28);
+            ctx.quadraticCurveTo(-88, -35, -78, -35);
+            ctx.lineTo(-42, -35);
+            // Roof curve
+            ctx.lineTo(-30, -72);
+            ctx.quadraticCurveTo(-28, -78, -22, -78);
+            ctx.lineTo(38, -78);
+            ctx.quadraticCurveTo(44, -78, 46, -72);
+            ctx.lineTo(62, -35);
+            ctx.lineTo(82, -35);
+            ctx.quadraticCurveTo(100, -35, 102, -15);
+            ctx.lineTo(102, 5);
+            ctx.quadraticCurveTo(102, 18, 92, 22);
+            ctx.lineTo(78, 22);
+            // Wheel arch front
+            ctx.quadraticCurveTo(75, 35, 60, 38);
+            ctx.quadraticCurveTo(45, 35, 42, 22);
+            ctx.lineTo(-28, 22);
+            // Wheel arch rear
+            ctx.quadraticCurveTo(-32, 35, -47, 38);
+            ctx.quadraticCurveTo(-62, 35, -65, 22);
+            ctx.lineTo(-82, 22);
+            ctx.quadraticCurveTo(-95, 18, -95, 5);
+            ctx.closePath();
+            ctx.fill();
+            ctx.restore();
+
             ctx.beginPath();
             ctx.moveTo(-95, 5);
             ctx.quadraticCurveTo(-100, -5, -95, -15);
@@ -3285,179 +4570,135 @@
             ctx.stroke();
         }
 
-        function drawHouseOutline(ctx) {
-            // Main roof with overhang
+        function drawDinoOutline(ctx) {
+            // Cute brontosaurus/sauropod dinosaur outline
+            // Body - large oval (subtle fill hint)
+            ctx.save();
+            ctx.globalAlpha = 0.06;
+            ctx.fillStyle = '#90EE90';
             ctx.beginPath();
-            ctx.moveTo(0, -95);
-            ctx.lineTo(-100, -22);
-            ctx.lineTo(-95, -18);
-            ctx.lineTo(95, -18);
-            ctx.lineTo(100, -22);
-            ctx.closePath();
+            ctx.ellipse(20, 25, 55, 32, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            // Long neck rising from body
+            ctx.beginPath();
+            ctx.moveTo(-20, 20);
+            ctx.bezierCurveTo(-30, -10, -45, -40, -50, -65);
+            ctx.bezierCurveTo(-52, -75, -45, -85, -35, -85);
+            // Head
+            ctx.bezierCurveTo(-25, -85, -15, -80, -12, -72);
+            ctx.bezierCurveTo(-10, -68, -15, -62, -22, -60);
+            // Back of neck down
+            ctx.bezierCurveTo(-30, -55, -35, -40, -30, -20);
+            ctx.bezierCurveTo(-25, -5, -15, 5, 0, 10);
             ctx.stroke();
-            // Roof ridge detail
+            // Body - large oval
             ctx.beginPath();
-            ctx.moveTo(-8, -88);
-            ctx.lineTo(8, -88);
+            ctx.ellipse(20, 25, 55, 32, 0, 0, Math.PI * 2);
             ctx.stroke();
-            // Walls with slight 3D effect
+            // Tail - long curving
             ctx.beginPath();
-            ctx.rect(-75, -18, 150, 105);
+            ctx.moveTo(70, 15);
+            ctx.bezierCurveTo(85, 8, 100, -5, 115, -15);
+            ctx.bezierCurveTo(120, -18, 125, -15, 122, -10);
+            ctx.bezierCurveTo(115, 0, 100, 10, 85, 20);
             ctx.stroke();
-            // Foundation line
+            // Front legs
             ctx.beginPath();
-            ctx.moveTo(-80, 87);
-            ctx.lineTo(80, 87);
-            ctx.stroke();
-            // Door with arch top
-            ctx.beginPath();
-            ctx.moveTo(-16, 87);
-            ctx.lineTo(-16, 28);
-            ctx.quadraticCurveTo(-16, 15, 0, 15);
-            ctx.quadraticCurveTo(16, 15, 16, 28);
-            ctx.lineTo(16, 87);
-            ctx.stroke();
-            // Door panels
-            ctx.beginPath();
-            ctx.rect(-12, 35, 10, 18);
+            ctx.moveTo(-5, 50);
+            ctx.lineTo(-8, 78);
+            ctx.bezierCurveTo(-10, 82, -3, 84, 0, 80);
+            ctx.lineTo(2, 78);
             ctx.stroke();
             ctx.beginPath();
-            ctx.rect(2, 35, 10, 18);
+            ctx.moveTo(8, 52);
+            ctx.lineTo(5, 78);
+            ctx.bezierCurveTo(3, 82, 10, 84, 13, 80);
+            ctx.lineTo(15, 78);
+            ctx.stroke();
+            // Back legs
+            ctx.beginPath();
+            ctx.moveTo(42, 52);
+            ctx.lineTo(38, 78);
+            ctx.bezierCurveTo(36, 82, 43, 84, 46, 80);
+            ctx.lineTo(48, 78);
             ctx.stroke();
             ctx.beginPath();
-            ctx.rect(-12, 58, 10, 22);
+            ctx.moveTo(55, 50);
+            ctx.lineTo(52, 78);
+            ctx.bezierCurveTo(50, 82, 57, 84, 60, 80);
+            ctx.lineTo(62, 78);
+            ctx.stroke();
+            // Eye
+            ctx.beginPath();
+            ctx.arc(-30, -75, 5, 0, Math.PI * 2);
             ctx.stroke();
             ctx.beginPath();
-            ctx.rect(2, 58, 10, 22);
-            ctx.stroke();
-            // Door knob
-            ctx.beginPath();
-            ctx.arc(11, 55, 3, 0, Math.PI * 2);
+            ctx.arc(-28, -75, 2.5, 0, Math.PI * 2);
             ctx.fillStyle = 'rgba(100,100,100,0.25)';
             ctx.fill();
-            // Door step
+            // Mouth - cute smile
             ctx.beginPath();
-            ctx.rect(-20, 83, 40, 4);
+            ctx.moveTo(-15, -68);
+            ctx.bezierCurveTo(-17, -63, -22, -60, -25, -62);
             ctx.stroke();
-            // Left window with shutters
-            ctx.beginPath();
-            ctx.rect(-62, 5, 32, 28);
-            ctx.stroke();
-            // Window cross
-            ctx.beginPath();
-            ctx.moveTo(-46, 5);
-            ctx.lineTo(-46, 33);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(-62, 19);
-            ctx.lineTo(-30, 19);
-            ctx.stroke();
-            // Left shutter
-            ctx.beginPath();
-            ctx.rect(-68, 3, 5, 32);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.rect(-29, 3, 5, 32);
-            ctx.stroke();
-            // Window sill
-            ctx.beginPath();
-            ctx.moveTo(-64, 35);
-            ctx.lineTo(-28, 35);
-            ctx.stroke();
-            // Right window with shutters
-            ctx.beginPath();
-            ctx.rect(30, 5, 32, 28);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(46, 5);
-            ctx.lineTo(46, 33);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(30, 19);
-            ctx.lineTo(62, 19);
-            ctx.stroke();
-            // Right shutters
-            ctx.beginPath();
-            ctx.rect(24, 3, 5, 32);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.rect(63, 3, 5, 32);
-            ctx.stroke();
-            // Window sill
-            ctx.beginPath();
-            ctx.moveTo(28, 35);
-            ctx.lineTo(64, 35);
-            ctx.stroke();
-            // Chimney with cap
-            ctx.beginPath();
-            ctx.moveTo(42, -80);
-            ctx.lineTo(42, -45);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(62, -80);
-            ctx.lineTo(62, -35);
-            ctx.stroke();
-            // Chimney cap
-            ctx.beginPath();
-            ctx.moveTo(38, -80);
-            ctx.lineTo(66, -80);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(40, -84);
-            ctx.lineTo(64, -84);
-            ctx.stroke();
-            // Chimney bricks
-            ctx.beginPath();
-            ctx.moveTo(42, -70);
-            ctx.lineTo(62, -70);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(52, -80);
-            ctx.lineTo(52, -70);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(42, -60);
-            ctx.lineTo(62, -60);
-            ctx.stroke();
-            // Smoke curls
-            ctx.beginPath();
-            ctx.moveTo(52, -86);
-            ctx.bezierCurveTo(50, -92, 55, -96, 52, -102);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(48, -84);
-            ctx.bezierCurveTo(44, -90, 50, -95, 46, -100);
-            ctx.stroke();
-            // Flower box under left window
-            ctx.beginPath();
-            ctx.rect(-60, 36, 28, 6);
-            ctx.stroke();
-            // Small flowers
-            ctx.beginPath();
-            ctx.arc(-54, 34, 3, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.arc(-46, 33, 3, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.arc(-38, 34, 3, 0, Math.PI * 2);
-            ctx.stroke();
-            // Path to door
-            ctx.beginPath();
-            ctx.moveTo(-14, 87);
-            ctx.lineTo(-20, 95);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(14, 87);
-            ctx.lineTo(20, 95);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(-16, 91);
-            ctx.lineTo(16, 91);
-            ctx.stroke();
+            // Back spines/spots
+            for (let i = 0; i < 5; i++) {
+                ctx.beginPath();
+                const sx = -10 + i * 15;
+                const sy = -2 + Math.sin(i * 0.8) * 5;
+                ctx.arc(sx, sy, 4, 0, Math.PI * 2);
+                ctx.stroke();
+            }
         }
 
         function drawButterflyOutline(ctx) {
+            // Subtle fill hint for wings
+            ctx.save();
+            ctx.globalAlpha = 0.06;
+            ctx.fillStyle = '#FF69B4';
+
+            // Upper left wing
+            ctx.beginPath();
+            ctx.moveTo(0, -5);
+            ctx.bezierCurveTo(-25, -55, -60, -85, -95, -70);
+            ctx.bezierCurveTo(-125, -55, -120, -20, -85, -10);
+            ctx.bezierCurveTo(-110, 0, -115, 35, -80, 40);
+            ctx.bezierCurveTo(-55, 44, -30, 50, -8, 30);
+            ctx.closePath();
+            ctx.fill();
+
+            // Lower left wing
+            ctx.beginPath();
+            ctx.moveTo(-8, 30);
+            ctx.bezierCurveTo(-25, 40, -55, 55, -65, 65);
+            ctx.bezierCurveTo(-75, 75, -60, 82, -45, 72);
+            ctx.bezierCurveTo(-25, 60, -10, 45, -5, 35);
+            ctx.closePath();
+            ctx.fill();
+
+            // Upper right wing
+            ctx.beginPath();
+            ctx.moveTo(0, -5);
+            ctx.bezierCurveTo(25, -55, 60, -85, 95, -70);
+            ctx.bezierCurveTo(125, -55, 120, -20, 85, -10);
+            ctx.bezierCurveTo(110, 0, 115, 35, 80, 40);
+            ctx.bezierCurveTo(55, 44, 30, 50, 8, 30);
+            ctx.closePath();
+            ctx.fill();
+
+            // Lower right wing
+            ctx.beginPath();
+            ctx.moveTo(8, 30);
+            ctx.bezierCurveTo(25, 40, 55, 55, 65, 65);
+            ctx.bezierCurveTo(75, 75, 60, 82, 45, 72);
+            ctx.bezierCurveTo(25, 60, 10, 45, 5, 35);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.restore();
+
             // Upper left wing - larger and more elaborate
             ctx.beginPath();
             ctx.moveTo(0, -5);
@@ -3636,7 +4877,13 @@
                 const x = touch.clientX - rect.left;
                 const y = touch.clientY - rect.top;
                 const ctx = CanvasGame.canvasCtx.draw;
-                ctx.strokeStyle = currentColor;
+                if (CanvasGame.eraserMode) {
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.strokeStyle = 'rgba(0,0,0,1)';
+                } else {
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.strokeStyle = currentColor;
+                }
                 ctx.lineWidth = CanvasGame.brushSize || 8;
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
@@ -3664,7 +4911,13 @@
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
                 const ctx = CanvasGame.canvasCtx.draw;
-                ctx.strokeStyle = currentColor;
+                if (CanvasGame.eraserMode) {
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.strokeStyle = 'rgba(0,0,0,1)';
+                } else {
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.strokeStyle = currentColor;
+                }
                 ctx.lineWidth = CanvasGame.brushSize || 8;
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
@@ -3682,7 +4935,9 @@
 
             window.selectColor = (color, btn) => {
                 currentColor = color;
+                CanvasGame.eraserMode = false;
                 document.querySelectorAll('.sketch-color-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.sketch-brush-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
             };
         }
@@ -3724,9 +4979,27 @@
                     @keyframes seaweedSway { 0%,100%{transform:rotate(-5deg);} 50%{transform:rotate(5deg);} }
                     @keyframes starPulse { 0%,100%{transform:scale(1);opacity:0.7;} 50%{transform:scale(1.15);opacity:1;} }
                     @keyframes sandSparkle { 0%,100%{opacity:0.3;} 50%{opacity:0.8;} }
+                    @keyframes swimRight { 0%{transform:translateX(-60px);} 100%{transform:translateX(calc(100vw + 60px));} }
+                    @keyframes shimmerPulse { 0%,100%{opacity:0.4;} 50%{opacity:0.8;} }
+                    @keyframes causticMove { 0%{background-position:0% 0%;} 50%{background-position:100% 100%;} 100%{background-position:0% 0%;} }
                 `;
                 document.head.appendChild(style);
             }
+
+            // Caustic light pattern overlay - enhanced
+            const caustics = document.createElement('div');
+            caustics.className = 'aquarium-caustics';
+            aquarium.appendChild(caustics);
+
+            // Second light ray from top-right
+            const lightRay2 = document.createElement('div');
+            lightRay2.className = 'aquarium-lightray2';
+            aquarium.appendChild(lightRay2);
+
+            // Depth fog at bottom
+            const depthFog = document.createElement('div');
+            depthFog.className = 'aquarium-depthfog';
+            aquarium.appendChild(depthFog);
 
             const bubblesContainer = document.createElement('div');
             bubblesContainer.className = 'aquarium-bubbles';
@@ -3746,6 +5019,11 @@
             const wave = document.createElement('div');
             wave.className = 'aquarium-wave';
             aquarium.appendChild(wave);
+
+            // Surface shimmer effect
+            const shimmer = document.createElement('div');
+            shimmer.style.cssText = 'position:absolute;top:0;left:0;right:0;height:15%;z-index:2;background:linear-gradient(180deg,rgba(100,200,255,0.15) 0%,rgba(100,200,255,0.05) 50%,transparent 100%);animation:shimmerPulse 4s ease-in-out infinite;pointer-events:none;';
+            aquarium.appendChild(shimmer);
 
             // Sandy bottom
             const sandDiv = document.createElement('div');
@@ -3806,6 +5084,26 @@
             shell.textContent = '🐚';
             aquarium.appendChild(shell);
 
+            // Treasure chest SVG on sand
+            const treasure = document.createElement('div');
+            treasure.style.cssText = 'position:absolute;bottom:5%;right:35%;z-index:5;pointer-events:none;animation:starPulse 4s ease-in-out 1s infinite;';
+            treasure.innerHTML = `<svg width="48" height="40" viewBox="0 0 48 40">
+                <rect x="4" y="16" width="40" height="22" rx="3" fill="#8D6E63" stroke="#5D4037" stroke-width="1.5"/>
+                <rect x="4" y="16" width="40" height="10" rx="3" fill="#A1887F"/>
+                <path d="M4,20 Q24,10 44,20" fill="#795548" stroke="#5D4037" stroke-width="1"/>
+                <rect x="20" y="18" width="8" height="8" rx="1" fill="#FFD54F" stroke="#F9A825" stroke-width="1"/>
+                <circle cx="24" cy="22" r="2" fill="#F9A825"/>
+                <circle cx="12" cy="12" r="3" fill="#FFD700" opacity="0.7"><animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/></circle>
+                <circle cx="36" cy="10" r="2.5" fill="#FFD700" opacity="0.5"><animate attributeName="opacity" values="0.5;0.9;0.5" dur="2.5s" repeatCount="indefinite"/></circle>
+                <circle cx="24" cy="8" r="2" fill="#FFF176" opacity="0.6"><animate attributeName="opacity" values="0.6;1;0.6" dur="1.8s" repeatCount="indefinite"/></circle>
+            </svg>`;
+            aquarium.appendChild(treasure);
+
+            // Additional small pearls scattered
+            const pearl = document.createElement('div');
+            pearl.style.cssText = 'position:absolute;bottom:7%;left:42%;z-index:5;width:10px;height:10px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff,#E0E0E0);box-shadow:0 0 6px rgba(255,255,255,0.6);pointer-events:none;';
+            aquarium.appendChild(pearl);
+
             // Small background fish
             for (let i = 0; i < 3; i++) {
                 const bgFish = document.createElement('div');
@@ -3852,9 +5150,7 @@
                 let posX = -220;
                 let speed = 1.0 + Math.random() * 0.6;
                 let goingRight = true;
-                // Start facing right (default orientation)
-                drawing.style.transition = 'transform 0.4s ease';
-                drawing.style.transform = 'scaleX(1)';
+                let currentScaleX = 1;
 
                 function animateSwim() {
                     if (!CanvasGame.aquariumAnimId) return;
@@ -3865,8 +5161,7 @@
                         posX += speed;
                         if (posX > maxX) {
                             goingRight = false;
-                            // Flip horizontally so head faces left (movement direction)
-                            drawing.style.transform = 'scaleX(-1)';
+                            currentScaleX = -1;
                             const newTop = Math.random() * 40 + 20;
                             drawing.style.top = newTop + '%';
                         }
@@ -3874,23 +5169,93 @@
                         posX -= speed;
                         if (posX < minX) {
                             goingRight = true;
-                            // Flip back so head faces right (movement direction)
-                            drawing.style.transform = 'scaleX(1)';
+                            currentScaleX = 1;
                             const newTop = Math.random() * 40 + 20;
                             drawing.style.top = newTop + '%';
                         }
                     }
 
-                    // Gentle bobbing motion
-                    const bob = Math.sin(Date.now() / 600) * 5;
+                    // Smooth dual-sine bobbing for natural motion
+                    const bob = Math.sin(Date.now() / 800) * 8 + Math.sin(Date.now() / 1200) * 3;
                     drawing.style.left = posX + 'px';
-                    drawing.style.marginTop = bob + 'px';
+                    drawing.style.transform = `scaleX(${currentScaleX}) translateY(${bob}px)`;
 
                     CanvasGame.aquariumAnimId = requestAnimationFrame(animateSwim);
                 }
 
                 CanvasGame.aquariumAnimId = requestAnimationFrame(animateSwim);
+
+                // Add a second drawing with different speed and height (created once, not on every frame)
+                if (Math.random() > 0.3) {
+                    setTimeout(() => {
+                        const drawing2 = document.createElement('div');
+                        drawing2.className = 'aquarium-drawing';
+                        const img2 = document.createElement('img');
+                        img2.src = capturedImageURL;
+                        img2.style.cssText = 'width:clamp(100px,28vw,180px);height:auto;pointer-events:none;';
+                        drawing2.appendChild(img2);
+                        drawing2.style.top = Math.random() * 35 + 35 + '%';
+                        drawing2.style.right = '-220px';
+                        aquarium.appendChild(drawing2);
+
+                        let posX2 = window.innerWidth + 100;
+                        let speed2 = (0.5 + Math.random() * 0.4);
+                        let goingRight2 = false;
+                        let currentScaleX2 = -1;
+
+                        function animateSwim2() {
+                            if (!CanvasGame.aquariumAnimId2) return;
+                            const maxX = window.innerWidth + 100;
+                            const minX = -250;
+
+                            if (goingRight2) {
+                                posX2 += speed2;
+                                if (posX2 > maxX) {
+                                    goingRight2 = false;
+                                    currentScaleX2 = -1;
+                                    const newTop = Math.random() * 35 + 35;
+                                    drawing2.style.top = newTop + '%';
+                                }
+                            } else {
+                                posX2 -= speed2;
+                                if (posX2 < minX) {
+                                    goingRight2 = true;
+                                    currentScaleX2 = 1;
+                                    const newTop = Math.random() * 35 + 35;
+                                    drawing2.style.top = newTop + '%';
+                                }
+                            }
+
+                            const bob2 = Math.sin(Date.now() / 600) * 6 + Math.sin(Date.now() / 1000) * 2;
+                            drawing2.style.left = posX2 + 'px';
+                            drawing2.style.transform = `scaleX(${currentScaleX2}) translateY(${bob2}px)`;
+
+                            CanvasGame.aquariumAnimId2 = requestAnimationFrame(animateSwim2);
+                        }
+
+                        CanvasGame.aquariumAnimId2 = requestAnimationFrame(animateSwim2);
+                    }, 1500);
+                }
+
+                // Add jellyfish (created once, not on every frame)
+                for (let j = 0; j < 2; j++) {
+                    const jelly = document.createElement('div');
+                    jelly.className = 'aquarium-jellyfish';
+                    jelly.textContent = '🪼';
+                    jelly.style.left = Math.random() * 80 + 10 + '%';
+                    jelly.style.top = Math.random() * 40 - 10 + '%';
+                    jelly.style.animationDelay = (Math.random() * 4) + 's';
+                    jelly.style.animationDuration = (6 + Math.random() * 4) + 's';
+                    aquarium.appendChild(jelly);
+                }
             }
+
+            // Home button for aquarium screen
+            const aquaHomeBtn = document.createElement('button');
+            aquaHomeBtn.className = 'aquarium-home-btn';
+            aquaHomeBtn.textContent = '🏠';
+            aquaHomeBtn.onclick = goHome;
+            aquarium.appendChild(aquaHomeBtn);
 
             const redrawBtn = document.createElement('button');
             redrawBtn.className = 'aquarium-redraw-btn';
@@ -3909,17 +5274,87 @@
                 cancelAnimationFrame(CanvasGame.aquariumAnimId);
                 CanvasGame.aquariumAnimId = null;
             }
+            if (CanvasGame.aquariumAnimId2) {
+                cancelAnimationFrame(CanvasGame.aquariumAnimId2);
+                CanvasGame.aquariumAnimId2 = null;
+            }
 
             window.removeEventListener('resize', () => resizeCanvases);
 
+            // Restore home button, hide pause button
             const homeBtn = document.getElementById('home-btn-3');
+            if (homeBtn) homeBtn.style.display = 'flex';
+            const pauseBtn = document.getElementById('canvas-pause-btn');
+            if (pauseBtn) { pauseBtn.style.display = 'none'; pauseBtn.textContent = '⏸️'; }
+
+            // Remove pause overlay if exists
+            const pauseOverlay = document.querySelector('.canvas-pause-overlay');
+            if (pauseOverlay) pauseOverlay.remove();
 
             const area = document.getElementById('canvas-area');
             if (area) area.innerHTML = '';
         }
 
+        function toggleCanvasPause() {
+            if (CanvasGame.paused) {
+                // Resume
+                CanvasGame.paused = false;
+                const pauseOverlay = document.querySelector('.canvas-pause-overlay');
+                if (pauseOverlay) pauseOverlay.remove();
+                const pauseBtn = document.getElementById('canvas-pause-btn');
+                if (pauseBtn) pauseBtn.textContent = '⏸️';
+            } else {
+                // Pause
+                CanvasGame.paused = true;
+                const pauseBtn = document.getElementById('canvas-pause-btn');
+                if (pauseBtn) pauseBtn.textContent = '▶️';
+
+                // Show pause overlay
+                const gameScreen = document.getElementById('game-canvas');
+                const overlay = document.createElement('div');
+                overlay.className = 'canvas-pause-overlay pause-overlay';
+                overlay.innerHTML = `
+                    <div class="pause-title">⏸️ 일시정지</div>
+                    <button class="pause-btn-action pause-btn-continue" onclick="toggleCanvasPause()">계속하기 ▶️</button>
+                    <button class="pause-btn-action pause-btn-home" onclick="goHome()">홈으로 🏠</button>
+                `;
+                gameScreen.appendChild(overlay);
+            }
+        }
+
+        /* ===== Card Ripple Effect ===== */
+        document.addEventListener('touchstart', function(e) {
+            const card = e.target.closest('.game-card, .animal-card, .sketch-option');
+            if (!card) return;
+            const rect = card.getBoundingClientRect();
+            const touch = e.touches[0];
+            const x = ((touch.clientX - rect.left) / rect.width * 100).toFixed(1);
+            const y = ((touch.clientY - rect.top) / rect.height * 100).toFixed(1);
+            card.style.setProperty('--tap-x', x + '%');
+            card.style.setProperty('--tap-y', y + '%');
+        }, { passive: true });
+
+        /* ===== Idle Breathing Animation for Menu Cards ===== */
+        function addCardBreathing() {
+            if (!document.getElementById('breathing-style')) {
+                const s = document.createElement('style');
+                s.id = 'breathing-style';
+                s.textContent = `
+                    @keyframes cardBreathe {
+                        0%, 100% { transform: translateY(0) scale(1); }
+                        50% { transform: translateY(-4px) scale(1.01); }
+                    }
+                    .game-card { animation: cardBreathe 3s ease-in-out infinite, cardGlowPulse 3.2s ease-in-out infinite; }
+                    .game-card:nth-child(2) { animation-delay: 0.8s, 1.3s; }
+                    .game-card:nth-child(3) { animation-delay: 1.6s, 2.6s; }
+                `;
+                document.head.appendChild(s);
+            }
+        }
+
         /* ===== Initialize ===== */
         buildMenu();
+        addCardBreathing();
     </script>
 </body>
 </html>
