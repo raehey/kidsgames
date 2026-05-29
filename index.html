@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>KidsArcade 3in1 - 아빠표 통합 놀이 앱</title>
-    <!-- Updated: 2026-05-26 Run25 | Changes: Increased bubble sizes (min 200px, max 320px), added pause button auto-hide after 3 seconds of no touch in Game 1, increased animal card sizes (160px min, 260px max), verified correct answer overlay at clamp(18rem, 70vw, 32rem), confirmed bidirectional swimming + head direction code working, verified toDataURL() canvas capture -->
+    <!-- Updated: 2026-05-29 Run47 | Changes: CRITICAL FIXES continued - Game1: balloon sizes further reduced (38-56px) for better screen density. Game3: outline lineWidth increased (130→160), shadow (150→190), removed buggy periodic clip enforcement timer that caused paint leaks, clip path + mask enforcement is now clean. Version v4.3 -->
     <style>
         /* ===== 전역 리셋 & 기본 설정 ===== */
         * {
@@ -46,9 +46,10 @@
         }
 
         @keyframes screenFadeIn {
-            0% { opacity: 0; transform: scale(0.92) translateY(8px); filter: blur(6px); }
-            40% { opacity: 0.8; transform: scale(1.01) translateY(-2px); filter: blur(1px); }
-            70% { opacity: 1; transform: scale(1.005) translateY(0); filter: blur(0); }
+            0% { opacity: 0; transform: scale(0.92) translateY(12px); filter: blur(10px); }
+            30% { opacity: 0.6; transform: scale(1.02) translateY(-3px); filter: blur(3px); }
+            55% { opacity: 0.9; transform: scale(1.008) translateY(0); filter: blur(1px); }
+            80% { opacity: 0.98; transform: scale(1.002) translateY(0); filter: blur(0); }
             100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
         }
 
@@ -370,6 +371,16 @@
             font-weight: 500;
         }
 
+        /* Card entrance animations */
+        .game-card:nth-child(1) { animation: cardGlow 2.5s ease-in-out infinite, cardGlowPulse 3.2s ease-in-out infinite, cardEntrance 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both; }
+        .game-card:nth-child(2) { animation: cardGlow 2.5s ease-in-out 0.8s infinite, cardGlowPulse 3.2s ease-in-out 0.8s infinite, cardEntrance 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both; }
+        .game-card:nth-child(3) { animation: cardGlow 2.5s ease-in-out 1.6s infinite, cardGlowPulse 3.2s ease-in-out 1.6s infinite, cardEntrance 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both; }
+
+        @keyframes cardEntrance {
+            0% { transform: scale(0.6) translateY(30px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
         /* ===== 게임 화면 공통 ===== */
         .game-screen {
             padding: 0;
@@ -473,7 +484,7 @@
 
         @keyframes cardGlow {
             0%, 100% { transform: translateY(0); box-shadow: 0 12px 36px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.06); }
-            50% { transform: translateY(-6px); }
+            50% { transform: translateY(-8px); }
         }
 
         @keyframes cardGlowPulse {
@@ -513,18 +524,18 @@
             width: clamp(48px, 11vw, 68px);
             height: clamp(48px, 11vw, 68px);
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.6);
-            border: 2.5px solid rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.7);
+            border: 2.5px solid rgba(255, 255, 255, 0.9);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: clamp(1.4rem, 4.5vw, 2.2rem);
             cursor: pointer;
             z-index: 150;
-            transition: transform 0.2s, opacity 0.3s;
-            opacity: 0.8;
-            backdrop-filter: blur(6px);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s, opacity 0.4s;
+            opacity: 0.85;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.5);
         }
 
         .pause-btn:active {
@@ -601,14 +612,15 @@
             background: rgba(255, 255, 255, 0.97);
             border-radius: 28px;
             padding: clamp(10px, 2vh, 18px) clamp(22px, 5.5vw, 38px);
-            font-size: clamp(2.8rem, 9vw, 4.5rem);
+            font-size: clamp(3.2rem, 10vw, 5rem);
             font-weight: 900;
             color: #FF3D00;
             box-shadow: 0 6px 24px rgba(255,61,0,0.2), 0 0 0 2px rgba(255,110,64,0.15);
             border: 3px solid #FF6E40;
             transition: transform 0.15s, box-shadow 0.3s;
             will-change: transform;
-            text-shadow: 0 2px 4px rgba(255,61,0,0.15);
+            text-shadow: 0 2px 8px rgba(255,61,0,0.2);
+            letter-spacing: 1px;
         }
 
         .bubble-score.pulse {
@@ -681,30 +693,32 @@
             cursor: pointer;
             transition: none;
             will-change: transform;
-            font-size: clamp(3rem, 8vw, 5rem);
+            font-size: clamp(1.8rem, 5vw, 2.8rem);
             line-height: 1;
             animation: bubbleShimmer 3s ease-in-out infinite;
         }
 
         @keyframes bubbleShimmer {
-            0%, 100% { filter: brightness(1) drop-shadow(0 0 6px rgba(255,255,255,0.2)); }
-            50% { filter: brightness(1.1) drop-shadow(0 0 12px rgba(255,255,255,0.4)); }
+            0%, 100% { filter: brightness(1) drop-shadow(0 0 10px rgba(255,255,255,0.3)); transform: translate3d(var(--bx, 0), var(--by, 0), 0); }
+            33% { filter: brightness(1.1) drop-shadow(0 0 16px rgba(255,255,255,0.5)); }
+            66% { filter: brightness(1.18) drop-shadow(0 0 22px rgba(255,255,255,0.7)); }
         }
 
-        .bubble.circle-shape {
+        .bubble.balloon-shape::after {
+            content: '';
+            position: absolute;
+            top: 15%;
+            left: 20%;
+            width: 30%;
+            height: 25%;
+            background: radial-gradient(ellipse, rgba(255,255,255,0.6), transparent 70%);
             border-radius: 50%;
-            border: 6px solid;
+            pointer-events: none;
         }
 
-        .bubble.square-shape {
-            border-radius: 15%;
-            border: 6px solid;
-        }
-
-        .bubble.triangle-shape {
-        }
-
-        .bubble.heart-shape {
+        .bubble.balloon-shape {
+            border: none;
+            background: none;
         }
 
         .bubble.popping {
@@ -713,23 +727,26 @@
         }
 
         @keyframes popBubble {
-            0% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(1.3); opacity: 0; }
+            0% { transform: scale(1); opacity: 1; filter: brightness(1); }
+            30% { transform: scale(1.15); opacity: 1; filter: brightness(1.5); }
+            100% { transform: scale(1.4); opacity: 0; filter: brightness(2); }
         }
 
         .score-float {
             position: absolute;
-            font-size: clamp(2.2rem, 7vw, 3.5rem);
+            font-size: clamp(2.8rem, 9vw, 4.5rem);
             font-weight: 900;
             color: #FF3D00;
             pointer-events: none;
-            animation: scoreFloatUp 0.9s ease-out forwards;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.2), 0 0 12px rgba(255,61,0,0.3);
+            animation: scoreFloatUp 1s ease-out forwards;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2), 0 0 16px rgba(255,61,0,0.4), 0 0 32px rgba(255,61,0,0.2);
         }
 
         @keyframes scoreFloatUp {
-            0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-60px) scale(1.3); opacity: 0; }
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            15% { transform: translateY(-5px) scale(1.4); opacity: 1; }
+            30% { transform: translateY(-15px) scale(1); opacity: 1; }
+            100% { transform: translateY(-80px) scale(1.2); opacity: 0; }
         }
 
         .pop-particles {
@@ -768,15 +785,16 @@
         .screen-flash {
             position: fixed;
             inset: 0;
-            background: rgba(255, 255, 255, 0.35);
-            animation: flashEffect 0.15s ease-out forwards;
+            background: radial-gradient(circle at var(--flash-x, 50%) var(--flash-y, 50%), rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.15));
+            animation: flashEffect 0.2s ease-out forwards;
             pointer-events: none;
             z-index: 250;
         }
 
         @keyframes flashEffect {
-            0% { opacity: 1; }
-            100% { opacity: 0; }
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; }
+            100% { opacity: 0; transform: scale(1.05); }
         }
 
         /* ===== 비누방울 시작 화면 ===== */
@@ -881,8 +899,8 @@
             align-items: center;
             width: 100%;
             height: 100%;
-            padding: clamp(60px, 8vh, 80px) clamp(12px, 2vw, 24px) clamp(16px, 2vh, 32px);
-            gap: clamp(10px, 1.5vh, 18px);
+            padding: clamp(56px, 7vh, 72px) clamp(8px, 1.5vw, 16px) clamp(10px, 1.5vh, 20px);
+            gap: clamp(6px, 1vh, 12px);
             justify-content: flex-start;
         }
 
@@ -898,14 +916,14 @@
             background: linear-gradient(135deg, #42A5F5, #1E88E5);
             color: white;
             border: none;
-            border-radius: 22px;
-            padding: clamp(12px, 2.2vh, 16px) clamp(24px, 5vw, 32px);
-            font-size: clamp(1.05rem, 3vw, 1.4rem);
+            border-radius: 20px;
+            padding: clamp(10px, 1.8vh, 14px) clamp(20px, 4vw, 28px);
+            font-size: clamp(0.95rem, 2.8vw, 1.3rem);
             font-weight: 800;
             cursor: pointer;
             box-shadow: 0 6px 20px rgba(66, 165, 245, 0.35), 0 2px 0 #1565C0;
             transition: transform 0.2s;
-            min-height: 48px;
+            min-height: 44px;
         }
 
         .animal-listen-btn {
@@ -925,27 +943,29 @@
         .animal-cards {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: clamp(12px, 2.5vw, 20px);
+            gap: clamp(8px, 1.5vw, 12px);
             width: 100%;
-            max-width: 500px;
+            max-width: 520px;
+            flex: 1;
+            align-content: center;
         }
 
         .animal-card {
             background: rgba(255,255,255,0.92);
-            border: 2.5px solid rgba(0,0,0,0.06);
-            border-radius: clamp(16px, 3vw, 24px);
-            padding: clamp(6px, 1vw, 10px);
+            border: 2px solid rgba(0,0,0,0.05);
+            border-radius: clamp(10px, 1.8vw, 14px);
+            padding: clamp(2px, 0.4vw, 4px);
             cursor: pointer;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: clamp(4px, 0.8vw, 6px);
+            gap: 0px;
             transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
             will-change: transform, box-shadow;
             min-height: 48px;
             min-width: 48px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.04);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.03);
             backdrop-filter: blur(6px);
             animation: cardBounceIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
             position: relative;
@@ -1008,9 +1028,9 @@
         }
 
         .animal-photo-circle {
-            width: clamp(160px, 50vw, 260px);
-            height: clamp(160px, 50vw, 260px);
-            border-radius: 14px;
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 6px;
             overflow: hidden;
             background: transparent;
             display: flex;
@@ -1027,10 +1047,12 @@
         }
 
         .animal-name {
-            font-size: clamp(1rem, 2.8vw, 1.2rem);
+            font-size: clamp(0.8rem, 2.2vw, 1rem);
             font-weight: 800;
             color: #333;
             text-align: center;
+            margin-top: -3px;
+            line-height: 1.2;
         }
 
         .animal-result-overlay {
@@ -1051,7 +1073,7 @@
         }
 
         .animal-result-symbol {
-            font-size: clamp(18rem, 70vw, 32rem);
+            font-size: clamp(20rem, 80vw, 36rem);
             animation: resultPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
             line-height: 1;
         }
@@ -1059,7 +1081,7 @@
         .animal-result-symbol.correct {
             animation: resultPopCorrect 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards, correctPulse 0.8s ease-in-out 0.3s infinite;
             color: #4CAF50;
-            text-shadow: 0 0 20px rgba(76, 175, 80, 0.8), 0 0 40px rgba(76, 175, 80, 0.5);
+            text-shadow: 0 0 30px rgba(76, 175, 80, 0.9), 0 0 60px rgba(76, 175, 80, 0.6), 0 0 90px rgba(76, 175, 80, 0.3);
         }
 
         @keyframes resultPop {
@@ -1096,7 +1118,7 @@
         .confetti {
             position: absolute;
             animation: confettiFall 2.5s ease-out forwards;
-            filter: drop-shadow(0 0 3px rgba(255, 200, 100, 0.8));
+            filter: drop-shadow(0 0 6px rgba(255, 200, 100, 0.9)) drop-shadow(0 0 12px rgba(255, 180, 80, 0.4));
         }
 
         .confetti:nth-child(odd) {
@@ -1152,46 +1174,81 @@
         .sketch-selection {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: clamp(12px, 3vw, 20px);
+            gap: clamp(14px, 3.5vw, 24px);
             width: 90%;
             max-width: 500px;
+        }
+
+        .sketch-option:nth-child(1) { animation: sketchOptionIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s both; }
+        .sketch-option:nth-child(2) { animation: sketchOptionIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.12s both; }
+        .sketch-option:nth-child(3) { animation: sketchOptionIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.19s both; }
+        .sketch-option:nth-child(4) { animation: sketchOptionIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.26s both; }
+
+        @keyframes sketchOptionIn {
+            0% { transform: scale(0.3) translateY(20px); opacity: 0; }
+            100% { transform: scale(1) translateY(0); opacity: 1; }
         }
 
         .sketch-option {
             background: white;
             border: 3px solid #E0E0E0;
-            border-radius: 22px;
-            padding: clamp(18px, 3.5vw, 28px);
+            border-radius: 28px;
+            padding: clamp(20px, 4vw, 36px);
             cursor: pointer;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
             align-items: center;
-            gap: clamp(8px, 2vw, 12px);
-            transition: all 0.2s;
-            min-height: 120px;
+            gap: 0;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            min-height: clamp(130px, 25vw, 180px);
             justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sketch-option::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: radial-gradient(ellipse at 30% 25%, rgba(255,255,255,0.7), transparent 70%);
+            pointer-events: none;
         }
 
         .sketch-option:active {
-            transform: scale(0.95);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            transform: scale(0.93);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
         }
 
-        .sketch-option:nth-child(1) { border-color: #64B5F6; }
-        .sketch-option:nth-child(2) { border-color: #FF8A65; }
-        .sketch-option:nth-child(3) { border-color: #81C784; }
-        .sketch-option:nth-child(4) { border-color: #CE93D8; }
+        .sketch-option:nth-child(1) {
+            border-color: #64B5F6;
+            background: linear-gradient(145deg, #E3F2FD, #BBDEFB);
+            box-shadow: 0 8px 24px rgba(100,181,246,0.2);
+        }
+        .sketch-option:nth-child(2) {
+            border-color: #FF8A65;
+            background: linear-gradient(145deg, #FBE9E7, #FFCCBC);
+            box-shadow: 0 8px 24px rgba(255,138,101,0.2);
+        }
+        .sketch-option:nth-child(3) {
+            border-color: #81C784;
+            background: linear-gradient(145deg, #E8F5E9, #C8E6C9);
+            box-shadow: 0 8px 24px rgba(129,199,132,0.2);
+        }
+        .sketch-option:nth-child(4) {
+            border-color: #CE93D8;
+            background: linear-gradient(145deg, #F3E5F5, #E1BEE7);
+            box-shadow: 0 8px 24px rgba(206,147,216,0.2);
+        }
 
         .sketch-option-emoji {
-            font-size: clamp(3.5rem, 14vw, 5rem);
+            font-size: clamp(4.5rem, 18vw, 7rem);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
-        .sketch-option-text {
-            font-size: clamp(0.95rem, 2.5vw, 1.2rem);
-            font-weight: 700;
-            color: #333;
-            text-align: center;
+        .sketch-option:active .sketch-option-emoji {
+            transform: scale(1.15) rotate(-5deg);
         }
 
         .sketch-draw-screen {
@@ -1221,7 +1278,7 @@
         }
 
         .sketch-toolbar {
-            background: rgba(255, 255, 255, 0.98);
+            background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,248,255,0.98));
             border-top: 2px solid #E0E0E0;
             padding: clamp(8px, 1.5vh, 14px) clamp(10px, 2vw, 16px);
             display: flex;
@@ -1230,7 +1287,7 @@
             gap: clamp(6px, 1vw, 10px);
             justify-content: center;
             min-height: clamp(60px, 10vh, 100px);
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+            box-shadow: 0 -6px 24px rgba(0,0,0,0.08), 0 -1px 0 rgba(255,255,255,0.5);
         }
 
         .sketch-color-btn {
@@ -1351,6 +1408,49 @@
         @keyframes magicBtnShine {
             0%, 60%, 100% { left: -70%; }
             30% { left: 130%; }
+        }
+
+        /* ===== Coloring Mode Toggle ===== */
+        .sketch-mode-toggle {
+            position: absolute;
+            top: clamp(10px, 2vh, 18px);
+            right: clamp(10px, 2vw, 18px);
+            width: clamp(44px, 10vw, 56px);
+            height: clamp(44px, 10vw, 56px);
+            border-radius: 50%;
+            border: 3px solid #AB47BC;
+            background: rgba(255,255,255,0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1.2rem, 3.5vw, 1.7rem);
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 4px 14px rgba(171,71,188,0.25);
+            transition: transform 0.2s, background 0.2s, border-color 0.2s;
+        }
+        .sketch-mode-toggle:active {
+            transform: scale(0.9);
+        }
+        .sketch-mode-toggle.free-mode {
+            border-color: #4CAF50;
+            background: rgba(232,245,233,0.95);
+        }
+        .sketch-mode-label {
+            position: absolute;
+            top: clamp(58px, calc(2vh + 48px), 78px);
+            right: clamp(4px, 1vw, 10px);
+            font-size: clamp(0.55rem, 1.6vw, 0.72rem);
+            font-weight: 700;
+            color: #7B1FA2;
+            text-align: center;
+            z-index: 100;
+            pointer-events: none;
+            white-space: nowrap;
+            transition: color 0.2s;
+        }
+        .sketch-mode-label.free-mode {
+            color: #388E3C;
         }
 
         /* ===== Aquarium ===== */
@@ -1519,7 +1619,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.6, 1);
             filter: drop-shadow(0 0 12px rgba(100,200,255,0.4)) drop-shadow(0 0 24px rgba(100,200,255,0.2));
             animation: aquariumGlow 3s ease-in-out infinite;
         }
@@ -1710,11 +1809,11 @@
         }
 
         .animal-progress-text {
-            font-size: clamp(0.7rem, 2vw, 0.9rem);
+            font-size: clamp(0.65rem, 1.8vw, 0.8rem);
             font-weight: 700;
             color: #66BB6A;
             text-align: center;
-            margin-top: 4px;
+            margin-top: 2px;
         }
 
         /* ===== Enhanced 3D buttons ===== */
@@ -1736,8 +1835,9 @@
                 gap: clamp(8px, 2vw, 14px);
             }
             .animal-photo-circle {
-                width: clamp(130px, 45vw, 200px) !important;
-                height: clamp(130px, 45vw, 200px) !important;
+                width: 100% !important;
+                height: auto !important;
+                aspect-ratio: 1 !important;
             }
             .sketch-selection {
                 grid-template-columns: repeat(2, 1fr);
@@ -1746,15 +1846,16 @@
                 font-size: clamp(1.2rem, 4vw, 1.6rem);
             }
             .animal-game-content {
-                padding-top: clamp(55px, 7vh, 70px);
-                gap: clamp(8px, 1.2vh, 14px);
+                padding-top: clamp(50px, 6.5vh, 65px);
+                gap: clamp(5px, 0.8vh, 10px);
             }
         }
 
         @media (min-width: 768px) {
             .animal-photo-circle {
-                width: clamp(150px, 20vw, 220px) !important;
-                height: clamp(150px, 20vw, 220px) !important;
+                width: 100% !important;
+                height: auto !important;
+                aspect-ratio: 1 !important;
             }
         }
     </style>
@@ -1768,7 +1869,7 @@
             <span>KidsArcade 3in1</span>
         </div>
         <div class="game-grid" id="game-grid"></div>
-        <div style="position:absolute;bottom:clamp(8px,2vh,16px);font-size:clamp(0.65rem,1.8vw,0.85rem);color:rgba(0,0,0,0.2);font-weight:600;z-index:1;">아빠표 놀이앱 v2.1</div>
+        <div style="position:absolute;bottom:clamp(8px,2vh,16px);font-size:clamp(0.65rem,1.8vw,0.85rem);color:rgba(0,0,0,0.2);font-weight:600;z-index:1;">아빠표 놀이앱 v4.1</div>
     </div>
 
     <!-- ========== 게임 1: 비누방울 팡팡 ========== -->
@@ -1876,6 +1977,123 @@
                 case 'stageup': navigator.vibrate([20, 40, 20, 40, 30]); break;
                 default: navigator.vibrate(10);
             }
+        }
+
+        /* ===== 화면 전환 사운드 ===== */
+        function playTransitionSound(type) {
+            if (!Settings.soundEnabled) return;
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+            const dest = getAudioDest();
+
+            if (type === 'open') {
+                // Gentle ascending whoosh when opening a game
+                const osc = ctx.createOscillator();
+                const g = ctx.createGain();
+                const flt = ctx.createBiquadFilter();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(900, now + 0.18);
+                flt.type = 'lowpass'; flt.frequency.setValueAtTime(1200, now);
+                g.gain.setValueAtTime(0.001, now);
+                g.gain.linearRampToValueAtTime(0.15, now + 0.04);
+                g.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+                osc.connect(flt); flt.connect(g); g.connect(dest);
+                osc.start(now); osc.stop(now + 0.22);
+                // Sparkle overtone
+                const osc2 = ctx.createOscillator();
+                const g2 = ctx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(1200, now + 0.06);
+                osc2.frequency.exponentialRampToValueAtTime(1800, now + 0.16);
+                g2.gain.setValueAtTime(0.001, now + 0.06);
+                g2.gain.linearRampToValueAtTime(0.08, now + 0.08);
+                g2.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+                osc2.connect(g2); g2.connect(dest);
+                osc2.start(now + 0.06); osc2.stop(now + 0.2);
+            } else if (type === 'close') {
+                // Gentle descending whoosh when going home
+                const osc = ctx.createOscillator();
+                const g = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(700, now);
+                osc.frequency.exponentialRampToValueAtTime(250, now + 0.2);
+                g.gain.setValueAtTime(0.001, now);
+                g.gain.linearRampToValueAtTime(0.12, now + 0.03);
+                g.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+                osc.connect(g); g.connect(dest);
+                osc.start(now); osc.stop(now + 0.22);
+            }
+        }
+
+        /* ===== 마일스톤 축하 (50점 단위) ===== */
+        function playMilestoneSound() {
+            if (!Settings.soundEnabled) return;
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+            const dest = getAudioDest();
+
+            // Fanfare: ascending major chord arpeggio
+            const notes = [523, 659, 784, 1047, 1319, 1568];
+            notes.forEach((freq, i) => {
+                const t = now + i * 0.07;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, t);
+                gain.gain.setValueAtTime(0, t);
+                gain.gain.linearRampToValueAtTime(0.22, t + 0.02);
+                gain.gain.setValueAtTime(0.20, t + 0.12);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+                osc.connect(gain); gain.connect(dest);
+                osc.start(t); osc.stop(t + 0.4);
+            });
+            // Shimmer noise
+            const bufSize = ctx.sampleRate * 0.3;
+            const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+            const data = buf.getChannelData(0);
+            for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufSize, 2) * 0.3;
+            const ns = ctx.createBufferSource(); ns.buffer = buf;
+            const nflt = ctx.createBiquadFilter(); nflt.type = 'highpass'; nflt.frequency.setValueAtTime(3000, now + 0.1);
+            const ng = ctx.createGain();
+            ng.gain.setValueAtTime(0.06, now + 0.1); ng.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+            ns.connect(nflt); nflt.connect(ng); ng.connect(dest);
+            ns.start(now + 0.1); ns.stop(now + 0.4);
+        }
+
+        function showMilestoneCelebration(score) {
+            const area = document.getElementById('bubble-area');
+            if (!area) return;
+
+            playMilestoneSound();
+            haptic('stageup');
+
+            // Big milestone overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'bubble-stage-up';
+            const milestoneEmojis = ['🌟', '🏆', '👑', '💎', '🎯', '🔥'];
+            const emoji = milestoneEmojis[Math.floor(score / 50 - 1) % milestoneEmojis.length];
+            overlay.innerHTML = `
+                <div class="stage-up-emoji">${emoji}</div>
+                <div class="stage-up-text">${score}점!</div>
+            `;
+            area.appendChild(overlay);
+            setTimeout(() => overlay.remove(), 2500);
+
+            // Burst of gold sparkles
+            const container = document.createElement('div');
+            container.style.cssText = 'position:absolute;inset:0;z-index:350;pointer-events:none;overflow:hidden;';
+            const goldEmojis = ['⭐', '🌟', '✨', '💫', '🎉', '🎊'];
+            for (let i = 0; i < 24; i++) {
+                const sp = document.createElement('div');
+                sp.textContent = goldEmojis[Math.floor(Math.random() * goldEmojis.length)];
+                sp.style.cssText = `position:absolute;left:${Math.random()*100}%;font-size:${24+Math.random()*20}px;animation:confettiFall ${1.5+Math.random()*1}s ease-out forwards;pointer-events:none;filter:drop-shadow(0 0 6px rgba(255,215,0,0.8));`;
+                container.appendChild(sp);
+            }
+            area.appendChild(container);
+            setTimeout(() => container.remove(), 3000);
         }
 
         /* ===== 설정 UI ===== */
@@ -2033,6 +2251,7 @@
         }
 
         function openGame(game) {
+            playTransitionSound('open');
             const menuScreen = document.getElementById('menu-screen');
             menuScreen.classList.add('exit-anim');
 
@@ -2051,6 +2270,7 @@
         }
 
         function goHome() {
+            playTransitionSound('close');
             if (currentGame && currentGame.onExit && typeof currentGame.onExit === 'function') {
                 currentGame.onExit();
             }
@@ -2091,18 +2311,14 @@
             lastTouchTime: 0,
 
             colors: [
-                '#FF1744', '#FF6D00', '#FFD600', '#00C853', '#2979FF',
-                '#304FFE', '#AA00FF', '#FF4081', '#00BFA5', '#F50057'
+                '#FF0000', '#FF4500', '#FF8C00', '#FFD700', '#FFFF00',
+                '#00CC00', '#00BFFF', '#0066FF', '#0000FF', '#4B0082',
+                '#8B00FF', '#FF1493', '#FF69B4', '#FF6347'
             ],
 
-            shapes: ['circle', 'square', 'triangle', 'heart'],
-
-            shapeEmojis: {
-                circle: '●',
-                triangle: '▲',
-                heart: '♥',
-                square: '■'
-            },
+            // Speed control: 0=slow, 1=normal, 2=fast
+            userSpeedLevel: 1,
+            userSpeedMultipliers: [1.5, 2.0, 2.5],
 
             getStageGoal(stage) {
                 return stage === 1 ? 20 : stage === 2 ? 30 : 10 + stage * 10;
@@ -2110,17 +2326,19 @@
 
             getStageDifficulty() {
                 const s = this.stage;
-                const speedMult = 1 + (s - 1) * 0.5; // x1, x1.5, x2, x2.5 ...
-                // Responsive bubble sizes - bigger on smaller screens
+                const stageSpeedMult = 1 + (s - 1) * 0.5;
+                const userMult = this.userSpeedMultipliers[this.userSpeedLevel];
+                const speedMult = stageSpeedMult * userMult;
                 const vw = window.innerWidth;
-                const sizeScale = vw < 480 ? 1.15 : 1.0;
+                // Appropriate sizes for toddlers: big enough to tap, small enough to fit many on screen
+                const sizeScale = vw < 480 ? 0.85 : 1.0;
                 return {
-                    minSize: Math.round(200 * sizeScale),
-                    maxSize: Math.round(320 * sizeScale),
+                    minSize: Math.round(38 * sizeScale),
+                    maxSize: Math.round(56 * sizeScale),
                     minSpeed: Math.min(0.7 * speedMult, 4.0),
                     maxSpeed: Math.min(1.3 * speedMult, 6.0),
-                    spawnInterval: Math.max(350, 1100 - s * 80),
-                    maxBubbles: Math.min(16, 6 + s * 2)
+                    spawnInterval: Math.max(300, Math.round((1100 - s * 80) / userMult)),
+                    maxBubbles: Math.min(20, 8 + s * 2)
                 };
             }
         };
@@ -2134,10 +2352,36 @@
             overlay.id = 'bubble-start-overlay';
             overlay.innerHTML = `
                 <div class="start-emoji">💖</div>
-                <div class="start-text">방울을 톡톡 터뜨려요!</div>
+                <div class="start-text">풍선을 톡톡 터뜨려요!</div>
+                <div style="font-size:clamp(0.85rem,2.3vw,1rem);font-weight:700;color:#666;margin-top:12px;">빠르기 선택</div>
+                <div class="speed-control" style="display:flex;gap:10px;margin:8px 0 20px;">
+                    <button class="speed-btn${BubbleGame.userSpeedLevel===0?' active':''}" data-speed="0" style="padding:12px 20px;border-radius:22px;border:2.5px solid #90CAF9;background:${BubbleGame.userSpeedLevel===0?'linear-gradient(135deg,#42A5F5,#1E88E5)':'white'};color:${BubbleGame.userSpeedLevel===0?'white':'#333'};font-size:clamp(0.95rem,2.8vw,1.2rem);font-weight:800;cursor:pointer;box-shadow:${BubbleGame.userSpeedLevel===0?'0 4px 12px rgba(66,165,245,0.35)':'0 2px 6px rgba(0,0,0,0.08)'};transition:all 0.2s;min-height:48px;">🐢 느리게</button>
+                    <button class="speed-btn${BubbleGame.userSpeedLevel===1?' active':''}" data-speed="1" style="padding:12px 20px;border-radius:22px;border:2.5px solid #FFB74D;background:${BubbleGame.userSpeedLevel===1?'linear-gradient(135deg,#FFA726,#F57C00)':'white'};color:${BubbleGame.userSpeedLevel===1?'white':'#333'};font-size:clamp(0.95rem,2.8vw,1.2rem);font-weight:800;cursor:pointer;box-shadow:${BubbleGame.userSpeedLevel===1?'0 4px 12px rgba(255,167,38,0.35)':'0 2px 6px rgba(0,0,0,0.08)'};transition:all 0.2s;min-height:48px;">🐇 보통</button>
+                    <button class="speed-btn${BubbleGame.userSpeedLevel===2?' active':''}" data-speed="2" style="padding:12px 20px;border-radius:22px;border:2.5px solid #EF5350;background:${BubbleGame.userSpeedLevel===2?'linear-gradient(135deg,#F44336,#C62828)':'white'};color:${BubbleGame.userSpeedLevel===2?'white':'#333'};font-size:clamp(0.95rem,2.8vw,1.2rem);font-weight:800;cursor:pointer;box-shadow:${BubbleGame.userSpeedLevel===2?'0 4px 12px rgba(244,67,54,0.35)':'0 2px 6px rgba(0,0,0,0.08)'};transition:all 0.2s;min-height:48px;">🚀 빠르게</button>
+                </div>
                 <button class="bubble-start-btn" id="bubble-start-btn">시작! 🎉</button>
             `;
             area.appendChild(overlay);
+
+            // Speed button handlers
+            overlay.querySelectorAll('.speed-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const level = parseInt(btn.dataset.speed);
+                    BubbleGame.userSpeedLevel = level;
+                    const gradients = ['linear-gradient(135deg,#42A5F5,#1E88E5)', 'linear-gradient(135deg,#FFA726,#F57C00)', 'linear-gradient(135deg,#F44336,#C62828)'];
+                    const borders = ['#90CAF9', '#FFB74D', '#EF5350'];
+                    const shadows = ['0 4px 12px rgba(66,165,245,0.35)', '0 4px 12px rgba(255,167,38,0.35)', '0 4px 12px rgba(244,67,54,0.35)'];
+                    overlay.querySelectorAll('.speed-btn').forEach(b => {
+                        const sl = parseInt(b.dataset.speed);
+                        b.style.background = sl === level ? gradients[sl] : 'white';
+                        b.style.color = sl === level ? 'white' : '#333';
+                        b.style.border = `2.5px solid ${borders[sl]}`;
+                        b.style.boxShadow = sl === level ? shadows[sl] : '0 2px 6px rgba(0,0,0,0.08)';
+                    });
+                    haptic('light');
+                });
+            });
 
             document.getElementById('bubble-start-btn').addEventListener('click', startBubbleGameplay);
             document.getElementById('bubble-start-btn').addEventListener('touchend', (e) => {
@@ -2152,9 +2396,17 @@
             const overlay = document.getElementById('bubble-start-overlay');
             if (overlay) overlay.remove();
 
-            // Hide home button, show pause button during gameplay
+            // Keep home button visible during gameplay (tapping it pauses then goes home)
             const homeBtn = document.getElementById('home-btn');
-            if (homeBtn) homeBtn.style.display = 'none';
+            if (homeBtn) {
+                homeBtn.style.display = 'flex';
+                homeBtn.onclick = () => {
+                    if (BubbleGame.running && !BubbleGame.paused) {
+                        toggleBubblePause();
+                    }
+                    goHome();
+                };
+            }
             const pauseBtn = document.getElementById('bubble-pause-btn');
             if (pauseBtn) pauseBtn.style.display = 'flex';
 
@@ -2182,6 +2434,9 @@
             updateBubbleScore();
             updateBubbleStage();
 
+            // Add floating cloud decorations
+            addBubbleClouds();
+
             // Play a starting jingle
             if (Settings.soundEnabled) {
                 const ctx = getAudioContext();
@@ -2205,6 +2460,33 @@
             BubbleGame.animFrameId = requestAnimationFrame(updateBubbles);
         }
 
+        function addBubbleClouds() {
+            const area = document.getElementById('bubble-area');
+            if (!area) return;
+            // Add cloud keyframe if not present
+            if (!document.getElementById('cloud-drift-style')) {
+                const s = document.createElement('style');
+                s.id = 'cloud-drift-style';
+                s.textContent = `
+                    @keyframes cloudDrift {
+                        0% { transform: translateX(-120px); }
+                        100% { transform: translateX(calc(100vw + 120px)); }
+                    }
+                `;
+                document.head.appendChild(s);
+            }
+            for (let i = 0; i < 3; i++) {
+                const cloud = document.createElement('div');
+                const topPos = 5 + i * 12 + Math.random() * 8;
+                const size = 40 + Math.random() * 30;
+                const speed = 25 + Math.random() * 20;
+                const delay = i * 8 + Math.random() * 5;
+                cloud.textContent = '☁️';
+                cloud.style.cssText = `position:absolute;top:${topPos}%;font-size:${size}px;opacity:0.15;z-index:1;pointer-events:none;animation:cloudDrift ${speed}s linear ${delay}s infinite;will-change:transform;`;
+                area.appendChild(cloud);
+            }
+        }
+
         function scheduleBubbleSpawn() {
             if (!BubbleGame.running) return;
             const diff = BubbleGame.getStageDifficulty();
@@ -2225,29 +2507,15 @@
             const areaRect = area.getBoundingClientRect();
 
             const bubble = document.createElement('div');
-            const shape = BubbleGame.shapes[Math.floor(Math.random() * BubbleGame.shapes.length)];
             const color = BubbleGame.colors[Math.floor(Math.random() * BubbleGame.colors.length)];
 
-            bubble.className = 'bubble ' + shape + '-shape';
+            bubble.className = 'bubble balloon-shape';
             bubble.style.width = size + 'px';
             bubble.style.height = size + 'px';
+            bubble.textContent = '🎈';
+            bubble.style.fontSize = size * 0.75 + 'px';
+            bubble.style.filter = `drop-shadow(0 0 8px ${color}88) drop-shadow(0 0 16px ${color}44)`;
             bubble.style.color = color;
-
-            if (shape === 'circle') {
-                bubble.style.background = `radial-gradient(circle at 35% 35%, rgba(255,255,255,0.8), ${color}99, ${color})`;
-                bubble.style.borderColor = color;
-                bubble.style.boxShadow = `0 0 28px ${color}99, 0 0 56px ${color}44, inset 0 -8px 16px rgba(0,0,0,0.1), inset 0 4px 8px rgba(255,255,255,0.4)`;
-            } else if (shape === 'square') {
-                bubble.style.background = `linear-gradient(135deg, rgba(255,255,255,0.5), ${color}CC, ${color})`;
-                bubble.style.borderColor = color;
-                bubble.style.boxShadow = `0 6px 24px ${color}88, 0 0 40px ${color}33, inset 0 3px 6px rgba(255,255,255,0.3)`;
-            } else if (shape === 'triangle' || shape === 'heart') {
-                bubble.style.fontSize = size * 0.85 + 'px';
-                bubble.textContent = BubbleGame.shapeEmojis[shape];
-                bubble.style.filter = `drop-shadow(0 0 10px ${color}AA) drop-shadow(0 0 20px ${color}55)`;
-                bubble.style.textShadow = `0 0 6px ${color}, 0 2px 4px rgba(0,0,0,0.2)`;
-                bubble.style.webkitTextStroke = `2px ${color}`;
-            }
 
             const x = Math.random() * (areaRect.width - size);
             const y = areaRect.height + size;
@@ -2352,6 +2620,11 @@
             }, 350);
 
             checkStageUp();
+
+            // Milestone celebration every 50 points
+            if (BubbleGame.score > 0 && BubbleGame.score % 50 === 0) {
+                showMilestoneCelebration(BubbleGame.score);
+            }
         }
 
         function showBubbleCombo(count) {
@@ -2492,13 +2765,17 @@
                 style.id = 'ring-burst-styles';
                 style.textContent = `
                     @keyframes ringBurst {
-                        0% { width: 0; height: 0; border-width: 6px; opacity: 1; }
+                        0% { width: 0; height: 0; border-width: 12px; opacity: 1; }
                         60% { opacity: 0.7; }
-                        100% { width: 200px; height: 200px; border-width: 1px; opacity: 0; }
+                        100% { width: 450px; height: 450px; border-width: 1px; opacity: 0; }
                     }
                     @keyframes ringBurst2 {
-                        0% { width: 0; height: 0; border-width: 4px; opacity: 0.8; }
-                        100% { width: 140px; height: 140px; border-width: 1px; opacity: 0; }
+                        0% { width: 0; height: 0; border-width: 8px; opacity: 0.8; }
+                        100% { width: 350px; height: 350px; border-width: 1px; opacity: 0; }
+                    }
+                    @keyframes ringBurst3 {
+                        0% { width: 0; height: 0; border-width: 6px; opacity: 0.6; }
+                        100% { width: 400px; height: 400px; border-width: 1px; opacity: 0; }
                     }
                 `;
                 document.head.appendChild(style);
@@ -2520,63 +2797,68 @@
             const ring2 = document.createElement('div');
             ring2.style.cssText = `position:absolute;border-radius:50%;border:4px solid ${ringColor}80;transform:translate(-50%,-50%);animation:ringBurst2 0.5s ease-out 0.08s forwards;pointer-events:none;`;
             container.appendChild(ring2);
+            // Third ring - rainbow colored
+            const ring3 = document.createElement('div');
+            const rainbowBorder = 'conic-gradient(from 0deg, #FF1744, #FF6D00, #FFD600, #00C853, #2979FF, #AA00FF, #FF1744)';
+            ring3.style.cssText = `position:absolute;border-radius:50%;border:3px solid transparent;background:${rainbowBorder};-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;padding:3px;transform:translate(-50%,-50%);animation:ringBurst3 0.55s ease-out 0.14s forwards;pointer-events:none;`;
+            container.appendChild(ring3);
 
-            // Big round particles - larger and more dramatic (16 particles)
-            for (let i = 0; i < 16; i++) {
+            // Big round particles - huge and flashier (30 particles)
+            for (let i = 0; i < 30; i++) {
                 const p = document.createElement('div');
                 p.className = 'pop-particle';
-                const angle = (i / 16) * Math.PI * 2;
-                const dist = 120 + Math.random() * 200;
+                const angle = (i / 30) * Math.PI * 2;
+                const dist = 180 + Math.random() * 380;
                 const dx = Math.cos(angle) * dist;
                 const dy = Math.sin(angle) * dist;
-                const size = 20 + Math.random() * 25;
+                const size = 32 + Math.random() * 44;
                 p.style.width = size + 'px';
                 p.style.height = size + 'px';
                 p.style.setProperty('--dx', dx + 'px');
                 p.style.setProperty('--dy', dy + 'px');
                 const c = colors[Math.floor(Math.random() * colors.length)];
-                p.style.background = c;
-                p.style.boxShadow = `0 0 14px ${c}, 0 0 28px ${c}70`;
+                p.style.background = `radial-gradient(circle at 35% 35%, rgba(255,255,255,0.9), ${c})`;
+                p.style.boxShadow = `0 0 22px ${c}, 0 0 44px ${c}80, 0 0 66px ${c}40`;
                 container.appendChild(p);
             }
 
-            // Star-shaped sparkles mixed in - using unicode star character
-            for (let i = 0; i < 14; i++) {
+            // Star-shaped sparkles mixed in - bigger and more (24 particles)
+            for (let i = 0; i < 24; i++) {
                 const p = document.createElement('div');
                 p.className = 'pop-particle sparkle-star';
-                const angle = (i / 14) * Math.PI * 2 + 0.2;
-                const dist = 80 + Math.random() * 160;
+                const angle = (i / 24) * Math.PI * 2 + 0.15;
+                const dist = 120 + Math.random() * 300;
                 const dx = Math.cos(angle) * dist;
                 const dy = Math.sin(angle) * dist;
                 p.style.width = 'auto';
                 p.style.height = 'auto';
-                p.style.fontSize = (22 + Math.random() * 10) + 'px';
+                p.style.fontSize = (32 + Math.random() * 22) + 'px';
                 p.style.setProperty('--dx', dx + 'px');
                 p.style.setProperty('--dy', dy + 'px');
                 p.style.background = 'none';
                 const sc = colors[Math.floor(Math.random() * colors.length)];
                 p.style.color = sc;
-                p.style.filter = `drop-shadow(0 0 6px ${sc})`;
-                p.textContent = ['✦', '✧', '◆', '★'][i % 4];
+                p.style.filter = `drop-shadow(0 0 10px ${sc}) drop-shadow(0 0 20px ${sc}80)`;
+                p.textContent = ['✦', '✧', '◆', '★', '❖'][i % 5];
                 container.appendChild(p);
             }
 
-            // Star emoji particles - much bigger
-            const starEmojis = ['✨', '⭐', '💫', '🌟'];
-            for (let i = 0; i < 8; i++) {
+            // Star emoji particles - huge and flashy (16 particles)
+            const starEmojis = ['✨', '⭐', '💫', '🌟', '💖'];
+            for (let i = 0; i < 16; i++) {
                 const p = document.createElement('div');
                 p.className = 'pop-particle';
                 const angle = Math.random() * Math.PI * 2;
-                const dist = 90 + Math.random() * 140;
+                const dist = 140 + Math.random() * 280;
                 const dx = Math.cos(angle) * dist;
                 const dy = Math.sin(angle) * dist;
                 p.style.width = 'auto';
                 p.style.height = 'auto';
-                p.style.fontSize = (26 + Math.random() * 10) + 'px';
+                p.style.fontSize = (38 + Math.random() * 22) + 'px';
                 p.style.background = 'none';
                 p.style.setProperty('--dx', dx + 'px');
                 p.style.setProperty('--dy', dy + 'px');
-                p.textContent = starEmojis[i % 4];
+                p.textContent = starEmojis[i % 5];
                 container.appendChild(p);
             }
 
@@ -2595,10 +2877,10 @@
             const osc = ctx.createOscillator();
             const oscGain = ctx.createGain();
             osc.type = 'sine';
-            const baseFreq = 900 + Math.random() * 500;
+            const baseFreq = 950 + Math.random() * 500;
             osc.frequency.setValueAtTime(baseFreq, now);
             osc.frequency.exponentialRampToValueAtTime(200, now + 0.1);
-            oscGain.gain.setValueAtTime(0.3, now);
+            oscGain.gain.setValueAtTime(0.32, now);
             oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
             osc.connect(oscGain);
             oscGain.connect(getAudioDest());
@@ -2738,9 +3020,12 @@
             BubbleGame.bubbles.forEach(b => b.el.remove());
             BubbleGame.bubbles = [];
 
-            // Restore home button, hide pause button
+            // Restore home button with normal handler, hide pause button
             const homeBtn = document.getElementById('home-btn');
-            if (homeBtn) homeBtn.style.display = 'flex';
+            if (homeBtn) {
+                homeBtn.style.display = 'flex';
+                homeBtn.onclick = () => goHome();
+            }
             const pauseBtn = document.getElementById('bubble-pause-btn');
             if (pauseBtn) { pauseBtn.style.display = 'none'; pauseBtn.textContent = '⏸️'; }
 
@@ -2802,10 +3087,15 @@
                 { id: 'pig',      name: '돼지' },
                 { id: 'horse',    name: '말' },
                 { id: 'elephant', name: '코끼리' },
-                { id: 'frog',     name: '개구리' }
+                { id: 'frog',     name: '개구리' },
+                { id: 'bear',     name: '곰' },
+                { id: 'rabbit',   name: '토끼' },
+                { id: 'mouse',    name: '쥐' },
+                { id: 'owl',      name: '부엉이' },
+                { id: 'monkey',   name: '원숭이' }
             ],
 
-            getStageGoal() { return 5; },
+            getStageGoal() { return this.stage <= 1 ? 5 : this.stage <= 2 ? 7 : 3 + this.stage * 2; },
             getChoiceCount() { return Math.min(this.stage + 1, this.animals.length); }
         };
 
@@ -3084,6 +3374,151 @@
                     <!-- Nostrils -->
                     <circle cx="42" cy="48" r="2" fill="#2E7D32"/>
                     <circle cx="58" cy="48" r="2" fill="#2E7D32"/>
+                </svg>`,
+                bear: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Round ears -->
+                    <circle cx="25" cy="25" r="14" fill="#6D4C41"/>
+                    <circle cx="75" cy="25" r="14" fill="#6D4C41"/>
+                    <circle cx="25" cy="25" r="9" fill="#8D6E63"/>
+                    <circle cx="75" cy="25" r="9" fill="#8D6E63"/>
+                    <!-- Face -->
+                    <circle cx="50" cy="55" r="36" fill="#8D6E63"/>
+                    <!-- Inner face (lighter) -->
+                    <circle cx="50" cy="58" r="28" fill="#A1887F"/>
+                    <!-- Eyes -->
+                    <circle cx="37" cy="48" r="5.5" fill="white"/>
+                    <circle cx="63" cy="48" r="5.5" fill="white"/>
+                    <circle cx="38" cy="49" r="3.5" fill="#2C1810"/>
+                    <circle cx="64" cy="49" r="3.5" fill="#2C1810"/>
+                    <circle cx="39" cy="47" r="1.2" fill="white"/>
+                    <circle cx="65" cy="47" r="1.2" fill="white"/>
+                    <!-- Muzzle -->
+                    <ellipse cx="50" cy="62" rx="14" ry="11" fill="#D7CCC8"/>
+                    <!-- Nose -->
+                    <ellipse cx="50" cy="58" rx="6" ry="4.5" fill="#3E2723"/>
+                    <ellipse cx="50" cy="56.5" rx="2.5" ry="1.2" fill="#5D4037" opacity="0.5"/>
+                    <!-- Mouth -->
+                    <path d="M50 63 Q44 70 40 67" fill="none" stroke="#4E342E" stroke-width="1.5" stroke-linecap="round"/>
+                    <path d="M50 63 Q56 70 60 67" fill="none" stroke="#4E342E" stroke-width="1.5" stroke-linecap="round"/>
+                    <!-- Cheeks -->
+                    <circle cx="30" cy="60" r="5" fill="#FFAB91" opacity="0.4"/>
+                    <circle cx="70" cy="60" r="5" fill="#FFAB91" opacity="0.4"/>
+                </svg>`,
+                rabbit: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Long ears -->
+                    <ellipse cx="36" cy="20" rx="9" ry="24" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+                    <ellipse cx="64" cy="20" rx="9" ry="24" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+                    <!-- Inner ears (pink) -->
+                    <ellipse cx="36" cy="20" rx="5" ry="18" fill="#FFB6C1"/>
+                    <ellipse cx="64" cy="20" rx="5" ry="18" fill="#FFB6C1"/>
+                    <!-- Face -->
+                    <circle cx="50" cy="62" r="30" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+                    <!-- Eyes -->
+                    <circle cx="38" cy="55" r="5" fill="white"/>
+                    <circle cx="62" cy="55" r="5" fill="white"/>
+                    <circle cx="39" cy="56" r="3.5" fill="#E91E63"/>
+                    <circle cx="63" cy="56" r="3.5" fill="#E91E63"/>
+                    <circle cx="40" cy="54" r="1.2" fill="white"/>
+                    <circle cx="64" cy="54" r="1.2" fill="white"/>
+                    <!-- Nose -->
+                    <ellipse cx="50" cy="65" rx="4" ry="3" fill="#FF8A80"/>
+                    <!-- Mouth -->
+                    <path d="M50 68 Q46 72 43 70" fill="none" stroke="#BDBDBD" stroke-width="1.3" stroke-linecap="round"/>
+                    <path d="M50 68 Q54 72 57 70" fill="none" stroke="#BDBDBD" stroke-width="1.3" stroke-linecap="round"/>
+                    <!-- Whiskers -->
+                    <line x1="18" y1="62" x2="36" y2="64" stroke="#BDBDBD" stroke-width="1"/>
+                    <line x1="18" y1="68" x2="36" y2="67" stroke="#BDBDBD" stroke-width="1"/>
+                    <line x1="64" y1="64" x2="82" y2="62" stroke="#BDBDBD" stroke-width="1"/>
+                    <line x1="64" y1="67" x2="82" y2="68" stroke="#BDBDBD" stroke-width="1"/>
+                    <!-- Cheeks -->
+                    <circle cx="33" cy="66" r="5" fill="#FFCDD2" opacity="0.5"/>
+                    <circle cx="67" cy="66" r="5" fill="#FFCDD2" opacity="0.5"/>
+                    <!-- Buck teeth -->
+                    <rect x="47" y="69" width="3" height="4" rx="1" fill="white" stroke="#E0E0E0" stroke-width="0.5"/>
+                    <rect x="51" y="69" width="3" height="4" rx="1" fill="white" stroke="#E0E0E0" stroke-width="0.5"/>
+                </svg>`,
+                mouse: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Large round ears -->
+                    <circle cx="28" cy="32" r="18" fill="#E0E0E0"/>
+                    <circle cx="72" cy="32" r="18" fill="#E0E0E0"/>
+                    <circle cx="28" cy="32" r="12" fill="#F8BBD0"/>
+                    <circle cx="72" cy="32" r="12" fill="#F8BBD0"/>
+                    <!-- Face -->
+                    <ellipse cx="50" cy="58" rx="28" ry="26" fill="#BDBDBD"/>
+                    <ellipse cx="50" cy="60" rx="24" ry="22" fill="#E0E0E0"/>
+                    <!-- Eyes -->
+                    <circle cx="40" cy="52" r="5" fill="white"/>
+                    <circle cx="60" cy="52" r="5" fill="white"/>
+                    <circle cx="41" cy="53" r="3" fill="#1A1A1A"/>
+                    <circle cx="61" cy="53" r="3" fill="#1A1A1A"/>
+                    <circle cx="42" cy="51" r="1" fill="white"/>
+                    <circle cx="62" cy="51" r="1" fill="white"/>
+                    <!-- Nose -->
+                    <ellipse cx="50" cy="63" rx="5" ry="4" fill="#FF8A80"/>
+                    <!-- Whiskers -->
+                    <line x1="15" y1="60" x2="38" y2="63" stroke="#9E9E9E" stroke-width="1"/>
+                    <line x1="15" y1="66" x2="38" y2="66" stroke="#9E9E9E" stroke-width="1"/>
+                    <line x1="62" y1="63" x2="85" y2="60" stroke="#9E9E9E" stroke-width="1"/>
+                    <line x1="62" y1="66" x2="85" y2="66" stroke="#9E9E9E" stroke-width="1"/>
+                    <!-- Mouth -->
+                    <path d="M50 67 Q46 72 43 69" fill="none" stroke="#9E9E9E" stroke-width="1.2" stroke-linecap="round"/>
+                    <path d="M50 67 Q54 72 57 69" fill="none" stroke="#9E9E9E" stroke-width="1.2" stroke-linecap="round"/>
+                    <!-- Front teeth -->
+                    <rect x="47" y="67" width="3" height="4" rx="1" fill="white" stroke="#BDBDBD" stroke-width="0.5"/>
+                    <rect x="50" y="67" width="3" height="4" rx="1" fill="white" stroke="#BDBDBD" stroke-width="0.5"/>
+                </svg>`,
+                owl: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Body -->
+                    <ellipse cx="50" cy="62" rx="30" ry="28" fill="#8D6E63"/>
+                    <!-- Chest feathers -->
+                    <ellipse cx="50" cy="68" rx="18" ry="20" fill="#D7CCC8"/>
+                    <!-- Ear tufts -->
+                    <polygon points="30,25 25,10 38,28" fill="#5D4037"/>
+                    <polygon points="70,25 75,10 62,28" fill="#5D4037"/>
+                    <!-- Head -->
+                    <circle cx="50" cy="38" r="24" fill="#8D6E63"/>
+                    <!-- Eye circles -->
+                    <circle cx="38" cy="36" r="12" fill="#FFF8E1"/>
+                    <circle cx="62" cy="36" r="12" fill="#FFF8E1"/>
+                    <!-- Pupils -->
+                    <circle cx="38" cy="36" r="7" fill="#1A1A1A"/>
+                    <circle cx="62" cy="36" r="7" fill="#1A1A1A"/>
+                    <circle cx="40" cy="34" r="2.5" fill="white"/>
+                    <circle cx="64" cy="34" r="2.5" fill="white"/>
+                    <!-- Beak -->
+                    <polygon points="50,42 46,48 54,48" fill="#FF8F00"/>
+                    <!-- Wing hints -->
+                    <ellipse cx="24" cy="58" rx="8" ry="16" fill="#6D4C41" transform="rotate(-8 24 58)"/>
+                    <ellipse cx="76" cy="58" rx="8" ry="16" fill="#6D4C41" transform="rotate(8 76 58)"/>
+                    <!-- Belly feather pattern -->
+                    <path d="M40 60 Q50 65 60 60" fill="none" stroke="#A1887F" stroke-width="1.2"/>
+                    <path d="M42 68 Q50 73 58 68" fill="none" stroke="#A1887F" stroke-width="1.2"/>
+                </svg>`,
+                monkey: `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Ears -->
+                    <circle cx="20" cy="48" r="14" fill="#8D6E63"/>
+                    <circle cx="80" cy="48" r="14" fill="#8D6E63"/>
+                    <circle cx="20" cy="48" r="9" fill="#FFCC80"/>
+                    <circle cx="80" cy="48" r="9" fill="#FFCC80"/>
+                    <!-- Face -->
+                    <circle cx="50" cy="52" r="30" fill="#8D6E63"/>
+                    <!-- Inner face -->
+                    <ellipse cx="50" cy="58" rx="20" ry="18" fill="#FFCC80"/>
+                    <!-- Eyes -->
+                    <circle cx="38" cy="46" r="6" fill="white"/>
+                    <circle cx="62" cy="46" r="6" fill="white"/>
+                    <circle cx="39" cy="47" r="3.5" fill="#3E2723"/>
+                    <circle cx="63" cy="47" r="3.5" fill="#3E2723"/>
+                    <circle cx="40" cy="45" r="1.2" fill="white"/>
+                    <circle cx="64" cy="45" r="1.2" fill="white"/>
+                    <!-- Nostrils -->
+                    <ellipse cx="46" cy="58" rx="3" ry="2.5" fill="#6D4C41"/>
+                    <ellipse cx="54" cy="58" rx="3" ry="2.5" fill="#6D4C41"/>
+                    <!-- Mouth - big smile -->
+                    <path d="M38 65 Q50 75 62 65" fill="none" stroke="#5D4037" stroke-width="2" stroke-linecap="round"/>
+                    <!-- Eyebrow ridges -->
+                    <path d="M32 39 Q38 36 44 39" fill="none" stroke="#6D4C41" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M56 39 Q62 36 68 39" fill="none" stroke="#6D4C41" stroke-width="2" stroke-linecap="round"/>
                 </svg>`
             };
             return svgs[id] || '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="30" fill="#ccc"/></svg>';
@@ -3186,12 +3621,19 @@
             const question = document.createElement('div');
             question.className = 'animal-question';
             question.id = 'animal-question';
-            question.textContent = '이 소리는 어떤 동물일까요?';
+            question.textContent = '이 소리는 어떤 동물일까요? 🤔';
 
             const listenBtn = document.createElement('button');
             listenBtn.className = 'animal-listen-btn';
             listenBtn.id = 'animal-listen-btn';
-            listenBtn.textContent = '🔊 소리 다시 듣기';
+            listenBtn.innerHTML = '<span style="display:inline-block;animation:listenIconBounce 1.5s ease-in-out infinite;">🔊</span> 소리 다시 듣기';
+            // Add listen icon bounce keyframe if needed
+            if (!document.getElementById('listen-icon-style')) {
+                const lstyle = document.createElement('style');
+                lstyle.id = 'listen-icon-style';
+                lstyle.textContent = '@keyframes listenIconBounce { 0%,100%{transform:scale(1);} 50%{transform:scale(1.15);} }';
+                document.head.appendChild(lstyle);
+            }
             listenBtn.addEventListener('click', () => {
                 if (AnimalGame.currentAnswer) {
                     playAnimalSound(AnimalGame.currentAnswer);
@@ -3219,7 +3661,12 @@
                 pig: { bg: 'rgba(244,143,177,0.08)', border: '#F48FB1' },
                 horse: { bg: 'rgba(161,136,127,0.08)', border: '#A1887F' },
                 elephant: { bg: 'rgba(144,164,174,0.08)', border: '#90A4AE' },
-                frog: { bg: 'rgba(102,187,106,0.08)', border: '#66BB6A' }
+                frog: { bg: 'rgba(102,187,106,0.08)', border: '#66BB6A' },
+                bear: { bg: 'rgba(141,110,99,0.08)', border: '#8D6E63' },
+                rabbit: { bg: 'rgba(244,143,177,0.08)', border: '#F48FB1' },
+                mouse: { bg: 'rgba(189,189,189,0.08)', border: '#9E9E9E' },
+                owl: { bg: 'rgba(141,110,99,0.08)', border: '#8D6E63' },
+                monkey: { bg: 'rgba(255,138,101,0.08)', border: '#FF8A65' }
             };
             AnimalGame.currentChoices.forEach(animal => {
                 const card = document.createElement('div');
@@ -3266,6 +3713,18 @@
             content.appendChild(progressText);
             content.appendChild(cardsContainer);
             area.appendChild(content);
+
+            // Entrance animation for cards - gentle stagger
+            const allCards = cardsContainer.querySelectorAll('.animal-card');
+            allCards.forEach((card, i) => {
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.8) translateY(20px)';
+                setTimeout(() => {
+                    card.style.transition = 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                    card.style.opacity = '1';
+                    card.style.transform = 'scale(1) translateY(0)';
+                }, 80 + i * 80);
+            });
         }
 
         function onAnimalCardTap(selectedId) {
@@ -3312,7 +3771,7 @@
                     if (AnimalGame.running) {
                         startAnimalRound();
                     }
-                }, isStageUp ? 2500 : 1500);
+                }, isStageUp ? 2200 : 1200);
 
             } else {
                 AnimalGame.locked = true;
@@ -3322,17 +3781,34 @@
                 showAnimalResultOverlay('❌', area);
                 playWrongSound();
 
+                // Highlight the correct answer so the child learns + show correct animal name
                 setTimeout(() => {
-                    if (AnimalGame.running) {
-                        AnimalGame.locked = false;
-                        const overlay = document.querySelector('.animal-result-overlay');
-                        if (overlay) overlay.remove();
-                        if (selectedCard) {
-                            selectedCard.classList.remove('wrong-flash');
-                            selectedCard.style.background = 'white';
+                    const correctCard = document.querySelector(`.animal-card[data-animal-id="${AnimalGame.currentAnswer}"]`);
+                    if (correctCard) {
+                        correctCard.style.transition = 'all 0.4s ease';
+                        correctCard.style.boxShadow = '0 0 0 5px #4CAF50, 0 0 24px rgba(76,175,80,0.6)';
+                        correctCard.style.transform = 'scale(1.12)';
+                        correctCard.style.background = 'linear-gradient(145deg, rgba(200,230,201,0.9), rgba(165,214,167,0.7))';
+                        // Show correct animal name label prominently
+                        const correctAnimal = AnimalGame.animals.find(a => a.id === AnimalGame.currentAnswer);
+                        if (correctAnimal) {
+                            const nameLabel = document.createElement('div');
+                            nameLabel.style.cssText = 'position:absolute;bottom:-28px;left:50%;transform:translateX(-50%);background:#4CAF50;color:white;padding:4px 14px;border-radius:12px;font-size:clamp(0.85rem,2.2vw,1rem);font-weight:800;white-space:nowrap;box-shadow:0 2px 8px rgba(76,175,80,0.4);z-index:10;animation:stageUpPop 0.5s cubic-bezier(0.34,1.56,0.64,1);';
+                            nameLabel.textContent = '정답: ' + correctAnimal.name;
+                            correctCard.style.position = 'relative';
+                            correctCard.appendChild(nameLabel);
                         }
                     }
-                }, 1000);
+                    // Play the correct animal sound so child can associate
+                    playAnimalSound(AnimalGame.currentAnswer);
+                }, 600);
+
+                // Auto-advance to next round after showing the correct answer
+                AnimalGame.advanceTimer = setTimeout(() => {
+                    if (AnimalGame.running) {
+                        startAnimalRound();
+                    }
+                }, 2500);
             }
         }
 
@@ -3346,6 +3822,38 @@
             symbolDiv.className = 'animal-result-symbol';
             if (symbol === '⭕') {
                 symbolDiv.classList.add('correct');
+                // Add sparkle particle burst around the circle
+                const sparkleColors = ['#FFD700', '#FF6B6B', '#4CAF50', '#42A5F5', '#FF4081', '#00E5FF', '#FFAB00', '#E040FB'];
+                for (let i = 0; i < 24; i++) {
+                    const sp = document.createElement('div');
+                    const angle = (i / 24) * Math.PI * 2;
+                    const dist = 120 + Math.random() * 200;
+                    const dx = Math.cos(angle) * dist;
+                    const dy = Math.sin(angle) * dist;
+                    const size = 8 + Math.random() * 16;
+                    const c = sparkleColors[Math.floor(Math.random() * sparkleColors.length)];
+                    sp.style.cssText = `position:absolute;left:50%;top:50%;width:${size}px;height:${size}px;border-radius:50%;background:${c};box-shadow:0 0 14px ${c},0 0 28px ${c}50;transform:translate(-50%,-50%);animation:animalSparkle 0.8s ease-out ${i*0.02}s forwards;pointer-events:none;--sdx:${dx}px;--sdy:${dy}px;`;
+                    overlay.appendChild(sp);
+                }
+                // Star emojis burst
+                const starEmojis = ['✨', '🌟', '⭐', '💖', '💫', '🎉'];
+                for (let i = 0; i < 12; i++) {
+                    const star = document.createElement('div');
+                    const angle = (i / 12) * Math.PI * 2 + 0.3;
+                    const dist = 80 + Math.random() * 160;
+                    const dx = Math.cos(angle) * dist;
+                    const dy = Math.sin(angle) * dist;
+                    star.textContent = starEmojis[Math.floor(Math.random() * starEmojis.length)];
+                    star.style.cssText = `position:absolute;left:50%;top:50%;font-size:${24+Math.random()*20}px;transform:translate(-50%,-50%);animation:animalSparkle 0.9s ease-out ${0.05+i*0.03}s forwards;pointer-events:none;--sdx:${dx}px;--sdy:${dy}px;filter:drop-shadow(0 0 8px rgba(255,215,0,0.8));`;
+                    overlay.appendChild(star);
+                }
+                // Add sparkle animation keyframe if not exists
+                if (!document.getElementById('animal-sparkle-style')) {
+                    const st = document.createElement('style');
+                    st.id = 'animal-sparkle-style';
+                    st.textContent = `@keyframes animalSparkle { 0%{transform:translate(-50%,-50%) scale(0);opacity:1;} 60%{opacity:0.8;} 100%{transform:translate(calc(-50% + var(--sdx)),calc(-50% + var(--sdy))) scale(0.3);opacity:0;} }`;
+                    document.head.appendChild(st);
+                }
             }
             symbolDiv.textContent = symbol;
             overlay.appendChild(symbolDiv);
@@ -3436,13 +3944,13 @@
             }
 
             // Sparkle emojis with glow - much larger and more variety
-            const sparkleEmojis = ['✨', '🌟', '⭐', '🎉', '💖', '🎊', '🎆', '💫'];
-            for (let i = 0; i < 28; i++) {
+            const sparkleEmojis = ['✨', '🌟', '⭐', '🎉', '💖', '🎊', '🎆', '💫', '🥳', '🎇', '🎀', '🦋', '🌸'];
+            for (let i = 0; i < 32; i++) {
                 const sparkle = document.createElement('div');
                 sparkle.className = 'confetti';
                 sparkle.textContent = sparkleEmojis[Math.floor(Math.random() * sparkleEmojis.length)];
                 sparkle.style.left = (Math.random() * 100) + '%';
-                sparkle.style.fontSize = (28 + Math.random() * 32) + 'px';
+                sparkle.style.fontSize = (30 + Math.random() * 36) + 'px';
                 sparkle.style.filter = 'drop-shadow(0 0 8px rgba(255,215,0,0.9)) drop-shadow(0 0 16px rgba(255,215,0,0.5))';
                 sparkle.style.animationDelay = (Math.random() * 0.4) + 's';
                 sparkle.style.animationDuration = (1.4 + Math.random() * 0.8) + 's';
@@ -3495,7 +4003,12 @@
             pig: '꿀꿀!',
             horse: '히힝~',
             elephant: '뿌우~',
-            frog: '개굴개굴!'
+            frog: '개굴개굴!',
+            bear: '으르렁!',
+            rabbit: '깡충깡충!',
+            mouse: '찍찍!',
+            owl: '부엉부엉!',
+            monkey: '끼끼!'
         };
 
         const ONOMATOPOEIA_COLORS = {
@@ -3509,7 +4022,12 @@
             pig: { color: '#FF6B8A', shadow: '#FFB6C1', glow: 'rgba(255,107,138,0.5)', stroke: '#D46A7A' },
             horse: { color: '#8B5E3C', shadow: '#C68E5B', glow: 'rgba(139,94,60,0.5)', stroke: '#5C3A20' },
             elephant: { color: '#7070A0', shadow: '#A0A0C0', glow: 'rgba(112,112,160,0.5)', stroke: '#505080' },
-            frog: { color: '#4CAF50', shadow: '#A5D6A7', glow: 'rgba(76,175,80,0.5)', stroke: '#2E7D32' }
+            frog: { color: '#4CAF50', shadow: '#A5D6A7', glow: 'rgba(76,175,80,0.5)', stroke: '#2E7D32' },
+            bear: { color: '#6D4C41', shadow: '#A1887F', glow: 'rgba(109,76,65,0.5)', stroke: '#3E2723' },
+            rabbit: { color: '#F48FB1', shadow: '#F8BBD0', glow: 'rgba(244,143,177,0.5)', stroke: '#C2185B' },
+            mouse: { color: '#9E9E9E', shadow: '#BDBDBD', glow: 'rgba(158,158,158,0.5)', stroke: '#616161' },
+            owl: { color: '#5D4037', shadow: '#8D6E63', glow: 'rgba(93,64,55,0.5)', stroke: '#3E2723' },
+            monkey: { color: '#FF8A65', shadow: '#FFAB91', glow: 'rgba(255,138,101,0.5)', stroke: '#BF360C' }
         };
 
         function showOnomatopoeia(animalId) {
@@ -3542,12 +4060,12 @@
 
             switch (animalId) {
                 case 'dog': {
-                    // 멍멍! - Two friendly barks: warm, round, clearly "멍멍" for toddlers
+                    // 멍멍! - Two distinct barks: pronounced "멍" vowel, stronger bark formant at 700Hz, punchier "ㅁ" consonant
                     const dest = getAudioDest();
                     for (let i = 0; i < 2; i++) {
                         const t = now + i * 0.45;
                         const pitchVar = 1 + (i * 0.05); // second bark slightly higher
-                        // Main bark: warm "멍" with clear vowel
+                        // Main bark: pronounced "멍" with strong vowel on 700Hz formant
                         const o = ctx.createOscillator();
                         const g = ctx.createGain();
                         const f1 = ctx.createBiquadFilter();
@@ -3556,14 +4074,29 @@
                         o.frequency.linearRampToValueAtTime(350 * pitchVar, t + 0.03);
                         o.frequency.linearRampToValueAtTime(250 * pitchVar, t + 0.10);
                         o.frequency.linearRampToValueAtTime(160 * pitchVar, t + 0.28);
-                        // Warm bandpass for clear "ㅓ" vowel
-                        f1.type = 'bandpass'; f1.frequency.setValueAtTime(650, t); f1.Q.setValueAtTime(3, t);
+                        // Stronger bandpass at 700Hz (dog bark formant) for clear "멍"
+                        f1.type = 'bandpass'; f1.frequency.setValueAtTime(700, t); f1.Q.setValueAtTime(3.5, t);
                         g.gain.setValueAtTime(0.001, t);
-                        g.gain.linearRampToValueAtTime(0.45, t + 0.015);
-                        g.gain.setValueAtTime(0.38, t + 0.10);
+                        g.gain.linearRampToValueAtTime(0.60, t + 0.012);
+                        g.gain.setValueAtTime(0.50, t + 0.10);
                         g.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
                         o.connect(f1); f1.connect(g); g.connect(dest);
                         o.start(t); o.stop(t + 0.28);
+                        // Second formant oscillator at ~1200Hz for brighter tone
+                        const o2 = ctx.createOscillator();
+                        const f2 = ctx.createBiquadFilter();
+                        const g2 = ctx.createGain();
+                        o2.type = 'sine';
+                        o2.frequency.setValueAtTime(240 * pitchVar, t);
+                        o2.frequency.linearRampToValueAtTime(420 * pitchVar, t + 0.03);
+                        o2.frequency.linearRampToValueAtTime(320 * pitchVar, t + 0.10);
+                        o2.frequency.linearRampToValueAtTime(210 * pitchVar, t + 0.28);
+                        f2.type = 'bandpass'; f2.frequency.setValueAtTime(1200, t); f2.Q.setValueAtTime(3.0, t);
+                        g2.gain.setValueAtTime(0.001, t);
+                        g2.gain.linearRampToValueAtTime(0.25, t + 0.012);
+                        g2.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+                        o2.connect(f2); f2.connect(g2); g2.connect(dest);
+                        o2.start(t); o2.stop(t + 0.28);
                         // Warm sub for body
                         const sub = ctx.createOscillator();
                         const subG = ctx.createGain();
@@ -3575,57 +4108,57 @@
                         subG.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
                         sub.connect(subG); subG.connect(dest);
                         sub.start(t); sub.stop(t + 0.25);
-                        // Soft "ㅁ" attack noise
-                        const nBuf = ctx.createBuffer(1, ctx.sampleRate * 0.025, ctx.sampleRate);
+                        // Punchy "ㅁ" attack noise
+                        const nBuf = ctx.createBuffer(1, ctx.sampleRate * 0.020, ctx.sampleRate);
                         const nData = nBuf.getChannelData(0);
-                        for (let j = 0; j < nData.length; j++) nData[j] = (Math.random() * 2 - 1) * (1 - j / nData.length) * 0.6;
+                        for (let j = 0; j < nData.length; j++) nData[j] = (Math.random() * 2 - 1) * (1 - j / nData.length) * 0.75;
                         const ns = ctx.createBufferSource(); ns.buffer = nBuf;
                         const nf = ctx.createBiquadFilter(); nf.type = 'lowpass'; nf.frequency.setValueAtTime(1200, t);
                         const ng = ctx.createGain();
-                        ng.gain.setValueAtTime(0.12, t); ng.gain.exponentialRampToValueAtTime(0.001, t + 0.025);
+                        ng.gain.setValueAtTime(0.16, t); ng.gain.exponentialRampToValueAtTime(0.001, t + 0.020);
                         ns.connect(nf); nf.connect(ng); ng.connect(dest);
-                        ns.start(t); ns.stop(t + 0.025);
+                        ns.start(t); ns.stop(t + 0.020);
                     }
                     break;
                 }
                 case 'cat': {
-                    // 야옹~ - Sweet meow: clear "야" rising → "옹" falling, gentle vibrato
+                    // 야옹~ - Musical meow: "야" at 400Hz → 650Hz, "옹" at 380Hz, richer harmonic, enhanced vibrato, longer sustain
                     const dest = getAudioDest();
-                    const dur = 0.85;
+                    const dur = 1.0;
                     const o = ctx.createOscillator();
                     const g = ctx.createGain();
                     o.type = 'sine';
-                    // Clear pitch contour: "야" rises, "옹" falls gently
-                    o.frequency.setValueAtTime(320, now);
-                    o.frequency.linearRampToValueAtTime(580, now + 0.10);
-                    o.frequency.setValueAtTime(570, now + 0.28);
-                    o.frequency.linearRampToValueAtTime(440, now + 0.50);
-                    o.frequency.linearRampToValueAtTime(340, now + dur);
+                    // Smooth contour: "야" rises (400→650Hz), "옹" falls (380Hz)
+                    o.frequency.setValueAtTime(400, now);
+                    o.frequency.linearRampToValueAtTime(650, now + 0.12);
+                    o.frequency.setValueAtTime(640, now + 0.28);
+                    o.frequency.linearRampToValueAtTime(450, now + 0.55);
+                    o.frequency.linearRampToValueAtTime(380, now + dur);
                     g.gain.setValueAtTime(0.001, now);
-                    g.gain.linearRampToValueAtTime(0.32, now + 0.04);
-                    g.gain.setValueAtTime(0.30, now + 0.30);
+                    g.gain.linearRampToValueAtTime(0.40, now + 0.04);
+                    g.gain.setValueAtTime(0.38, now + 0.30);
                     g.gain.exponentialRampToValueAtTime(0.001, now + dur);
                     o.connect(g); g.connect(dest);
                     o.start(now); o.stop(now + dur);
-                    // Soft harmonic for warmth
+                    // Second sine oscillator for richer harmonic
                     const o2 = ctx.createOscillator();
                     const g2 = ctx.createGain();
                     o2.type = 'sine';
-                    o2.frequency.setValueAtTime(640, now);
-                    o2.frequency.linearRampToValueAtTime(1160, now + 0.10);
-                    o2.frequency.setValueAtTime(1140, now + 0.28);
-                    o2.frequency.linearRampToValueAtTime(880, now + 0.50);
-                    o2.frequency.linearRampToValueAtTime(680, now + dur);
+                    o2.frequency.setValueAtTime(750, now);
+                    o2.frequency.linearRampToValueAtTime(1250, now + 0.12);
+                    o2.frequency.setValueAtTime(1200, now + 0.32);
+                    o2.frequency.linearRampToValueAtTime(850, now + 0.55);
+                    o2.frequency.linearRampToValueAtTime(720, now + dur);
                     g2.gain.setValueAtTime(0.001, now);
-                    g2.gain.linearRampToValueAtTime(0.12, now + 0.04);
-                    g2.gain.setValueAtTime(0.10, now + 0.30);
+                    g2.gain.linearRampToValueAtTime(0.15, now + 0.04);
+                    g2.gain.setValueAtTime(0.13, now + 0.30);
                     g2.gain.exponentialRampToValueAtTime(0.001, now + dur);
                     o2.connect(g2); g2.connect(dest);
                     o2.start(now); o2.stop(now + dur);
-                    // Gentle vibrato for meow character
+                    // Enhanced vibrato: 20Hz modulation for musical character
                     const v = ctx.createOscillator();
                     const vg = ctx.createGain();
-                    v.frequency.setValueAtTime(5.5, now); vg.gain.setValueAtTime(16, now);
+                    v.frequency.setValueAtTime(6.5, now); vg.gain.setValueAtTime(20, now);
                     v.connect(vg); vg.connect(o.frequency);
                     v.start(now); v.stop(now + dur);
                     break;
@@ -3638,10 +4171,10 @@
                     const g = ctx.createGain();
                     const flt = ctx.createBiquadFilter();
                     o.type = 'sawtooth';
-                    o.frequency.setValueAtTime(75, now);
-                    o.frequency.linearRampToValueAtTime(130, now + 0.20);
-                    o.frequency.setValueAtTime(120, now + 0.6);
-                    o.frequency.linearRampToValueAtTime(65, now + dur);
+                    o.frequency.setValueAtTime(70, now);
+                    o.frequency.linearRampToValueAtTime(140, now + 0.18);
+                    o.frequency.setValueAtTime(125, now + 0.55);
+                    o.frequency.linearRampToValueAtTime(60, now + dur);
                     flt.type = 'lowpass'; flt.frequency.setValueAtTime(420, now); flt.Q.setValueAtTime(1, now);
                     g.gain.setValueAtTime(0.001, now);
                     g.gain.linearRampToValueAtTime(0.38, now + 0.10);
@@ -3664,7 +4197,7 @@
                     // Gentle growl tremor
                     const tr = ctx.createOscillator();
                     const trg = ctx.createGain();
-                    tr.frequency.setValueAtTime(6, now); trg.gain.setValueAtTime(18, now);
+                    tr.frequency.setValueAtTime(5.5, now); trg.gain.setValueAtTime(22, now);
                     tr.connect(trg); trg.connect(o.frequency);
                     tr.start(now); tr.stop(now + dur);
                     // Soft breath noise
@@ -3754,7 +4287,7 @@
                     break;
                 }
                 case 'duck': {
-                    // 꽥꽥! - Two clear nasal quacks, softer
+                    // 꽥꽥! - Two clear nasal quacks with enhanced nasal resonance and sharp attack
                     const dest = getAudioDest();
                     for (let i = 0; i < 2; i++) {
                         const t = now + i * 0.42;
@@ -3765,23 +4298,24 @@
                         o.frequency.linearRampToValueAtTime(400, t + 0.04);
                         o.frequency.linearRampToValueAtTime(300, t + 0.11);
                         o.frequency.linearRampToValueAtTime(200, t + 0.25);
-                        bp.type = 'bandpass'; bp.frequency.setValueAtTime(700, t); bp.Q.setValueAtTime(5, t);
+                        // More nasal quality: higher Q for sharper resonance
+                        bp.type = 'bandpass'; bp.frequency.setValueAtTime(700, t); bp.Q.setValueAtTime(7, t);
                         g.gain.setValueAtTime(0.001, t);
-                        g.gain.linearRampToValueAtTime(0.35, t + 0.02);
-                        g.gain.setValueAtTime(0.30, t + 0.08);
+                        g.gain.linearRampToValueAtTime(0.40, t + 0.015);
+                        g.gain.setValueAtTime(0.35, t + 0.08);
                         g.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
                         o.connect(bp); bp.connect(g); g.connect(dest);
                         o.start(t); o.stop(t + 0.25);
-                        // Nasal overtone
+                        // High-Q resonant peak at 1800Hz for nasal character
                         const o2 = ctx.createOscillator(); const g2 = ctx.createGain();
                         const bp2 = ctx.createBiquadFilter();
                         o2.type = 'sawtooth';
                         o2.frequency.setValueAtTime(500, t);
                         o2.frequency.linearRampToValueAtTime(850, t + 0.04);
                         o2.frequency.linearRampToValueAtTime(650, t + 0.22);
-                        bp2.type = 'bandpass'; bp2.frequency.setValueAtTime(1400, t); bp2.Q.setValueAtTime(4, t);
+                        bp2.type = 'bandpass'; bp2.frequency.setValueAtTime(1800, t); bp2.Q.setValueAtTime(6.5, t);
                         g2.gain.setValueAtTime(0.001, t);
-                        g2.gain.linearRampToValueAtTime(0.18, t + 0.02);
+                        g2.gain.linearRampToValueAtTime(0.22, t + 0.015);
                         g2.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
                         o2.connect(bp2); bp2.connect(g2); g2.connect(dest);
                         o2.start(t); o2.stop(t + 0.22);
@@ -3986,6 +4520,180 @@
                     }
                     break;
                 }
+                case 'bear': {
+                    // 으르렁! - Deep growl, friendly but powerful, clear "으르렁" for toddlers
+                    const dest = getAudioDest();
+                    const dur = 1.1;
+                    const o = ctx.createOscillator();
+                    const g = ctx.createGain();
+                    const flt = ctx.createBiquadFilter();
+                    o.type = 'sawtooth';
+                    o.frequency.setValueAtTime(65, now);
+                    o.frequency.linearRampToValueAtTime(95, now + 0.12);
+                    o.frequency.setValueAtTime(90, now + 0.5);
+                    o.frequency.linearRampToValueAtTime(55, now + dur);
+                    flt.type = 'lowpass'; flt.frequency.setValueAtTime(350, now); flt.Q.setValueAtTime(1.2, now);
+                    g.gain.setValueAtTime(0.001, now);
+                    g.gain.linearRampToValueAtTime(0.35, now + 0.06);
+                    g.gain.setValueAtTime(0.32, now + 0.4);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+                    o.connect(flt); flt.connect(g); g.connect(dest);
+                    o.start(now); o.stop(now + dur);
+                    // Sub-bass rumble
+                    const sub = ctx.createOscillator();
+                    const subG = ctx.createGain();
+                    sub.type = 'sine';
+                    sub.frequency.setValueAtTime(38, now);
+                    sub.frequency.linearRampToValueAtTime(55, now + 0.12);
+                    sub.frequency.linearRampToValueAtTime(35, now + dur);
+                    subG.gain.setValueAtTime(0.001, now);
+                    subG.gain.linearRampToValueAtTime(0.20, now + 0.06);
+                    subG.gain.exponentialRampToValueAtTime(0.001, now + dur * 0.9);
+                    sub.connect(subG); subG.connect(dest);
+                    sub.start(now); sub.stop(now + dur);
+                    // Growl tremor
+                    const tr = ctx.createOscillator();
+                    const trg = ctx.createGain();
+                    tr.frequency.setValueAtTime(7, now); trg.gain.setValueAtTime(15, now);
+                    tr.connect(trg); trg.connect(o.frequency);
+                    tr.start(now); tr.stop(now + dur);
+                    // Breath noise at start
+                    const nBuf = ctx.createBuffer(1, ctx.sampleRate * 0.15, ctx.sampleRate);
+                    const nData = nBuf.getChannelData(0);
+                    for (let j = 0; j < nData.length; j++) nData[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / nData.length, 0.7) * 0.3;
+                    const ns = ctx.createBufferSource(); ns.buffer = nBuf;
+                    const nFlt = ctx.createBiquadFilter(); nFlt.type = 'lowpass'; nFlt.frequency.setValueAtTime(300, now);
+                    const ng = ctx.createGain();
+                    ng.gain.setValueAtTime(0.10, now); ng.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                    ns.connect(nFlt); nFlt.connect(ng); ng.connect(dest);
+                    ns.start(now); ns.stop(now + 0.15);
+                    break;
+                }
+                case 'rabbit': {
+                    // 깡충깡충! - Two bouncy hops: light, cheerful "깡" sounds
+                    const dest = getAudioDest();
+                    for (let i = 0; i < 2; i++) {
+                        const t = now + i * 0.38;
+                        const o = ctx.createOscillator();
+                        const g = ctx.createGain();
+                        o.type = 'sine';
+                        o.frequency.setValueAtTime(400 + i * 50, t);
+                        o.frequency.linearRampToValueAtTime(800 + i * 80, t + 0.06);
+                        o.frequency.linearRampToValueAtTime(600 + i * 40, t + 0.12);
+                        o.frequency.exponentialRampToValueAtTime(350, t + 0.22);
+                        g.gain.setValueAtTime(0.001, t);
+                        g.gain.linearRampToValueAtTime(0.30, t + 0.02);
+                        g.gain.setValueAtTime(0.25, t + 0.08);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.22);
+                        o.connect(g); g.connect(dest);
+                        o.start(t); o.stop(t + 0.22);
+                        const o2 = ctx.createOscillator();
+                        const g2 = ctx.createGain();
+                        o2.type = 'sine';
+                        o2.frequency.setValueAtTime(800 + i * 100, t);
+                        o2.frequency.linearRampToValueAtTime(1200 + i * 100, t + 0.04);
+                        o2.frequency.exponentialRampToValueAtTime(500, t + 0.18);
+                        g2.gain.setValueAtTime(0.001, t);
+                        g2.gain.linearRampToValueAtTime(0.12, t + 0.02);
+                        g2.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+                        o2.connect(g2); g2.connect(dest);
+                        o2.start(t); o2.stop(t + 0.18);
+                        const nBuf = ctx.createBuffer(1, ctx.sampleRate * 0.04, ctx.sampleRate);
+                        const nData = nBuf.getChannelData(0);
+                        for (let j = 0; j < nData.length; j++) nData[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / nData.length, 2) * 0.5;
+                        const ns = ctx.createBufferSource(); ns.buffer = nBuf;
+                        const nf = ctx.createBiquadFilter(); nf.type = 'lowpass'; nf.frequency.setValueAtTime(800, t + 0.12);
+                        const ng = ctx.createGain();
+                        ng.gain.setValueAtTime(0.08, t + 0.12); ng.gain.exponentialRampToValueAtTime(0.001, t + 0.16);
+                        ns.connect(nf); nf.connect(ng); ng.connect(dest);
+                        ns.start(t + 0.12); ns.stop(t + 0.16);
+                    }
+                    break;
+                }
+                case 'mouse': {
+                    // 찍찍! - Two high-pitched squeaks
+                    const dest = getAudioDest();
+                    for (let i = 0; i < 2; i++) {
+                        const t = now + i * 0.25;
+                        const o = ctx.createOscillator();
+                        const g = ctx.createGain();
+                        o.type = 'sine';
+                        o.frequency.setValueAtTime(1800 + i * 200, t);
+                        o.frequency.linearRampToValueAtTime(2400 + i * 200, t + 0.03);
+                        o.frequency.exponentialRampToValueAtTime(1500, t + 0.12);
+                        g.gain.setValueAtTime(0.001, t);
+                        g.gain.linearRampToValueAtTime(0.25, t + 0.01);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+                        o.connect(g); g.connect(dest);
+                        o.start(t); o.stop(t + 0.12);
+                        // Harmonic overtone
+                        const o2 = ctx.createOscillator();
+                        const g2 = ctx.createGain();
+                        o2.type = 'sine';
+                        o2.frequency.setValueAtTime(3200 + i * 300, t);
+                        o2.frequency.exponentialRampToValueAtTime(2200, t + 0.10);
+                        g2.gain.setValueAtTime(0.001, t);
+                        g2.gain.linearRampToValueAtTime(0.08, t + 0.01);
+                        g2.gain.exponentialRampToValueAtTime(0.001, t + 0.10);
+                        o2.connect(g2); g2.connect(dest);
+                        o2.start(t); o2.stop(t + 0.10);
+                    }
+                    break;
+                }
+                case 'owl': {
+                    // 부엉부엉! - Two deep hoots
+                    const dest = getAudioDest();
+                    for (let i = 0; i < 2; i++) {
+                        const t = now + i * 0.6;
+                        const o = ctx.createOscillator();
+                        const g = ctx.createGain();
+                        o.type = 'sine';
+                        o.frequency.setValueAtTime(280, t);
+                        o.frequency.linearRampToValueAtTime(320, t + 0.08);
+                        o.frequency.linearRampToValueAtTime(260, t + 0.35);
+                        g.gain.setValueAtTime(0.001, t);
+                        g.gain.linearRampToValueAtTime(0.35, t + 0.04);
+                        g.gain.setValueAtTime(0.30, t + 0.15);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+                        o.connect(g); g.connect(dest);
+                        o.start(t); o.stop(t + 0.35);
+                        // Breathy overtone
+                        const o2 = ctx.createOscillator();
+                        const g2 = ctx.createGain();
+                        o2.type = 'triangle';
+                        o2.frequency.setValueAtTime(560, t);
+                        o2.frequency.linearRampToValueAtTime(520, t + 0.30);
+                        g2.gain.setValueAtTime(0.001, t);
+                        g2.gain.linearRampToValueAtTime(0.10, t + 0.04);
+                        g2.gain.exponentialRampToValueAtTime(0.001, t + 0.30);
+                        o2.connect(g2); g2.connect(dest);
+                        o2.start(t); o2.stop(t + 0.30);
+                    }
+                    break;
+                }
+                case 'monkey': {
+                    // 끼끼! - High-pitched chattering
+                    const dest = getAudioDest();
+                    for (let i = 0; i < 3; i++) {
+                        const t = now + i * 0.18;
+                        const o = ctx.createOscillator();
+                        const g = ctx.createGain();
+                        o.type = 'sawtooth';
+                        const flt = ctx.createBiquadFilter();
+                        flt.type = 'bandpass';
+                        flt.frequency.setValueAtTime(1500, t);
+                        flt.Q.setValueAtTime(3, t);
+                        o.frequency.setValueAtTime(600 + i * 80, t);
+                        o.frequency.linearRampToValueAtTime(1000 + i * 100, t + 0.04);
+                        o.frequency.exponentialRampToValueAtTime(500, t + 0.12);
+                        g.gain.setValueAtTime(0.001, t);
+                        g.gain.linearRampToValueAtTime(0.28, t + 0.015);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+                        o.connect(flt); flt.connect(g); g.connect(dest);
+                        o.start(t); o.stop(t + 0.12);
+                    }
+                    break;
+                }
             }
         }
 
@@ -4082,11 +4790,17 @@
         const CanvasGame = {
             currentShape: null,
             drawingMode: false,
-            canvases: { outline: null, draw: null },
-            canvasCtx: { outline: null, draw: null },
+            canvases: { outline: null, draw: null, mask: null },
+            canvasCtx: { outline: null, draw: null, mask: null },
             running: false,
             brushSize: 8,
-            eraserMode: false
+            eraserMode: false,
+            paused: false,
+            resizeHandler: null,
+            secondDrawTimer: null,
+            undoStack: [],
+            maxUndoSteps: 20,
+            colorInsideOnly: true  // true = paint inside outline only, false = free draw
         };
 
         function initCanvasGame() {
@@ -4110,14 +4824,18 @@
             shapes.forEach(shape => {
                 const option = document.createElement('div');
                 option.className = 'sketch-option';
-                option.innerHTML = `
-                    <div class="sketch-option-emoji">${shape.emoji}</div>
-                    <div class="sketch-option-text">${shape.name}</div>
-                `;
+                option.innerHTML = `<div class="sketch-option-emoji">${shape.emoji}</div>`;
                 option.onclick = () => { haptic('light'); startSketchDrawing(shape.id); };
                 option.ontouchend = (e) => { e.preventDefault(); haptic('light'); startSketchDrawing(shape.id); };
                 selection.appendChild(option);
             });
+
+            // Title for sketch selection
+            const selTitle = document.createElement('div');
+            selTitle.className = 'start-text';
+            selTitle.textContent = '무엇을 그릴까요?';
+            selTitle.style.marginBottom = '16px';
+            overlay.appendChild(selTitle);
 
             overlay.appendChild(selection);
             area.appendChild(overlay);
@@ -4138,6 +4856,8 @@
             CanvasGame.currentShape = shapeId;
             CanvasGame.running = true;
             CanvasGame.paused = false;
+            CanvasGame.undoStack = [];
+            CanvasGame.colorInsideOnly = true; // default to outline-only mode
 
             const area = document.getElementById('canvas-area');
             area.innerHTML = '';
@@ -4152,14 +4872,19 @@
             outlineCanvas.id = 'sketch-outline-canvas';
             const drawCanvas = document.createElement('canvas');
             drawCanvas.id = 'sketch-draw-canvas';
+            // Hidden mask canvas - defines the paintable region (outline interior)
+            const maskCanvas = document.createElement('canvas');
+            maskCanvas.id = 'sketch-mask-canvas';
+            maskCanvas.style.display = 'none';
 
             canvasWrap.appendChild(outlineCanvas);
             canvasWrap.appendChild(drawCanvas);
+            canvasWrap.appendChild(maskCanvas);
 
             const toolbar = document.createElement('div');
             toolbar.className = 'sketch-toolbar';
 
-            const colors = ['#FF1744', '#FF6D00', '#FFD600', '#00C853', '#2979FF', '#9C27B0', '#FF4081', '#00BFA5'];
+            const colors = ['#FF1744', '#FF6D00', '#FFEA00', '#00E676', '#2979FF', '#651FFF', '#FF4081', '#00BFA5'];
             colors.forEach(color => {
                 const btn = document.createElement('button');
                 btn.className = 'sketch-color-btn';
@@ -4206,6 +4931,22 @@
             };
             toolbar.appendChild(eraserBtn);
 
+            // Undo button
+            const undoDivider = document.createElement('div');
+            undoDivider.className = 'sketch-divider';
+            toolbar.appendChild(undoDivider);
+
+            const undoBtn = document.createElement('button');
+            undoBtn.className = 'sketch-brush-btn';
+            undoBtn.textContent = '↩️';
+            undoBtn.style.fontSize = 'clamp(1.2rem, 3vw, 1.6rem)';
+            undoBtn.style.minHeight = '48px';
+            undoBtn.style.minWidth = '48px';
+            undoBtn.onclick = () => {
+                undoCanvasStroke();
+            };
+            toolbar.appendChild(undoBtn);
+
             toolbar.innerHTML += '<div style="flex: 1;"></div>';
 
             const actionBtns = document.createElement('div');
@@ -4220,29 +4961,49 @@
 
             const magicBtn = document.createElement('button');
             magicBtn.className = 'sketch-action-btn sketch-magic-btn';
-            magicBtn.textContent = '완성! 🎬';
+            magicBtn.textContent = '✨ 마법! ✨';
             magicBtn.style.minHeight = '48px';
             magicBtn.onclick = () => { haptic('success'); startAquarium(); };
             actionBtns.appendChild(magicBtn);
 
             toolbar.appendChild(actionBtns);
+
+            // Coloring mode toggle button (🔒 = inside outline only, 🔓 = free draw)
+            const modeToggle = document.createElement('button');
+            modeToggle.className = 'sketch-mode-toggle';
+            modeToggle.id = 'sketch-mode-toggle';
+            modeToggle.textContent = '🔒';
+            modeToggle.title = '윤곽선 안에서만 색칠';
+            const modeLabel = document.createElement('div');
+            modeLabel.className = 'sketch-mode-label';
+            modeLabel.id = 'sketch-mode-label';
+            modeLabel.textContent = '윤곽 안만';
+            modeToggle.onclick = () => { toggleColoringMode(); };
+            screenDiv.appendChild(modeToggle);
+            screenDiv.appendChild(modeLabel);
+
             screenDiv.appendChild(canvasWrap);
             screenDiv.appendChild(toolbar);
             area.appendChild(screenDiv);
 
-            resizeCanvases(outlineCanvas, drawCanvas);
-            window.addEventListener('resize', () => resizeCanvases(outlineCanvas, drawCanvas));
+            resizeCanvases(outlineCanvas, drawCanvas, maskCanvas);
+            CanvasGame.resizeHandler = () => resizeCanvases(outlineCanvas, drawCanvas, maskCanvas);
+            window.addEventListener('resize', CanvasGame.resizeHandler);
 
             CanvasGame.canvases.outline = outlineCanvas;
             CanvasGame.canvases.draw = drawCanvas;
+            CanvasGame.canvases.mask = maskCanvas;
             CanvasGame.canvasCtx.outline = outlineCanvas.getContext('2d');
             CanvasGame.canvasCtx.draw = drawCanvas.getContext('2d');
+            CanvasGame.canvasCtx.mask = maskCanvas.getContext('2d');
 
             drawOutline(outlineCanvas);
+            fillMask(maskCanvas);
+            applyColoringMode();
             setupDrawing(drawCanvas);
         }
 
-        function resizeCanvases(outlineCanvas, drawCanvas) {
+        function resizeCanvases(outlineCanvas, drawCanvas, maskCanvas) {
             const wrap = document.querySelector('.sketch-canvas-wrap');
             if (!wrap) return;
             const rect = wrap.getBoundingClientRect();
@@ -4250,7 +5011,13 @@
             outlineCanvas.height = rect.height;
             drawCanvas.width = rect.width;
             drawCanvas.height = rect.height;
+            if (maskCanvas) {
+                maskCanvas.width = rect.width;
+                maskCanvas.height = rect.height;
+                fillMask(maskCanvas);
+            }
             drawOutline(outlineCanvas);
+            applyColoringMode();
         }
 
         function drawOutline(canvas) {
@@ -4261,12 +5028,35 @@
             const cy = canvas.height / 2;
             const scale = Math.min(canvas.width, canvas.height) * 0.003;
 
+            // Draw a soft colored shadow layer first for depth
+            const shadowColors = { fish: '#4FC3F7', car: '#FF8A65', dino: '#81C784', butterfly: '#CE93D8' };
+            const shadowColor = shadowColors[CanvasGame.currentShape] || '#999';
+            ctx.save();
+            ctx.translate(cx, cy + 3 * scale);
+            ctx.scale(scale, scale);
+            ctx.strokeStyle = shadowColor;
+            ctx.globalAlpha = 0.22;
+            ctx.lineWidth = 190;
+            ctx.setLineDash([]);
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            switch (CanvasGame.currentShape) {
+                case 'fish': drawFishOutline(ctx); break;
+                case 'car': drawCarOutline(ctx); break;
+                case 'dino': drawDinoOutline(ctx); break;
+                case 'butterfly': drawButterflyOutline(ctx); break;
+                default: ctx.beginPath(); ctx.arc(0, 0, 60, 0, Math.PI * 2); ctx.stroke();
+            }
+            ctx.restore();
+
+            // Main outline on top - extra thick for kids
             ctx.save();
             ctx.translate(cx, cy);
             ctx.scale(scale, scale);
-            ctx.strokeStyle = 'rgba(100, 100, 100, 0.35)';
-            ctx.lineWidth = 3;
-            ctx.setLineDash([8, 6]);
+            ctx.strokeStyle = 'rgba(5, 5, 5, 1.0)';
+            ctx.lineWidth = 160;
+            ctx.setLineDash([]);
             ctx.lineCap = 'round';
             ctx.lineJoin = 'round';
 
@@ -4292,11 +5082,521 @@
             ctx.restore();
         }
 
+        // Fill the hidden mask canvas with the outline's interior region (solid white)
+        function fillMask(canvas) {
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const scale = Math.min(canvas.width, canvas.height) * 0.003;
+
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.scale(scale, scale);
+            ctx.fillStyle = '#FFFFFF';
+
+            switch (CanvasGame.currentShape) {
+                case 'fish': fillFishMask(ctx); break;
+                case 'car': fillCarMask(ctx); break;
+                case 'dino': fillDinoMask(ctx); break;
+                case 'butterfly': fillButterflyMask(ctx); break;
+                default:
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 60, 0, Math.PI * 2);
+                    ctx.fill();
+            }
+            ctx.restore();
+        }
+
+        function fillFishMask(ctx) {
+            // Main body
+            ctx.beginPath();
+            ctx.moveTo(75, 0);
+            ctx.bezierCurveTo(80, -30, 60, -55, 30, -52);
+            ctx.bezierCurveTo(0, -50, -40, -45, -65, -25);
+            ctx.bezierCurveTo(-80, -15, -80, 15, -65, 25);
+            ctx.bezierCurveTo(-40, 45, 0, 50, 30, 52);
+            ctx.bezierCurveTo(60, 55, 80, 30, 75, 0);
+            ctx.closePath();
+            ctx.fill();
+            // Tail fin region
+            ctx.beginPath();
+            ctx.moveTo(-65, -15);
+            ctx.bezierCurveTo(-85, -20, -110, -55, -125, -50);
+            ctx.lineTo(-80, -5);
+            ctx.closePath();
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(-65, 15);
+            ctx.bezierCurveTo(-85, 20, -110, 55, -125, 50);
+            ctx.lineTo(-80, 5);
+            ctx.closePath();
+            ctx.fill();
+            // Tail center
+            ctx.beginPath();
+            ctx.moveTo(-80, -5);
+            ctx.lineTo(-80, 5);
+            ctx.lineTo(-65, 0);
+            ctx.closePath();
+            ctx.fill();
+            // Dorsal fin
+            ctx.beginPath();
+            ctx.moveTo(10, -50);
+            ctx.bezierCurveTo(5, -75, 20, -95, 35, -80);
+            ctx.bezierCurveTo(45, -70, 50, -58, 42, -50);
+            ctx.closePath();
+            ctx.fill();
+            // Belly fin
+            ctx.beginPath();
+            ctx.moveTo(5, 48);
+            ctx.bezierCurveTo(0, 65, 15, 75, 25, 65);
+            ctx.bezierCurveTo(30, 58, 28, 50, 22, 48);
+            ctx.closePath();
+            ctx.fill();
+            // Anal fin
+            ctx.beginPath();
+            ctx.moveTo(-30, 42);
+            ctx.bezierCurveTo(-35, 55, -22, 60, -18, 50);
+            ctx.bezierCurveTo(-15, 45, -20, 42, -25, 42);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function fillCarMask(ctx) {
+            ctx.beginPath();
+            ctx.moveTo(-95, 5);
+            ctx.quadraticCurveTo(-100, -5, -95, -15);
+            ctx.lineTo(-90, -28);
+            ctx.quadraticCurveTo(-88, -35, -78, -35);
+            ctx.lineTo(-42, -35);
+            ctx.lineTo(-30, -72);
+            ctx.quadraticCurveTo(-28, -78, -22, -78);
+            ctx.lineTo(38, -78);
+            ctx.quadraticCurveTo(44, -78, 46, -72);
+            ctx.lineTo(62, -35);
+            ctx.lineTo(82, -35);
+            ctx.quadraticCurveTo(100, -35, 102, -15);
+            ctx.lineTo(102, 5);
+            ctx.quadraticCurveTo(102, 22, 92, 22);
+            ctx.lineTo(78, 22);
+            ctx.quadraticCurveTo(75, 38, 60, 42);
+            ctx.quadraticCurveTo(45, 38, 42, 22);
+            ctx.lineTo(-28, 22);
+            ctx.quadraticCurveTo(-32, 38, -47, 42);
+            ctx.quadraticCurveTo(-62, 38, -65, 22);
+            ctx.lineTo(-82, 22);
+            ctx.quadraticCurveTo(-95, 22, -95, 5);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function fillDinoMask(ctx) {
+            // Body ellipse (matches drawDinoOutline brontosaurus)
+            ctx.beginPath();
+            ctx.ellipse(20, 25, 55, 32, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Neck + head (closed shape tracing both sides of neck)
+            ctx.beginPath();
+            ctx.moveTo(-20, 20);
+            ctx.bezierCurveTo(-30, -10, -45, -40, -50, -65);
+            ctx.bezierCurveTo(-52, -75, -45, -85, -35, -85);
+            ctx.bezierCurveTo(-25, -85, -15, -80, -12, -72);
+            ctx.bezierCurveTo(-10, -68, -15, -62, -22, -60);
+            ctx.bezierCurveTo(-30, -55, -35, -40, -30, -20);
+            ctx.bezierCurveTo(-25, -5, -15, 5, 0, 10);
+            ctx.closePath();
+            ctx.fill();
+            // Tail (closed shape)
+            ctx.beginPath();
+            ctx.moveTo(70, 15);
+            ctx.bezierCurveTo(85, 8, 100, -5, 115, -15);
+            ctx.bezierCurveTo(120, -18, 125, -15, 122, -10);
+            ctx.bezierCurveTo(115, 0, 100, 10, 85, 20);
+            ctx.closePath();
+            ctx.fill();
+            // Front left leg
+            ctx.beginPath();
+            ctx.moveTo(-9, 50);
+            ctx.lineTo(-12, 78);
+            ctx.bezierCurveTo(-14, 86, 1, 88, 4, 80);
+            ctx.lineTo(6, 50);
+            ctx.closePath();
+            ctx.fill();
+            // Front right leg
+            ctx.beginPath();
+            ctx.moveTo(4, 52);
+            ctx.lineTo(1, 78);
+            ctx.bezierCurveTo(-1, 86, 14, 88, 17, 80);
+            ctx.lineTo(19, 52);
+            ctx.closePath();
+            ctx.fill();
+            // Back left leg
+            ctx.beginPath();
+            ctx.moveTo(38, 52);
+            ctx.lineTo(34, 78);
+            ctx.bezierCurveTo(32, 86, 47, 88, 50, 80);
+            ctx.lineTo(52, 52);
+            ctx.closePath();
+            ctx.fill();
+            // Back right leg
+            ctx.beginPath();
+            ctx.moveTo(51, 50);
+            ctx.lineTo(48, 78);
+            ctx.bezierCurveTo(46, 86, 61, 88, 64, 80);
+            ctx.lineTo(66, 50);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function fillButterflyMask(ctx) {
+            // Upper left wing (matches drawButterflyOutline)
+            ctx.beginPath();
+            ctx.moveTo(0, -5);
+            ctx.bezierCurveTo(-25, -55, -60, -85, -95, -70);
+            ctx.bezierCurveTo(-125, -55, -120, -20, -85, -10);
+            ctx.bezierCurveTo(-110, 0, -115, 35, -80, 40);
+            ctx.bezierCurveTo(-55, 44, -30, 50, -8, 30);
+            ctx.closePath();
+            ctx.fill();
+            // Lower left wing
+            ctx.beginPath();
+            ctx.moveTo(-8, 30);
+            ctx.bezierCurveTo(-25, 40, -55, 55, -65, 65);
+            ctx.bezierCurveTo(-75, 75, -60, 82, -45, 72);
+            ctx.bezierCurveTo(-25, 60, -10, 45, -5, 35);
+            ctx.closePath();
+            ctx.fill();
+            // Upper right wing
+            ctx.beginPath();
+            ctx.moveTo(0, -5);
+            ctx.bezierCurveTo(25, -55, 60, -85, 95, -70);
+            ctx.bezierCurveTo(125, -55, 120, -20, 85, -10);
+            ctx.bezierCurveTo(110, 0, 115, 35, 80, 40);
+            ctx.bezierCurveTo(55, 44, 30, 50, 8, 30);
+            ctx.closePath();
+            ctx.fill();
+            // Lower right wing
+            ctx.beginPath();
+            ctx.moveTo(8, 30);
+            ctx.bezierCurveTo(25, 40, 55, 55, 65, 65);
+            ctx.bezierCurveTo(75, 75, 60, 82, 45, 72);
+            ctx.bezierCurveTo(25, 60, 10, 45, 5, 35);
+            ctx.closePath();
+            ctx.fill();
+            // Body segments + head
+            ctx.beginPath();
+            ctx.ellipse(0, -5, 6, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(0, 5, 5, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(0, 18, 5, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(0, 30, 4, 7, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(0, -18, 9, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Build the shape clip path on the draw canvas context (used for inside-only coloring)
+        // This traces the same filled regions as the fillXxxMask functions
+        function buildShapeClipPath(ctx, canvas) {
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const scale = Math.min(canvas.width, canvas.height) * 0.003;
+
+            ctx.save();
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.beginPath();
+
+            // We need to build the path in the same coordinate system as the mask
+            const buildInTransform = (pathFn) => {
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.scale(scale, scale);
+                pathFn(ctx);
+                ctx.restore();
+            };
+
+            switch (CanvasGame.currentShape) {
+                case 'fish': buildInTransform(buildFishClipPath); break;
+                case 'car': buildInTransform(buildCarClipPath); break;
+                case 'dino': buildInTransform(buildDinoClipPath); break;
+                case 'butterfly': buildInTransform(buildButterflyClipPath); break;
+                default:
+                    ctx.arc(cx, cy, 60 * scale, 0, Math.PI * 2);
+            }
+
+            ctx.clip();
+            ctx.restore();
+        }
+
+        function buildFishClipPath(ctx) {
+            // Main body
+            ctx.moveTo(75, 0);
+            ctx.bezierCurveTo(80, -30, 60, -55, 30, -52);
+            ctx.bezierCurveTo(0, -50, -40, -45, -65, -25);
+            ctx.bezierCurveTo(-80, -15, -80, 15, -65, 25);
+            ctx.bezierCurveTo(-40, 45, 0, 50, 30, 52);
+            ctx.bezierCurveTo(60, 55, 80, 30, 75, 0);
+            ctx.closePath();
+            // Tail fins
+            ctx.moveTo(-65, -15);
+            ctx.bezierCurveTo(-85, -20, -110, -55, -125, -50);
+            ctx.lineTo(-80, -5);
+            ctx.closePath();
+            ctx.moveTo(-65, 15);
+            ctx.bezierCurveTo(-85, 20, -110, 55, -125, 50);
+            ctx.lineTo(-80, 5);
+            ctx.closePath();
+            // Tail center
+            ctx.moveTo(-80, -5);
+            ctx.lineTo(-80, 5);
+            ctx.lineTo(-65, 0);
+            ctx.closePath();
+            // Dorsal fin
+            ctx.moveTo(10, -50);
+            ctx.bezierCurveTo(5, -75, 20, -95, 35, -80);
+            ctx.bezierCurveTo(45, -70, 50, -58, 42, -50);
+            ctx.closePath();
+            // Belly fin
+            ctx.moveTo(5, 48);
+            ctx.bezierCurveTo(0, 65, 15, 75, 25, 65);
+            ctx.bezierCurveTo(30, 58, 28, 50, 22, 48);
+            ctx.closePath();
+            // Anal fin
+            ctx.moveTo(-30, 42);
+            ctx.bezierCurveTo(-35, 55, -22, 60, -18, 50);
+            ctx.bezierCurveTo(-15, 45, -20, 42, -25, 42);
+            ctx.closePath();
+        }
+
+        function buildCarClipPath(ctx) {
+            ctx.moveTo(-95, 5);
+            ctx.quadraticCurveTo(-100, -5, -95, -15);
+            ctx.lineTo(-90, -28);
+            ctx.quadraticCurveTo(-88, -35, -78, -35);
+            ctx.lineTo(-42, -35);
+            ctx.lineTo(-30, -72);
+            ctx.quadraticCurveTo(-28, -78, -22, -78);
+            ctx.lineTo(38, -78);
+            ctx.quadraticCurveTo(44, -78, 46, -72);
+            ctx.lineTo(62, -35);
+            ctx.lineTo(82, -35);
+            ctx.quadraticCurveTo(100, -35, 102, -15);
+            ctx.lineTo(102, 5);
+            ctx.quadraticCurveTo(102, 22, 92, 22);
+            ctx.lineTo(78, 22);
+            ctx.quadraticCurveTo(75, 38, 60, 42);
+            ctx.quadraticCurveTo(45, 38, 42, 22);
+            ctx.lineTo(-28, 22);
+            ctx.quadraticCurveTo(-32, 38, -47, 42);
+            ctx.quadraticCurveTo(-62, 38, -65, 22);
+            ctx.lineTo(-82, 22);
+            ctx.quadraticCurveTo(-95, 22, -95, 5);
+            ctx.closePath();
+        }
+
+        function buildDinoClipPath(ctx) {
+            // Body ellipse (matches drawDinoOutline brontosaurus)
+            ctx.moveTo(75, 25);
+            ctx.ellipse(20, 25, 55, 32, 0, 0, Math.PI * 2);
+            ctx.closePath();
+            // Neck + head
+            ctx.moveTo(-20, 20);
+            ctx.bezierCurveTo(-30, -10, -45, -40, -50, -65);
+            ctx.bezierCurveTo(-52, -75, -45, -85, -35, -85);
+            ctx.bezierCurveTo(-25, -85, -15, -80, -12, -72);
+            ctx.bezierCurveTo(-10, -68, -15, -62, -22, -60);
+            ctx.bezierCurveTo(-30, -55, -35, -40, -30, -20);
+            ctx.bezierCurveTo(-25, -5, -15, 5, 0, 10);
+            ctx.closePath();
+            // Tail
+            ctx.moveTo(70, 15);
+            ctx.bezierCurveTo(85, 8, 100, -5, 115, -15);
+            ctx.bezierCurveTo(120, -18, 125, -15, 122, -10);
+            ctx.bezierCurveTo(115, 0, 100, 10, 85, 20);
+            ctx.closePath();
+            // Front left leg
+            ctx.moveTo(-9, 50);
+            ctx.lineTo(-12, 78);
+            ctx.bezierCurveTo(-14, 86, 1, 88, 4, 80);
+            ctx.lineTo(6, 50);
+            ctx.closePath();
+            // Front right leg
+            ctx.moveTo(4, 52);
+            ctx.lineTo(1, 78);
+            ctx.bezierCurveTo(-1, 86, 14, 88, 17, 80);
+            ctx.lineTo(19, 52);
+            ctx.closePath();
+            // Back left leg
+            ctx.moveTo(38, 52);
+            ctx.lineTo(34, 78);
+            ctx.bezierCurveTo(32, 86, 47, 88, 50, 80);
+            ctx.lineTo(52, 52);
+            ctx.closePath();
+            // Back right leg
+            ctx.moveTo(51, 50);
+            ctx.lineTo(48, 78);
+            ctx.bezierCurveTo(46, 86, 61, 88, 64, 80);
+            ctx.lineTo(66, 50);
+            ctx.closePath();
+        }
+
+        function buildButterflyClipPath(ctx) {
+            // Upper left wing (matches drawButterflyOutline)
+            ctx.moveTo(0, -5);
+            ctx.bezierCurveTo(-25, -55, -60, -85, -95, -70);
+            ctx.bezierCurveTo(-125, -55, -120, -20, -85, -10);
+            ctx.bezierCurveTo(-110, 0, -115, 35, -80, 40);
+            ctx.bezierCurveTo(-55, 44, -30, 50, -8, 30);
+            ctx.closePath();
+            // Lower left wing
+            ctx.moveTo(-8, 30);
+            ctx.bezierCurveTo(-25, 40, -55, 55, -65, 65);
+            ctx.bezierCurveTo(-75, 75, -60, 82, -45, 72);
+            ctx.bezierCurveTo(-25, 60, -10, 45, -5, 35);
+            ctx.closePath();
+            // Upper right wing
+            ctx.moveTo(0, -5);
+            ctx.bezierCurveTo(25, -55, 60, -85, 95, -70);
+            ctx.bezierCurveTo(125, -55, 120, -20, 85, -10);
+            ctx.bezierCurveTo(110, 0, 115, 35, 80, 40);
+            ctx.bezierCurveTo(55, 44, 30, 50, 8, 30);
+            ctx.closePath();
+            // Lower right wing
+            ctx.moveTo(8, 30);
+            ctx.bezierCurveTo(25, 40, 55, 55, 65, 65);
+            ctx.bezierCurveTo(75, 75, 60, 82, 45, 72);
+            ctx.bezierCurveTo(25, 60, 10, 45, 5, 35);
+            ctx.closePath();
+            // Body segments + head
+            ctx.moveTo(6, -5);
+            ctx.ellipse(0, -5, 6, 8, 0, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.moveTo(5, 5);
+            ctx.ellipse(0, 5, 5, 8, 0, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.moveTo(5, 18);
+            ctx.ellipse(0, 18, 5, 8, 0, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.moveTo(4, 30);
+            ctx.ellipse(0, 30, 4, 7, 0, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.moveTo(9, -18);
+            ctx.arc(0, -18, 9, 0, Math.PI * 2);
+            ctx.closePath();
+        }
+
+        // Apply coloring mode: in "inside-only" mode, use native canvas clip() for perfect containment
+        function applyColoringMode() {
+            const drawCanvas = CanvasGame.canvases.draw;
+            const maskCanvas = CanvasGame.canvases.mask;
+            if (!drawCanvas || !maskCanvas) return;
+            const ctx = CanvasGame.canvasCtx.draw;
+            ctx.globalCompositeOperation = 'source-over';
+        }
+
+        // Clip the entire draw canvas to only show inside mask (fallback compositing method)
+        function clipDrawToMask() {
+            const drawCanvas = CanvasGame.canvases.draw;
+            const maskCanvas = CanvasGame.canvases.mask;
+            if (!drawCanvas || !maskCanvas || !CanvasGame.colorInsideOnly) return;
+            const ctx = CanvasGame.canvasCtx.draw;
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = drawCanvas.width;
+            tempCanvas.height = drawCanvas.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(drawCanvas, 0, 0);
+            ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.drawImage(maskCanvas, 0, 0);
+            ctx.globalCompositeOperation = 'source-in';
+            ctx.drawImage(tempCanvas, 0, 0);
+            ctx.globalCompositeOperation = 'source-over';
+        }
+
+        function toggleColoringMode() {
+            const drawCanvas = CanvasGame.canvases.draw;
+            const ctx = CanvasGame.canvasCtx.draw;
+            if (!drawCanvas || !ctx) return;
+
+            // Save current visible drawing before toggling
+            const savedDrawing = ctx.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
+
+            CanvasGame.colorInsideOnly = !CanvasGame.colorInsideOnly;
+
+            // Update toggle button UI
+            const toggleBtn = document.getElementById('sketch-mode-toggle');
+            const modeLabel = document.getElementById('sketch-mode-label');
+            if (toggleBtn) {
+                if (CanvasGame.colorInsideOnly) {
+                    toggleBtn.textContent = '🔒';
+                    toggleBtn.title = '윤곽선 안에서만 색칠';
+                    toggleBtn.classList.remove('free-mode');
+                } else {
+                    toggleBtn.textContent = '🔓';
+                    toggleBtn.title = '자유 그리기';
+                    toggleBtn.classList.add('free-mode');
+                }
+            }
+            if (modeLabel) {
+                if (CanvasGame.colorInsideOnly) {
+                    modeLabel.textContent = '윤곽 안만';
+                    modeLabel.classList.remove('free-mode');
+                } else {
+                    modeLabel.textContent = '자유 그리기';
+                    modeLabel.classList.add('free-mode');
+                }
+            }
+
+            if (CanvasGame.colorInsideOnly) {
+                // Switching TO inside-only mode: clip existing drawing to mask
+                ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.putImageData(savedDrawing, 0, 0);
+                clipDrawToMask();
+            } else {
+                // Switching TO free mode
+                ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height);
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.putImageData(savedDrawing, 0, 0);
+            }
+
+            // Play subtle mode toggle sound
+            if (Settings.soundEnabled) {
+                const actx = getAudioContext();
+                if (actx) {
+                    const t = actx.currentTime;
+                    const o = actx.createOscillator();
+                    const g = actx.createGain();
+                    o.type = 'sine';
+                    if (CanvasGame.colorInsideOnly) {
+                        o.frequency.setValueAtTime(500, t);
+                        o.frequency.linearRampToValueAtTime(700, t + 0.08);
+                    } else {
+                        o.frequency.setValueAtTime(700, t);
+                        o.frequency.linearRampToValueAtTime(500, t + 0.08);
+                    }
+                    g.gain.setValueAtTime(0.08, t);
+                    g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+                    o.connect(g); g.connect(getAudioDest());
+                    o.start(t); o.stop(t + 0.1);
+                }
+            }
+            haptic('light');
+        }
+
         function drawFishOutline(ctx) {
             // Body - smooth fish shape with bezier curves
-            // Subtle fill hint
+            // Subtle fill hint (increased alpha for better visibility)
             ctx.save();
-            ctx.globalAlpha = 0.06;
+            ctx.globalAlpha = 0.38;
             ctx.fillStyle = '#4FC3F7';
             ctx.beginPath();
             ctx.moveTo(75, 0);
@@ -4404,9 +5704,9 @@
 
         function drawCarOutline(ctx) {
             // Main body - rounded sedan shape
-            // Subtle fill hint
+            // Subtle fill hint (increased alpha for better visibility)
             ctx.save();
-            ctx.globalAlpha = 0.06;
+            ctx.globalAlpha = 0.32;
             ctx.fillStyle = '#FF6F00';
             ctx.beginPath();
             ctx.moveTo(-95, 5);
@@ -4572,9 +5872,9 @@
 
         function drawDinoOutline(ctx) {
             // Cute brontosaurus/sauropod dinosaur outline
-            // Body - large oval (subtle fill hint)
+            // Body - large oval (increased alpha for better visibility)
             ctx.save();
-            ctx.globalAlpha = 0.06;
+            ctx.globalAlpha = 0.32;
             ctx.fillStyle = '#90EE90';
             ctx.beginPath();
             ctx.ellipse(20, 25, 55, 32, 0, 0, Math.PI * 2);
@@ -4654,9 +5954,9 @@
         }
 
         function drawButterflyOutline(ctx) {
-            // Subtle fill hint for wings
+            // Subtle fill hint for wings (increased alpha for better visibility)
             ctx.save();
-            ctx.globalAlpha = 0.06;
+            ctx.globalAlpha = 0.32;
             ctx.fillStyle = '#FF69B4';
 
             // Upper left wing
@@ -4857,6 +6157,51 @@
             let isDrawing = false;
             let currentColor = '#FF1744';
 
+            // Helper: begin a clipped stroke session
+            function beginClippedStroke(ctx, x, y) {
+                ctx.save();
+                if (CanvasGame.colorInsideOnly && !CanvasGame.eraserMode) {
+                    // Apply native clip path so paint CANNOT go outside the shape
+                    const cx = canvas.width / 2;
+                    const cy = canvas.height / 2;
+                    const scale = Math.min(canvas.width, canvas.height) * 0.003;
+                    ctx.beginPath();
+                    ctx.save();
+                    ctx.translate(cx, cy);
+                    ctx.scale(scale, scale);
+                    switch (CanvasGame.currentShape) {
+                        case 'fish': buildFishClipPath(ctx); break;
+                        case 'car': buildCarClipPath(ctx); break;
+                        case 'dino': buildDinoClipPath(ctx); break;
+                        case 'butterfly': buildButterflyClipPath(ctx); break;
+                        default: ctx.arc(0, 0, 60, 0, Math.PI * 2);
+                    }
+                    ctx.restore();
+                    ctx.clip();
+                }
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+            }
+
+            function endClippedStroke(ctx) {
+                ctx.restore(); // removes clip
+            }
+
+            function drawSegment(ctx, x, y) {
+                if (CanvasGame.eraserMode) {
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.strokeStyle = 'rgba(0,0,0,1)';
+                } else {
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.strokeStyle = currentColor;
+                }
+                ctx.lineWidth = CanvasGame.brushSize || 8;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            }
+
             canvas.addEventListener('touchstart', (e) => {
                 e.preventDefault();
                 isDrawing = true;
@@ -4865,8 +6210,7 @@
                 const x = touch.clientX - rect.left;
                 const y = touch.clientY - rect.top;
                 const ctx = CanvasGame.canvasCtx.draw;
-                ctx.beginPath();
-                ctx.moveTo(x, y);
+                beginClippedStroke(ctx, x, y);
             });
 
             canvas.addEventListener('touchmove', (e) => {
@@ -4877,22 +6221,19 @@
                 const x = touch.clientX - rect.left;
                 const y = touch.clientY - rect.top;
                 const ctx = CanvasGame.canvasCtx.draw;
-                if (CanvasGame.eraserMode) {
-                    ctx.globalCompositeOperation = 'destination-out';
-                    ctx.strokeStyle = 'rgba(0,0,0,1)';
-                } else {
-                    ctx.globalCompositeOperation = 'source-over';
-                    ctx.strokeStyle = currentColor;
-                }
-                ctx.lineWidth = CanvasGame.brushSize || 8;
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-                ctx.lineTo(x, y);
-                ctx.stroke();
-            });
+                drawSegment(ctx, x, y);
+            }, { passive: false });
 
             canvas.addEventListener('touchend', () => {
+                if (!isDrawing) return;
                 isDrawing = false;
+                const ctx = CanvasGame.canvasCtx.draw;
+                endClippedStroke(ctx);
+                // Double-enforce: composite with mask to remove any paint outside outline
+                if (CanvasGame.colorInsideOnly && !CanvasGame.eraserMode) {
+                    clipDrawToMask();
+                }
+                saveCanvasState();
             });
 
             canvas.addEventListener('mousedown', (e) => {
@@ -4901,8 +6242,7 @@
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
                 const ctx = CanvasGame.canvasCtx.draw;
-                ctx.beginPath();
-                ctx.moveTo(x, y);
+                beginClippedStroke(ctx, x, y);
             });
 
             canvas.addEventListener('mousemove', (e) => {
@@ -4911,25 +6251,31 @@
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
                 const ctx = CanvasGame.canvasCtx.draw;
-                if (CanvasGame.eraserMode) {
-                    ctx.globalCompositeOperation = 'destination-out';
-                    ctx.strokeStyle = 'rgba(0,0,0,1)';
-                } else {
-                    ctx.globalCompositeOperation = 'source-over';
-                    ctx.strokeStyle = currentColor;
-                }
-                ctx.lineWidth = CanvasGame.brushSize || 8;
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-                ctx.lineTo(x, y);
-                ctx.stroke();
+                drawSegment(ctx, x, y);
             });
 
             canvas.addEventListener('mouseup', () => {
+                if (!isDrawing) return;
                 isDrawing = false;
+                const ctx = CanvasGame.canvasCtx.draw;
+                endClippedStroke(ctx);
+                // Double-enforce: composite with mask to remove any paint outside outline
+                if (CanvasGame.colorInsideOnly && !CanvasGame.eraserMode) {
+                    clipDrawToMask();
+                }
+                saveCanvasState();
             });
 
             canvas.addEventListener('mouseleave', () => {
+                if (isDrawing) {
+                    const ctx = CanvasGame.canvasCtx.draw;
+                    endClippedStroke(ctx);
+                    // Double-enforce: composite with mask to remove any paint outside outline
+                    if (CanvasGame.colorInsideOnly && !CanvasGame.eraserMode) {
+                        clipDrawToMask();
+                    }
+                    saveCanvasState();
+                }
                 isDrawing = false;
             });
 
@@ -4942,20 +6288,164 @@
             };
         }
 
+        function saveCanvasState() {
+            const canvas = CanvasGame.canvases.draw;
+            if (!canvas) return;
+            const dataURL = canvas.toDataURL();
+            CanvasGame.undoStack.push(dataURL);
+            if (CanvasGame.undoStack.length > CanvasGame.maxUndoSteps) {
+                CanvasGame.undoStack.shift();
+            }
+        }
+
+        function undoCanvasStroke() {
+            if (CanvasGame.undoStack.length === 0) return;
+            CanvasGame.undoStack.pop(); // Remove current state
+            const canvas = CanvasGame.canvases.draw;
+            const ctx = CanvasGame.canvasCtx.draw;
+            if (!canvas || !ctx) return;
+
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (CanvasGame.undoStack.length > 0) {
+                const img = new Image();
+                img.onload = () => {
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.drawImage(img, 0, 0);
+                    // Re-apply mask mode after restoring
+                    if (CanvasGame.colorInsideOnly) {
+                        applyColoringMode();
+                    }
+                };
+                img.src = CanvasGame.undoStack[CanvasGame.undoStack.length - 1];
+            } else {
+                // No undo states left - re-apply mask if needed
+                if (CanvasGame.colorInsideOnly) {
+                    applyColoringMode();
+                }
+            }
+
+            // Play soft undo sound
+            if (Settings.soundEnabled) {
+                const actx = getAudioContext();
+                if (actx) {
+                    const now = actx.currentTime;
+                    const o = actx.createOscillator();
+                    const g = actx.createGain();
+                    o.type = 'sine';
+                    o.frequency.setValueAtTime(600, now);
+                    o.frequency.exponentialRampToValueAtTime(350, now + 0.1);
+                    g.gain.setValueAtTime(0.1, now);
+                    g.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+                    o.connect(g); g.connect(getAudioDest());
+                    o.start(now); o.stop(now + 0.12);
+                }
+            }
+
+            haptic('light');
+        }
+
         function clearCanvas() {
             const ctx = CanvasGame.canvasCtx.draw;
+            ctx.globalCompositeOperation = 'source-over';
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            CanvasGame.undoStack = [];
+            // Re-apply mask if in inside-only mode
+            if (CanvasGame.colorInsideOnly) {
+                applyColoringMode();
+            }
         }
 
         function startAquarium() {
             const area = document.getElementById('canvas-area');
-            area.innerHTML = '';
+
+            // Play magic sparkle sound
+            if (Settings.soundEnabled) {
+                const ctx = getAudioContext();
+                if (ctx) {
+                    const now = ctx.currentTime;
+                    const dest = getAudioDest();
+                    // Ascending magic harp glissando
+                    const magicNotes = [523, 659, 784, 988, 1175, 1397, 1568, 2093];
+                    magicNotes.forEach((freq, i) => {
+                        const t = now + i * 0.06;
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, t);
+                        gain.gain.setValueAtTime(0, t);
+                        gain.gain.linearRampToValueAtTime(0.18, t + 0.02);
+                        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+                        osc.connect(gain); gain.connect(dest);
+                        osc.start(t); osc.stop(t + 0.25);
+                    });
+                    // Sparkle shimmer
+                    const shimBuf = ctx.createBuffer(1, ctx.sampleRate * 0.5, ctx.sampleRate);
+                    const shimData = shimBuf.getChannelData(0);
+                    for (let j = 0; j < shimData.length; j++) shimData[j] = (Math.random() * 2 - 1) * Math.pow(1 - j / shimData.length, 1.5) * 0.2;
+                    const shimSrc = ctx.createBufferSource(); shimSrc.buffer = shimBuf;
+                    const shimFlt = ctx.createBiquadFilter(); shimFlt.type = 'highpass'; shimFlt.frequency.setValueAtTime(4000, now);
+                    const shimG = ctx.createGain();
+                    shimG.gain.setValueAtTime(0.08, now + 0.2); shimG.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+                    shimSrc.connect(shimFlt); shimFlt.connect(shimG); shimG.connect(dest);
+                    shimSrc.start(now + 0.2); shimSrc.stop(now + 0.6);
+                }
+            }
+
+            // Show sparkle transition overlay
+            const sparkleOverlay = document.createElement('div');
+            sparkleOverlay.style.cssText = 'position:absolute;inset:0;z-index:500;background:radial-gradient(circle at center,rgba(255,255,255,0.95),rgba(200,220,255,0.9));display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;animation:sparkleTransIn 0.8s ease-out forwards;pointer-events:none;';
+            sparkleOverlay.innerHTML = `
+                <div style="font-size:clamp(5rem,18vw,9rem);animation:stageUpSpin 0.8s ease;">✨</div>
+                <div style="font-size:clamp(1.5rem,5vw,2.5rem);font-weight:900;color:#7B1FA2;animation:stageUpPop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);">마법 시작!</div>
+            `;
+            // Add sparkle particles floating around
+            const sparkleColors = ['#FFD700', '#FF6B6B', '#7B1FA2', '#2196F3', '#4CAF50', '#FF9800'];
+            for (let i = 0; i < 20; i++) {
+                const sp = document.createElement('div');
+                const c = sparkleColors[Math.floor(Math.random() * sparkleColors.length)];
+                sp.style.cssText = `position:absolute;left:${Math.random()*100}%;top:${Math.random()*100}%;width:${4+Math.random()*8}px;height:${4+Math.random()*8}px;border-radius:50%;background:${c};box-shadow:0 0 8px ${c};animation:sparkleGlow ${0.5+Math.random()*0.8}s ease-in-out ${Math.random()*0.5}s infinite;pointer-events:none;`;
+                sparkleOverlay.appendChild(sp);
+            }
+            area.appendChild(sparkleOverlay);
+
+            // After sparkle transition, build the actual aquarium
+            setTimeout(() => {
+                sparkleOverlay.style.animation = 'screenFadeOut 0.3s ease forwards';
+                setTimeout(() => {
+                    sparkleOverlay.remove();
+                }, 300);
+            }, 900);
+
+            // Delay aquarium build slightly to let transition play
+            setTimeout(() => { buildAquarium(); }, 600);
+        }
+
+        function buildAquarium() {
+            const area = document.getElementById('canvas-area');
+            // Remove everything except the sparkle overlay (which fades on its own)
+            const sparkle = area.querySelector('[style*="z-index:500"]');
+            Array.from(area.children).forEach(child => {
+                if (child !== sparkle) child.remove();
+            });
 
             const aquarium = document.createElement('div');
             aquarium.className = 'aquarium-screen';
 
+            // Shape-specific background setup
+            const shapeId = CanvasGame.currentShape;
+            const bgConfigs = {
+                fish: { className: 'aquarium-bg', extraStyle: '' },
+                butterfly: { className: 'aquarium-bg', extraStyle: 'background:linear-gradient(180deg,#87CEEB 0%,#B3E5FC 30%,#E1F5FE 60%,#FFFDE7 90%,#C8E6C9 100%) !important;' },
+                car: { className: 'aquarium-bg', extraStyle: 'background:linear-gradient(180deg,#81D4FA 0%,#B3E5FC 20%,#E3F2FD 50%,#90A4AE 80%,#78909C 100%) !important;' },
+                dino: { className: 'aquarium-bg', extraStyle: 'background:linear-gradient(180deg,#A5D6A7 0%,#66BB6A 20%,#388E3C 50%,#2E7D32 80%,#1B5E20 100%) !important;' }
+            };
+            const bgConfig = bgConfigs[shapeId] || bgConfigs.fish;
+
             const bg = document.createElement('div');
-            bg.className = 'aquarium-bg';
+            bg.className = bgConfig.className;
+            if (bgConfig.extraStyle) bg.style.cssText = bgConfig.extraStyle;
             aquarium.appendChild(bg);
 
             // Light rays from surface
@@ -4986,134 +6476,244 @@
                 document.head.appendChild(style);
             }
 
-            // Caustic light pattern overlay - enhanced
-            const caustics = document.createElement('div');
-            caustics.className = 'aquarium-caustics';
-            aquarium.appendChild(caustics);
+            // Shape-specific environment decorations
+            if (shapeId === 'fish') {
+                // Caustic light pattern overlay - enhanced
+                const caustics = document.createElement('div');
+                caustics.className = 'aquarium-caustics';
+                aquarium.appendChild(caustics);
 
-            // Second light ray from top-right
-            const lightRay2 = document.createElement('div');
-            lightRay2.className = 'aquarium-lightray2';
-            aquarium.appendChild(lightRay2);
+                // Second light ray from top-right
+                const lightRay2 = document.createElement('div');
+                lightRay2.className = 'aquarium-lightray2';
+                aquarium.appendChild(lightRay2);
 
-            // Depth fog at bottom
-            const depthFog = document.createElement('div');
-            depthFog.className = 'aquarium-depthfog';
-            aquarium.appendChild(depthFog);
+                // Depth fog at bottom
+                const depthFog = document.createElement('div');
+                depthFog.className = 'aquarium-depthfog';
+                aquarium.appendChild(depthFog);
 
-            const bubblesContainer = document.createElement('div');
-            bubblesContainer.className = 'aquarium-bubbles';
-            for (let i = 0; i < 12; i++) {
-                const bubble = document.createElement('div');
-                bubble.className = 'aquarium-bubble';
-                const size = 6 + Math.random() * 22;
-                bubble.style.width = size + 'px';
-                bubble.style.height = size + 'px';
-                bubble.style.left = Math.random() * 100 + '%';
-                bubble.style.animationDelay = Math.random() * 4 + 's';
-                bubble.style.animationDuration = (3 + Math.random() * 4) + 's';
-                bubblesContainer.appendChild(bubble);
-            }
-            aquarium.appendChild(bubblesContainer);
+                const bubblesContainer = document.createElement('div');
+                bubblesContainer.className = 'aquarium-bubbles';
+                for (let i = 0; i < 12; i++) {
+                    const bubble = document.createElement('div');
+                    bubble.className = 'aquarium-bubble';
+                    const size = 6 + Math.random() * 22;
+                    bubble.style.width = size + 'px';
+                    bubble.style.height = size + 'px';
+                    bubble.style.left = Math.random() * 100 + '%';
+                    bubble.style.animationDelay = Math.random() * 4 + 's';
+                    bubble.style.animationDuration = (3 + Math.random() * 4) + 's';
+                    bubblesContainer.appendChild(bubble);
+                }
+                aquarium.appendChild(bubblesContainer);
 
-            const wave = document.createElement('div');
-            wave.className = 'aquarium-wave';
-            aquarium.appendChild(wave);
+                const wave = document.createElement('div');
+                wave.className = 'aquarium-wave';
+                aquarium.appendChild(wave);
 
-            // Surface shimmer effect
-            const shimmer = document.createElement('div');
-            shimmer.style.cssText = 'position:absolute;top:0;left:0;right:0;height:15%;z-index:2;background:linear-gradient(180deg,rgba(100,200,255,0.15) 0%,rgba(100,200,255,0.05) 50%,transparent 100%);animation:shimmerPulse 4s ease-in-out infinite;pointer-events:none;';
-            aquarium.appendChild(shimmer);
-
-            // Sandy bottom
-            const sandDiv = document.createElement('div');
-            sandDiv.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:18%;z-index:3;background:linear-gradient(180deg,#C8A96E,#D4B87A 30%,#E8CFA0 60%,#D4B87A);border-radius:60% 60% 0 0 / 30px 30px 0 0;';
-            // Sand sparkles
-            for (let i = 0; i < 8; i++) {
-                const sparkle = document.createElement('div');
-                sparkle.style.cssText = `position:absolute;width:3px;height:3px;background:rgba(255,255,200,0.6);border-radius:50%;left:${5+Math.random()*90}%;top:${30+Math.random()*50}%;animation:sandSparkle ${1.5+Math.random()*2}s ease-in-out ${Math.random()*2}s infinite;`;
-                sandDiv.appendChild(sparkle);
-            }
-            aquarium.appendChild(sandDiv);
-
-            // Seaweed clusters
-            const seaweedContainer = document.createElement('div');
-            seaweedContainer.style.cssText = 'position:absolute;bottom:12%;left:0;right:0;z-index:4;pointer-events:none;';
-            const seaweedPositions = [8, 22, 45, 65, 82, 92];
-            const seaweedColors = ['#2E7D32', '#388E3C', '#1B5E20', '#43A047', '#2E7D32', '#33691E'];
-            seaweedPositions.forEach((pos, i) => {
-                const height = 60 + Math.random() * 80;
-                const sw = document.createElement('div');
-                sw.style.cssText = `position:absolute;left:${pos}%;bottom:0;width:12px;height:${height}px;transform-origin:bottom center;animation:seaweedSway ${2.5+Math.random()*2}s ease-in-out ${Math.random()*2}s infinite;`;
-                // SVG seaweed blade
-                sw.innerHTML = `<svg width="24" height="${height}" viewBox="0 0 24 ${height}" style="overflow:visible;">
-                    <path d="M12,${height} Q6,${height*0.7} 14,${height*0.5} Q4,${height*0.3} 12,${height*0.1} Q10,${height*0.05} 12,0" fill="none" stroke="${seaweedColors[i]}" stroke-width="5" stroke-linecap="round"/>
-                    ${Math.random()>0.4 ? `<path d="M12,${height*0.6} Q${Math.random()>0.5?20:4},${height*0.45} ${Math.random()>0.5?18:6},${height*0.35}" fill="none" stroke="${seaweedColors[i]}" stroke-width="3" stroke-linecap="round"/>` : ''}
+                // Surface shimmer effect
+                const shimmer = document.createElement('div');
+                shimmer.style.cssText = 'position:absolute;top:0;left:0;right:0;height:15%;z-index:2;background:linear-gradient(180deg,rgba(100,200,255,0.15) 0%,rgba(100,200,255,0.05) 50%,transparent 100%);animation:shimmerPulse 4s ease-in-out infinite;pointer-events:none;';
+                aquarium.appendChild(shimmer);
+            } else if (shapeId === 'butterfly') {
+                // Sky scene: clouds, flowers at bottom, butterflies
+                for (let i = 0; i < 4; i++) {
+                    const cloud = document.createElement('div');
+                    const cw = 80 + Math.random() * 80;
+                    cloud.style.cssText = `position:absolute;top:${5+Math.random()*25}%;left:${Math.random()*80}%;width:${cw}px;height:${cw*0.5}px;background:white;border-radius:50%;opacity:0.6;z-index:2;animation:ambientDrift ${8+Math.random()*6}s ease-in-out ${Math.random()*4}s infinite;pointer-events:none;box-shadow:${cw*0.2}px ${cw*0.1}px 0 white, ${-cw*0.15}px ${cw*0.05}px 0 white;`;
+                    aquarium.appendChild(cloud);
+                }
+                // Flower garden at bottom
+                const garden = document.createElement('div');
+                garden.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:22%;z-index:3;background:linear-gradient(180deg,#66BB6A,#43A047 40%,#2E7D32);border-radius:60% 60% 0 0 / 30px 30px 0 0;pointer-events:none;';
+                const flowerEmojis = ['🌸', '🌼', '🌺', '🌷', '🌻', '💐'];
+                for (let i = 0; i < 10; i++) {
+                    const flower = document.createElement('div');
+                    flower.style.cssText = `position:absolute;left:${5+Math.random()*90}%;top:${10+Math.random()*50}%;font-size:${16+Math.random()*18}px;animation:starPulse ${2+Math.random()*2}s ease-in-out ${Math.random()*2}s infinite;`;
+                    flower.textContent = flowerEmojis[Math.floor(Math.random()*flowerEmojis.length)];
+                    garden.appendChild(flower);
+                }
+                aquarium.appendChild(garden);
+                // Floating sparkles
+                for (let i = 0; i < 8; i++) {
+                    const sparkle = document.createElement('div');
+                    sparkle.style.cssText = `position:absolute;left:${Math.random()*100}%;top:${Math.random()*60}%;font-size:${14+Math.random()*10}px;z-index:4;opacity:0.6;animation:sparkleGlow ${1.5+Math.random()*2}s ease-in-out ${Math.random()*3}s infinite;pointer-events:none;`;
+                    sparkle.textContent = '✨';
+                    aquarium.appendChild(sparkle);
+                }
+                // Background butterflies floating gently
+                const bgButterflies = ['🦋', '🦋', '🌸'];
+                for (let i = 0; i < 3; i++) {
+                    const bgB = document.createElement('div');
+                    const bY = 15 + Math.random() * 40;
+                    const bSize = 22 + Math.random() * 14;
+                    const bSpeed = 10 + Math.random() * 6;
+                    const bDelay = Math.random() * 5;
+                    bgB.style.cssText = `position:absolute;top:${bY}%;z-index:4;font-size:${bSize}px;opacity:0.35;animation:swimRight ${bSpeed}s linear ${bDelay}s infinite;pointer-events:none;`;
+                    bgB.textContent = bgButterflies[i];
+                    aquarium.appendChild(bgB);
+                }
+            } else if (shapeId === 'car') {
+                // Road scene: sky, road, buildings
+                // Road at bottom
+                const road = document.createElement('div');
+                road.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:35%;z-index:3;background:linear-gradient(180deg,#546E7A 0%,#455A64 60%,#37474F 100%);pointer-events:none;';
+                // Road markings
+                for (let i = 0; i < 6; i++) {
+                    const mark = document.createElement('div');
+                    mark.style.cssText = `position:absolute;bottom:45%;left:${8+i*16}%;width:10%;height:6px;background:#FDD835;border-radius:3px;opacity:0.8;`;
+                    road.appendChild(mark);
+                }
+                // Sidewalk
+                const sidewalk = document.createElement('div');
+                sidewalk.style.cssText = 'position:absolute;top:0;left:0;right:0;height:18%;background:#BDBDBD;border-bottom:3px solid #9E9E9E;';
+                road.appendChild(sidewalk);
+                aquarium.appendChild(road);
+                // Buildings in background
+                const buildingColors = ['#78909C', '#90A4AE', '#607D8B', '#B0BEC5', '#546E7A'];
+                for (let i = 0; i < 5; i++) {
+                    const bldg = document.createElement('div');
+                    const h = 25 + Math.random() * 30;
+                    const w = 8 + Math.random() * 10;
+                    bldg.style.cssText = `position:absolute;bottom:35%;left:${5+i*18}%;width:${w}%;height:${h}%;background:${buildingColors[i]};border-radius:4px 4px 0 0;z-index:2;pointer-events:none;opacity:0.7;`;
+                    // Windows
+                    for (let r = 0; r < 3; r++) {
+                        for (let c = 0; c < 2; c++) {
+                            const win = document.createElement('div');
+                            win.style.cssText = `position:absolute;top:${15+r*25}%;left:${20+c*40}%;width:25%;height:12%;background:${Math.random()>0.3?'#FFF9C4':'#FFECB3'};border-radius:1px;opacity:0.8;`;
+                            bldg.appendChild(win);
+                        }
+                    }
+                    aquarium.appendChild(bldg);
+                }
+                // Sun
+                const sun = document.createElement('div');
+                sun.style.cssText = 'position:absolute;top:8%;right:12%;width:50px;height:50px;border-radius:50%;background:#FDD835;box-shadow:0 0 30px #FFEE58,0 0 60px rgba(255,238,88,0.3);z-index:2;pointer-events:none;animation:starPulse 4s ease-in-out infinite;';
+                aquarium.appendChild(sun);
+                // Clouds
+                for (let i = 0; i < 3; i++) {
+                    const cloud = document.createElement('div');
+                    const cw = 60 + Math.random() * 60;
+                    cloud.style.cssText = `position:absolute;top:${8+Math.random()*18}%;left:${10+i*28}%;width:${cw}px;height:${cw*0.45}px;background:white;border-radius:50%;opacity:0.7;z-index:2;animation:ambientDrift ${8+Math.random()*4}s ease-in-out ${Math.random()*3}s infinite;pointer-events:none;box-shadow:${cw*0.2}px ${cw*0.08}px 0 white;`;
+                    aquarium.appendChild(cloud);
+                }
+                // Small birds in the sky
+                for (let i = 0; i < 2; i++) {
+                    const bird = document.createElement('div');
+                    const bY = 5 + Math.random() * 15;
+                    bird.style.cssText = `position:absolute;top:${bY}%;z-index:4;font-size:${14+Math.random()*8}px;opacity:0.4;animation:swimRight ${12+Math.random()*6}s linear ${Math.random()*6}s infinite;pointer-events:none;`;
+                    bird.textContent = '🕊️';
+                    aquarium.appendChild(bird);
+                }
+            } else if (shapeId === 'dino') {
+                // Prehistoric forest: trees, volcano, ferns
+                // Ground
+                const ground = document.createElement('div');
+                ground.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:20%;z-index:3;background:linear-gradient(180deg,#4CAF50,#388E3C 50%,#2E7D32);border-radius:50% 50% 0 0 / 20px 20px 0 0;pointer-events:none;';
+                aquarium.appendChild(ground);
+                // Tall trees
+                const treePositions = [8, 25, 55, 78, 92];
+                treePositions.forEach((pos, i) => {
+                    const tree = document.createElement('div');
+                    const h = 30 + Math.random() * 25;
+                    tree.style.cssText = `position:absolute;bottom:18%;left:${pos}%;z-index:${i%2===0?4:2};pointer-events:none;`;
+                    tree.innerHTML = `<svg width="50" height="${h*3}" viewBox="0 0 50 ${h*3}" style="overflow:visible;">
+                        <rect x="22" y="${h*1.5}" width="6" height="${h*1.5}" fill="#5D4037"/>
+                        <ellipse cx="25" cy="${h*0.8}" rx="${12+Math.random()*8}" ry="${h*0.8}" fill="${['#2E7D32','#388E3C','#1B5E20','#4CAF50'][i%4]}" opacity="0.9"/>
+                    </svg>`;
+                    aquarium.appendChild(tree);
+                });
+                // Volcano in background
+                const volcano = document.createElement('div');
+                volcano.style.cssText = 'position:absolute;bottom:18%;left:35%;z-index:1;pointer-events:none;opacity:0.5;';
+                volcano.innerHTML = `<svg width="120" height="100" viewBox="0 0 120 100">
+                    <polygon points="60,5 10,100 110,100" fill="#795548"/>
+                    <polygon points="60,5 45,25 75,25" fill="#FF6D00" opacity="0.6"/>
+                    <circle cx="55" cy="8" r="4" fill="#FF9800" opacity="0.7"><animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/></circle>
+                    <circle cx="65" cy="12" r="3" fill="#FFAB00" opacity="0.5"><animate attributeName="opacity" values="0.5;0.9;0.5" dur="1.5s" repeatCount="indefinite"/></circle>
                 </svg>`;
-                seaweedContainer.appendChild(sw);
-            });
-            aquarium.appendChild(seaweedContainer);
+                aquarium.appendChild(volcano);
+                // Fern plants
+                const fernEmojis = ['🌿', '🍃', '☘️'];
+                for (let i = 0; i < 8; i++) {
+                    const fern = document.createElement('div');
+                    fern.style.cssText = `position:absolute;bottom:${14+Math.random()*10}%;left:${Math.random()*90}%;font-size:${18+Math.random()*14}px;z-index:5;animation:seaweedSway ${2+Math.random()*2}s ease-in-out ${Math.random()*2}s infinite;pointer-events:none;opacity:0.8;`;
+                    fern.textContent = fernEmojis[Math.floor(Math.random()*fernEmojis.length)];
+                    aquarium.appendChild(fern);
+                }
+                // Flying pterodactyl in the sky
+                const ptero = document.createElement('div');
+                ptero.style.cssText = `position:absolute;top:${8+Math.random()*12}%;z-index:4;font-size:28px;opacity:0.35;animation:swimRight ${14+Math.random()*6}s linear ${Math.random()*4}s infinite;pointer-events:none;`;
+                ptero.textContent = '🦅';
+                aquarium.appendChild(ptero);
+            }
 
-            // Decorative elements on sand
-            const decorations = document.createElement('div');
-            decorations.style.cssText = 'position:absolute;bottom:4%;left:0;right:0;z-index:5;pointer-events:none;display:flex;align-items:flex-end;justify-content:space-around;padding:0 5%;';
-            // Corals as SVG
-            const coralData = [
-                {color:'#FF7043', h:45}, {color:'#E91E63', h:35}, {color:'#FF5722', h:50},
-                {color:'#FFA726', h:30}, {color:'#AB47BC', h:40}
-            ];
-            coralData.forEach(cd => {
-                const c = document.createElement('div');
-                c.innerHTML = `<svg width="40" height="${cd.h}" viewBox="0 0 40 ${cd.h}">
-                    <path d="M20,${cd.h} L20,${cd.h*0.4} Q15,${cd.h*0.2} 10,${cd.h*0.1} M20,${cd.h*0.4} Q25,${cd.h*0.15} 30,${cd.h*0.05} M20,${cd.h*0.5} Q12,${cd.h*0.35} 5,${cd.h*0.25}" fill="none" stroke="${cd.color}" stroke-width="4" stroke-linecap="round"/>
-                    <circle cx="10" cy="${cd.h*0.1}" r="5" fill="${cd.color}" opacity="0.8"/>
-                    <circle cx="30" cy="${cd.h*0.05}" r="5" fill="${cd.color}" opacity="0.8"/>
-                    <circle cx="5" cy="${cd.h*0.25}" r="4" fill="${cd.color}" opacity="0.8"/>
-                </svg>`;
-                decorations.appendChild(c);
-            });
-            aquarium.appendChild(decorations);
+            // Fish-specific ocean decorations
+            if (shapeId === 'fish') {
+                // Sandy bottom
+                const sandDiv = document.createElement('div');
+                sandDiv.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:18%;z-index:3;background:linear-gradient(180deg,#C8A96E,#D4B87A 30%,#E8CFA0 60%,#D4B87A);border-radius:60% 60% 0 0 / 30px 30px 0 0;';
+                for (let i = 0; i < 8; i++) {
+                    const sparkle = document.createElement('div');
+                    sparkle.style.cssText = `position:absolute;width:3px;height:3px;background:rgba(255,255,200,0.6);border-radius:50%;left:${5+Math.random()*90}%;top:${30+Math.random()*50}%;animation:sandSparkle ${1.5+Math.random()*2}s ease-in-out ${Math.random()*2}s infinite;`;
+                    sandDiv.appendChild(sparkle);
+                }
+                aquarium.appendChild(sandDiv);
 
-            // Starfish on sand
-            const starfish = document.createElement('div');
-            starfish.style.cssText = 'position:absolute;bottom:8%;left:15%;z-index:5;font-size:28px;animation:starPulse 3s ease-in-out infinite;pointer-events:none;';
-            starfish.textContent = '⭐';
-            aquarium.appendChild(starfish);
-            const shell = document.createElement('div');
-            shell.style.cssText = 'position:absolute;bottom:6%;right:20%;z-index:5;font-size:22px;pointer-events:none;';
-            shell.textContent = '🐚';
-            aquarium.appendChild(shell);
+                // Seaweed clusters
+                const seaweedContainer = document.createElement('div');
+                seaweedContainer.style.cssText = 'position:absolute;bottom:12%;left:0;right:0;z-index:4;pointer-events:none;';
+                const seaweedPositions = [8, 22, 45, 65, 82, 92];
+                const seaweedColors = ['#2E7D32', '#388E3C', '#1B5E20', '#43A047', '#2E7D32', '#33691E'];
+                seaweedPositions.forEach((pos, i) => {
+                    const height = 60 + Math.random() * 80;
+                    const sw = document.createElement('div');
+                    sw.style.cssText = `position:absolute;left:${pos}%;bottom:0;width:12px;height:${height}px;transform-origin:bottom center;animation:seaweedSway ${2.5+Math.random()*2}s ease-in-out ${Math.random()*2}s infinite;`;
+                    sw.innerHTML = `<svg width="24" height="${height}" viewBox="0 0 24 ${height}" style="overflow:visible;">
+                        <path d="M12,${height} Q6,${height*0.7} 14,${height*0.5} Q4,${height*0.3} 12,${height*0.1} Q10,${height*0.05} 12,0" fill="none" stroke="${seaweedColors[i]}" stroke-width="5" stroke-linecap="round"/>
+                        ${Math.random()>0.4 ? `<path d="M12,${height*0.6} Q${Math.random()>0.5?20:4},${height*0.45} ${Math.random()>0.5?18:6},${height*0.35}" fill="none" stroke="${seaweedColors[i]}" stroke-width="3" stroke-linecap="round"/>` : ''}
+                    </svg>`;
+                    seaweedContainer.appendChild(sw);
+                });
+                aquarium.appendChild(seaweedContainer);
 
-            // Treasure chest SVG on sand
-            const treasure = document.createElement('div');
-            treasure.style.cssText = 'position:absolute;bottom:5%;right:35%;z-index:5;pointer-events:none;animation:starPulse 4s ease-in-out 1s infinite;';
-            treasure.innerHTML = `<svg width="48" height="40" viewBox="0 0 48 40">
-                <rect x="4" y="16" width="40" height="22" rx="3" fill="#8D6E63" stroke="#5D4037" stroke-width="1.5"/>
-                <rect x="4" y="16" width="40" height="10" rx="3" fill="#A1887F"/>
-                <path d="M4,20 Q24,10 44,20" fill="#795548" stroke="#5D4037" stroke-width="1"/>
-                <rect x="20" y="18" width="8" height="8" rx="1" fill="#FFD54F" stroke="#F9A825" stroke-width="1"/>
-                <circle cx="24" cy="22" r="2" fill="#F9A825"/>
-                <circle cx="12" cy="12" r="3" fill="#FFD700" opacity="0.7"><animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/></circle>
-                <circle cx="36" cy="10" r="2.5" fill="#FFD700" opacity="0.5"><animate attributeName="opacity" values="0.5;0.9;0.5" dur="2.5s" repeatCount="indefinite"/></circle>
-                <circle cx="24" cy="8" r="2" fill="#FFF176" opacity="0.6"><animate attributeName="opacity" values="0.6;1;0.6" dur="1.8s" repeatCount="indefinite"/></circle>
-            </svg>`;
-            aquarium.appendChild(treasure);
+                // Corals
+                const decorations = document.createElement('div');
+                decorations.style.cssText = 'position:absolute;bottom:4%;left:0;right:0;z-index:5;pointer-events:none;display:flex;align-items:flex-end;justify-content:space-around;padding:0 5%;';
+                const coralData = [{color:'#FF7043',h:45},{color:'#E91E63',h:35},{color:'#FF5722',h:50},{color:'#FFA726',h:30},{color:'#AB47BC',h:40}];
+                coralData.forEach(cd => {
+                    const c = document.createElement('div');
+                    c.innerHTML = `<svg width="40" height="${cd.h}" viewBox="0 0 40 ${cd.h}"><path d="M20,${cd.h} L20,${cd.h*0.4} Q15,${cd.h*0.2} 10,${cd.h*0.1} M20,${cd.h*0.4} Q25,${cd.h*0.15} 30,${cd.h*0.05} M20,${cd.h*0.5} Q12,${cd.h*0.35} 5,${cd.h*0.25}" fill="none" stroke="${cd.color}" stroke-width="4" stroke-linecap="round"/><circle cx="10" cy="${cd.h*0.1}" r="5" fill="${cd.color}" opacity="0.8"/><circle cx="30" cy="${cd.h*0.05}" r="5" fill="${cd.color}" opacity="0.8"/><circle cx="5" cy="${cd.h*0.25}" r="4" fill="${cd.color}" opacity="0.8"/></svg>`;
+                    decorations.appendChild(c);
+                });
+                aquarium.appendChild(decorations);
 
-            // Additional small pearls scattered
-            const pearl = document.createElement('div');
-            pearl.style.cssText = 'position:absolute;bottom:7%;left:42%;z-index:5;width:10px;height:10px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff,#E0E0E0);box-shadow:0 0 6px rgba(255,255,255,0.6);pointer-events:none;';
-            aquarium.appendChild(pearl);
+                // Starfish, shell, treasure
+                const starfish = document.createElement('div');
+                starfish.style.cssText = 'position:absolute;bottom:8%;left:15%;z-index:5;font-size:28px;animation:starPulse 3s ease-in-out infinite;pointer-events:none;';
+                starfish.textContent = '⭐';
+                aquarium.appendChild(starfish);
+                const shell = document.createElement('div');
+                shell.style.cssText = 'position:absolute;bottom:6%;right:20%;z-index:5;font-size:22px;pointer-events:none;';
+                shell.textContent = '🐚';
+                aquarium.appendChild(shell);
+                const treasure = document.createElement('div');
+                treasure.style.cssText = 'position:absolute;bottom:5%;right:35%;z-index:5;pointer-events:none;animation:starPulse 4s ease-in-out 1s infinite;';
+                treasure.innerHTML = `<svg width="48" height="40" viewBox="0 0 48 40"><rect x="4" y="16" width="40" height="22" rx="3" fill="#8D6E63" stroke="#5D4037" stroke-width="1.5"/><rect x="4" y="16" width="40" height="10" rx="3" fill="#A1887F"/><path d="M4,20 Q24,10 44,20" fill="#795548" stroke="#5D4037" stroke-width="1"/><rect x="20" y="18" width="8" height="8" rx="1" fill="#FFD54F" stroke="#F9A825" stroke-width="1"/><circle cx="24" cy="22" r="2" fill="#F9A825"/></svg>`;
+                aquarium.appendChild(treasure);
 
-            // Small background fish
-            for (let i = 0; i < 3; i++) {
-                const bgFish = document.createElement('div');
-                const fishY = 20 + Math.random() * 40;
-                const fishSize = 18 + Math.random() * 12;
-                const fishSpeed = 8 + Math.random() * 6;
-                const fishDelay = Math.random() * 5;
-                bgFish.style.cssText = `position:absolute;top:${fishY}%;z-index:4;font-size:${fishSize}px;opacity:0.4;animation:swimRight ${fishSpeed}s linear ${fishDelay}s infinite;pointer-events:none;`;
-                bgFish.textContent = ['🐠','🐡','🦐'][i];
-                aquarium.appendChild(bgFish);
+                // Small background fish
+                for (let i = 0; i < 3; i++) {
+                    const bgFish = document.createElement('div');
+                    const fishY = 20 + Math.random() * 40;
+                    const fishSize = 18 + Math.random() * 12;
+                    const fishSpeed = 8 + Math.random() * 6;
+                    const fishDelay = Math.random() * 5;
+                    bgFish.style.cssText = `position:absolute;top:${fishY}%;z-index:4;font-size:${fishSize}px;opacity:0.4;animation:swimRight ${fishSpeed}s linear ${fishDelay}s infinite;pointer-events:none;`;
+                    bgFish.textContent = ['🐠','🐡','🦐'][i];
+                    aquarium.appendChild(bgFish);
+                }
             }
 
             // Capture the actual drawn image from canvases
@@ -5123,12 +6723,24 @@
 
             if (drawCanvas && outlineCanvas) {
                 // Merge outline + drawing into one canvas, then export as image
+                // First extract only visible strokes (filter out near-invisible mask pixels)
                 const mergeCanvas = document.createElement('canvas');
                 mergeCanvas.width = drawCanvas.width;
                 mergeCanvas.height = drawCanvas.height;
                 const mergeCtx = mergeCanvas.getContext('2d');
                 mergeCtx.drawImage(outlineCanvas, 0, 0);
-                mergeCtx.drawImage(drawCanvas, 0, 0);
+                // Draw the user's strokes; filter out mask base layer (alpha ~3)
+                const drawData = CanvasGame.canvasCtx.draw.getImageData(0, 0, drawCanvas.width, drawCanvas.height);
+                const pixels = drawData.data;
+                for (let p = 3; p < pixels.length; p += 4) {
+                    if (pixels[p] < 5) pixels[p] = 0; // Remove near-invisible mask pixels
+                }
+                const cleanDraw = document.createElement('canvas');
+                cleanDraw.width = drawCanvas.width;
+                cleanDraw.height = drawCanvas.height;
+                const cleanCtx = cleanDraw.getContext('2d');
+                cleanCtx.putImageData(drawData, 0, 0);
+                mergeCtx.drawImage(cleanDraw, 0, 0);
                 capturedImageURL = mergeCanvas.toDataURL('image/png');
             }
 
@@ -5138,7 +6750,7 @@
                 // Use the actual captured drawing as an <img>
                 const img = document.createElement('img');
                 img.src = capturedImageURL;
-                img.style.cssText = 'width:clamp(120px,35vw,220px);height:auto;pointer-events:none;';
+                img.style.cssText = 'width:clamp(150px,42vw,280px);height:auto;pointer-events:none;';
                 drawing.textContent = '';
                 drawing.style.fontSize = '0';
                 drawing.appendChild(img);
@@ -5151,6 +6763,8 @@
                 let speed = 1.0 + Math.random() * 0.6;
                 let goingRight = true;
                 let currentScaleX = 1;
+                let targetScaleX = 1;
+                const flipSpeed = 0.12; // smooth flip interpolation
 
                 function animateSwim() {
                     if (!CanvasGame.aquariumAnimId) return;
@@ -5161,7 +6775,7 @@
                         posX += speed;
                         if (posX > maxX) {
                             goingRight = false;
-                            currentScaleX = -1;
+                            targetScaleX = -1;
                             const newTop = Math.random() * 40 + 20;
                             drawing.style.top = newTop + '%';
                         }
@@ -5169,10 +6783,16 @@
                         posX -= speed;
                         if (posX < minX) {
                             goingRight = true;
-                            currentScaleX = 1;
+                            targetScaleX = 1;
                             const newTop = Math.random() * 40 + 20;
                             drawing.style.top = newTop + '%';
                         }
+                    }
+
+                    // Smooth interpolation for head direction flip
+                    if (currentScaleX !== targetScaleX) {
+                        currentScaleX += (targetScaleX - currentScaleX) * flipSpeed;
+                        if (Math.abs(currentScaleX - targetScaleX) < 0.05) currentScaleX = targetScaleX;
                     }
 
                     // Smooth dual-sine bobbing for natural motion
@@ -5187,12 +6807,13 @@
 
                 // Add a second drawing with different speed and height (created once, not on every frame)
                 if (Math.random() > 0.3) {
-                    setTimeout(() => {
+                    CanvasGame.secondDrawTimer = setTimeout(() => {
+                        CanvasGame.secondDrawTimer = null;
                         const drawing2 = document.createElement('div');
                         drawing2.className = 'aquarium-drawing';
                         const img2 = document.createElement('img');
                         img2.src = capturedImageURL;
-                        img2.style.cssText = 'width:clamp(100px,28vw,180px);height:auto;pointer-events:none;';
+                        img2.style.cssText = 'width:clamp(110px,32vw,200px);height:auto;pointer-events:none;';
                         drawing2.appendChild(img2);
                         drawing2.style.top = Math.random() * 35 + 35 + '%';
                         drawing2.style.right = '-220px';
@@ -5202,6 +6823,7 @@
                         let speed2 = (0.5 + Math.random() * 0.4);
                         let goingRight2 = false;
                         let currentScaleX2 = -1;
+                        let targetScaleX2 = -1;
 
                         function animateSwim2() {
                             if (!CanvasGame.aquariumAnimId2) return;
@@ -5212,7 +6834,7 @@
                                 posX2 += speed2;
                                 if (posX2 > maxX) {
                                     goingRight2 = false;
-                                    currentScaleX2 = -1;
+                                    targetScaleX2 = -1;
                                     const newTop = Math.random() * 35 + 35;
                                     drawing2.style.top = newTop + '%';
                                 }
@@ -5220,10 +6842,16 @@
                                 posX2 -= speed2;
                                 if (posX2 < minX) {
                                     goingRight2 = true;
-                                    currentScaleX2 = 1;
+                                    targetScaleX2 = 1;
                                     const newTop = Math.random() * 35 + 35;
                                     drawing2.style.top = newTop + '%';
                                 }
+                            }
+
+                            // Smooth interpolation for head direction flip
+                            if (currentScaleX2 !== targetScaleX2) {
+                                currentScaleX2 += (targetScaleX2 - currentScaleX2) * 0.12;
+                                if (Math.abs(currentScaleX2 - targetScaleX2) < 0.05) currentScaleX2 = targetScaleX2;
                             }
 
                             const bob2 = Math.sin(Date.now() / 600) * 6 + Math.sin(Date.now() / 1000) * 2;
@@ -5237,16 +6865,45 @@
                     }, 1500);
                 }
 
-                // Add jellyfish (created once, not on every frame)
-                for (let j = 0; j < 2; j++) {
-                    const jelly = document.createElement('div');
-                    jelly.className = 'aquarium-jellyfish';
-                    jelly.textContent = '🪼';
-                    jelly.style.left = Math.random() * 80 + 10 + '%';
-                    jelly.style.top = Math.random() * 40 - 10 + '%';
-                    jelly.style.animationDelay = (Math.random() * 4) + 's';
-                    jelly.style.animationDuration = (6 + Math.random() * 4) + 's';
-                    aquarium.appendChild(jelly);
+                // Add jellyfish only for fish/aquarium environments
+                if (shapeId === 'fish') {
+                    for (let j = 0; j < 2; j++) {
+                        const jelly = document.createElement('div');
+                        jelly.className = 'aquarium-jellyfish';
+                        jelly.textContent = '🪼';
+                        jelly.style.left = Math.random() * 80 + 10 + '%';
+                        jelly.style.top = Math.random() * 40 - 10 + '%';
+                        jelly.style.animationDelay = (Math.random() * 4) + 's';
+                        jelly.style.animationDuration = (6 + Math.random() * 4) + 's';
+                        aquarium.appendChild(jelly);
+                    }
+                }
+            }
+
+            // Ambient underwater bubble sound loop
+            if (Settings.soundEnabled) {
+                const actx = getAudioContext();
+                if (actx) {
+                    const dest = getAudioDest();
+                    // Create a repeating gentle bubble sound loop
+                    function playAquaBubble() {
+                        if (!CanvasGame.aquariumAnimId) return;
+                        const t = actx.currentTime;
+                        const freq = 800 + Math.random() * 600;
+                        const o = actx.createOscillator();
+                        const g = actx.createGain();
+                        o.type = 'sine';
+                        o.frequency.setValueAtTime(freq, t);
+                        o.frequency.exponentialRampToValueAtTime(freq * 0.5, t + 0.15);
+                        g.gain.setValueAtTime(0.001, t);
+                        g.gain.linearRampToValueAtTime(0.04, t + 0.02);
+                        g.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+                        o.connect(g); g.connect(dest);
+                        o.start(t); o.stop(t + 0.15);
+                        // Schedule next bubble randomly
+                        CanvasGame.aquaBubbleTimer = setTimeout(playAquaBubble, 800 + Math.random() * 2000);
+                    }
+                    CanvasGame.aquaBubbleTimer = setTimeout(playAquaBubble, 500);
                 }
             }
 
@@ -5259,7 +6916,7 @@
 
             const redrawBtn = document.createElement('button');
             redrawBtn.className = 'aquarium-redraw-btn';
-            redrawBtn.textContent = '다시 그리기';
+            redrawBtn.textContent = '🎨 다시 그리기';
             redrawBtn.onclick = initCanvasGame;
             aquarium.appendChild(redrawBtn);
 
@@ -5268,7 +6925,11 @@
 
         function cleanupCanvasGame() {
             CanvasGame.running = false;
+            CanvasGame.paused = false;
             CanvasGame.currentShape = null;
+            CanvasGame.colorInsideOnly = true; // reset to default
+            CanvasGame.canvases.mask = null;
+            CanvasGame.canvasCtx.mask = null;
 
             if (CanvasGame.aquariumAnimId) {
                 cancelAnimationFrame(CanvasGame.aquariumAnimId);
@@ -5278,8 +6939,19 @@
                 cancelAnimationFrame(CanvasGame.aquariumAnimId2);
                 CanvasGame.aquariumAnimId2 = null;
             }
+            if (CanvasGame.secondDrawTimer) {
+                clearTimeout(CanvasGame.secondDrawTimer);
+                CanvasGame.secondDrawTimer = null;
+            }
+            if (CanvasGame.aquaBubbleTimer) {
+                clearTimeout(CanvasGame.aquaBubbleTimer);
+                CanvasGame.aquaBubbleTimer = null;
+            }
 
-            window.removeEventListener('resize', () => resizeCanvases);
+            if (CanvasGame.resizeHandler) {
+                window.removeEventListener('resize', CanvasGame.resizeHandler);
+                CanvasGame.resizeHandler = null;
+            }
 
             // Restore home button, hide pause button
             const homeBtn = document.getElementById('home-btn-3');
@@ -5322,7 +6994,7 @@
             }
         }
 
-        /* ===== Card Ripple Effect ===== */
+        /* ===== Card Ripple Effect + Enhanced Touch Feedback ===== */
         document.addEventListener('touchstart', function(e) {
             const card = e.target.closest('.game-card, .animal-card, .sketch-option');
             if (!card) return;
@@ -5332,6 +7004,50 @@
             const y = ((touch.clientY - rect.top) / rect.height * 100).toFixed(1);
             card.style.setProperty('--tap-x', x + '%');
             card.style.setProperty('--tap-y', y + '%');
+
+            // Create expanding ripple circle at tap point
+            const ripple = document.createElement('div');
+            const rippleX = touch.clientX - rect.left;
+            const rippleY = touch.clientY - rect.top;
+            const maxDim = Math.max(rect.width, rect.height) * 2;
+            ripple.style.cssText = `position:absolute;left:${rippleX}px;top:${rippleY}px;width:${maxDim}px;height:${maxDim}px;border-radius:50%;background:rgba(255,255,255,0.35);transform:translate(-50%,-50%) scale(0);animation:rippleExpand 0.5s ease-out forwards;pointer-events:none;z-index:10;`;
+            card.style.position = 'relative';
+            card.style.overflow = 'hidden';
+            card.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+        }, { passive: true });
+
+        // Add ripple expand keyframe
+        if (!document.getElementById('ripple-expand-style')) {
+            const rs = document.createElement('style');
+            rs.id = 'ripple-expand-style';
+            rs.textContent = `
+                @keyframes rippleExpand {
+                    0% { transform: translate(-50%,-50%) scale(0); opacity: 1; }
+                    100% { transform: translate(-50%,-50%) scale(1); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(rs);
+        }
+
+        // Add subtle tap sound for all interactive elements
+        document.addEventListener('touchstart', function(e) {
+            const btn = e.target.closest('button, .game-card, .animal-card, .sketch-option');
+            if (!btn) return;
+            if (!Settings.soundEnabled) return;
+            const ctx = getAudioContext();
+            if (!ctx) return;
+            const now = ctx.currentTime;
+            // Very light tap click sound
+            const osc = ctx.createOscillator();
+            const g = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(1800, now);
+            osc.frequency.exponentialRampToValueAtTime(1200, now + 0.03);
+            g.gain.setValueAtTime(0.04, now);
+            g.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+            osc.connect(g); g.connect(getAudioDest());
+            osc.start(now); osc.stop(now + 0.04);
         }, { passive: true });
 
         /* ===== Idle Breathing Animation for Menu Cards ===== */
